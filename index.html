@@ -352,19 +352,27 @@
 // ═══════════════════════════════════════════════
 // CONFIGURAÇÃO SUPABASE
 // ═══════════════════════════════════════════════
-const URL_SB  = 'SUA_URL_AQUI';
-const CHAVE_SB = 'SUA_CHAVE_AQUI';
+// IMPORTANTE: Insira a URL do seu projeto Supabase no lugar de 'SUA_URL_AQUI' (Ex: https://xyz.supabase.co)
+const URL_SB  = 'SUA_URL_AQUI'; 
+const CHAVE_SB = 'sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F';
 let db = null;
-if (URL_SB !== 'SUA_URL_AQUI') db = supabase.createClient(URL_SB, CHAVE_SB);
+
+if (URL_SB !== 'SUA_URL_AQUI' && URL_SB.trim() !== '') {
+    db = supabase.createClient(URL_SB, CHAVE_SB);
+}
 
 // ═══════════════════════════════════════════════
-// ESTADO / LOCALSTORAGE
+// ESTADO / LOCALSTORAGE (Fallback caso offline)
 // ═══════════════════════════════════════════════
 let condominios = JSON.parse(localStorage.getItem('ff_condominios') || '[]');
 let registros   = JSON.parse(localStorage.getItem('ff_registros')   || '[]');
 
 function salvarLocal() {
     localStorage.setItem('ff_registros', JSON.stringify(registros));
+}
+
+function salvarCondominiosLocal() { 
+    localStorage.setItem('ff_condominios', JSON.stringify(condominios)); 
 }
 
 // ═══════════════════════════════════════════════
@@ -377,13 +385,23 @@ function logar() {
     iniciar();
 }
 
-function iniciar() {
+async function iniciar() {
     const op = localStorage.getItem('ff_op');
     if (!op) return;
     document.getElementById('tela-login').style.display = 'none';
     document.getElementById('app').style.display = 'flex';
     document.getElementById('status-op').textContent = op.toUpperCase();
     
+    // Sincronizar com o Supabase ao logar, caso esteja configurado
+    if (db) {
+        try {
+            await carregarCondominiosDoSupabase();
+            await carregarRegistrosDoSupabase();
+        } catch (err) {
+            console.error("Falha ao sincronizar com Supabase:", err);
+        }
+    }
+
     renderSelectCondo();
     renderCondominios();
     renderHistorico();
@@ -398,27 +416,68 @@ function mudarAba(nome) {
 }
 
 // ═══════════════════════════════════════════════
+// INTEGRAÇÃO SUPABASE - CONSULTAS
+// ═══════════════════════════════════════════════
+async function carregarCondominiosDoSupabase() {
+    if (!db) return;
+    const { data, error } = await db.from('ff_condominios').select('nome');
+    if (!error && data) {
+        condominios = data.map(c => c.nome);
+        salvarCondominiosLocal();
+    }
+}
+
+async function carregarRegistrosDoSupabase() {
+    if (!db) return;
+    const { data, error } = await db.from('ff_registros').select('*').order('id', { ascending: false });
+    if (!error && data) {
+        registros = data;
+        salvarLocal();
+    }
+}
+
+// ═══════════════════════════════════════════════
 // CONDOMÍNIOS
 // ═══════════════════════════════════════════════
-function salvarCondominios() { localStorage.setItem('ff_condominios', JSON.stringify(condominios)); }
-
-function cadastrarCondo() {
+async function cadastrarCondo() {
     const nome = document.getElementById('condo-nome').value.trim();
     if (!nome) { mostrarMsg('msg-condo','Digite o nome do condomínio.','erro'); return; }
     if (condominios.find(c => c.toLowerCase() === nome.toLowerCase())) {
         mostrarMsg('msg-condo','Condomínio já cadastrado.','erro'); return;
     }
+
+    if (db) {
+        const { error } = await db.from('ff_condominios').insert([{ nome: nome }]);
+        if (error) {
+            mostrarMsg('msg-condo', 'Erro Supabase: ' + error.message, 'erro');
+            return;
+        }
+    }
+
     condominios.push(nome);
-    salvarCondominios();
+    salvarCondominiosLocal();
     document.getElementById('condo-nome').value = '';
-    renderCondominios(); renderSelectCondo();
+    renderCondominios(); 
+    renderSelectCondo();
     mostrarMsg('msg-condo', `"${nome}" cadastrado!`, 'ok');
 }
 
-function removerCondo(i) {
+async function removerCondo(i) {
     if (!confirm(`Remover "${condominios[i]}"?`)) return;
-    condominios.splice(i,1); salvarCondominios();
-    renderCondominios(); renderSelectCondo();
+    const nomeRemover = condominios[i];
+
+    if (db) {
+        const { error } = await db.from('ff_condominios').delete().eq('nome', nomeRemover);
+        if (error) {
+            alert('Erro ao deletar do Supabase: ' + error.message);
+            return;
+        }
+    }
+
+    condominios.splice(i,1); 
+    salvarCondominiosLocal();
+    renderCondominios(); 
+    renderSelectCondo();
 }
 
 function renderCondominios() {
@@ -439,7 +498,7 @@ function renderSelectCondo() {
 // ═══════════════════════════════════════════════
 // SALVAR NOVA O.S. (APENAS CRIAÇÃO INICIAL)
 // ═══════════════════════════════════════════════
-function salvarRegistro() {
+async function salvarRegistro() {
     const condo   = document.getElementById('sel-condo').value;
     const os      = document.getElementById('campo-os').value.trim();
     const status  = document.getElementById('campo-status').value;
@@ -470,6 +529,14 @@ function salvarRegistro() {
             }
         ]
     };
+
+    if (db) {
+        const { error } = await db.from('ff_registros').insert([reg]);
+        if (error) {
+            mostrarMsg('msg-reg', 'Erro Supabase: ' + error.message, 'erro');
+            return;
+        }
+    }
 
     registros.unshift(reg);
     salvarLocal();
@@ -615,7 +682,7 @@ function renderPainel(rid) {
     `;
 }
 
-function salvarNovaDesc(rid) {
+async function salvarNovaDesc(rid) {
     const txt = document.getElementById(`nd-txt-${rid}`).value.trim();
     if (!txt) { alert('Digite uma descrição antes de salvar.'); return; }
 
@@ -623,26 +690,47 @@ function salvarNovaDesc(rid) {
     if (!r) return;
 
     const agora = new Date();
-    // Adiciona a nova atualização na timeline da O.S.
-    r.descricoes.push({
+    const novaDesc = {
         texto: txt,
         data_hora: agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
         operador: localStorage.getItem('ff_op')
-    });
+    };
 
+    // Cria a lista atualizada de descrições
+    const novasDescricoes = [...r.descricoes, novaDesc];
+
+    if (db) {
+        const { error } = await db.from('ff_registros').update({ descricoes: novasDescricoes }).eq('id', rid);
+        if (error) {
+            alert('Erro ao salvar descrição no Supabase: ' + error.message);
+            return;
+        }
+    }
+
+    // Atualiza localmente apenas após validação do Supabase (ou diretamente se offline)
+    r.descricoes = novasDescricoes;
     salvarLocal();
     renderHistorico(); 
     
-    // Mantém o painel aberto após salvar
+    // Mantém o painel aberto e atualizado
     const trDet = document.getElementById('det-' + rid);
     trDet.style.display = 'table-row';
     document.getElementById('btnexp-' + rid).classList.add('aberto');
     renderPainel(rid);
 }
 
-function mudarStatus(rid, novoStatus) {
+async function mudarStatus(rid, novoStatus) {
     const r = registros.find(x => x.id === rid);
     if (!r) return;
+
+    if (db) {
+        const { error } = await db.from('ff_registros').update({ status: novoStatus }).eq('id', rid);
+        if (error) {
+            alert('Erro ao atualizar status no Supabase: ' + error.message);
+            return;
+        }
+    }
+
     r.status = novoStatus;
     salvarLocal();
     renderHistorico();

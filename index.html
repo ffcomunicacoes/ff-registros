@@ -1,752 +1,445 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FF REGISTROS | Sistema NOC</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Sora:wght@300;400;600;800&display=swap');
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FF Geristro</title>
 
-        :root {
-            --preto: #000000;
-            --bg: #080b10;
-            --card: #0f1419;
-            --borda: #1c2330;
-            --ciano: #3fc1c9;
-            --ciano-dim: rgba(63,193,201,0.12);
-            --ciano-glow: rgba(63,193,201,0.35);
-            --branco: #e8edf3;
-            --muted: #6e7a8a;
-            --vermelho: #e05252;
-            --verde: #3ecf8e;
-            --amarelo: #f0c040;
-            --laranja: #f0883e;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Sora', sans-serif; background: var(--bg); color: var(--branco); min-height: 100vh; }
+:root{
+    --bg:#0f172a;
+    --card:#1e293b;
+    --card-hover:#334155;
+    --border:#475569;
+    --text:#f8fafc;
+    --text-secondary:#94a3b8;
+    --primary:#3b82f6;
+    --success:#22c55e;
+    --warning:#f59e0b;
+}
 
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { background: var(--ciano); border-radius: 2px; }
+body{
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:20px;
+}
 
-        /* ══ LOGIN ══ */
-        #tela-login { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .login-box {
-            background: var(--card); border: 1px solid var(--ciano); border-radius: 14px;
-            padding: 50px 45px; width: 370px;
-            box-shadow: 0 0 60px rgba(63,193,201,0.08), 0 20px 60px rgba(0,0,0,0.6);
-            text-align: center;
-        }
-        .login-box .logo { font-size: 30px; font-weight: 800; letter-spacing: 3px; margin-bottom: 6px; }
-        .login-box .logo span { color: var(--ciano); }
-        .login-box .sub { color: var(--muted); font-size: 12px; margin-bottom: 35px; letter-spacing: 1px; }
-        .input-login {
-            background: var(--bg); border: 1px solid var(--borda); color: var(--branco);
-            padding: 13px 16px; border-radius: 8px; font-size: 14px; width: 100%;
-            margin-bottom: 12px; font-family: 'Sora', sans-serif; transition: border-color 0.2s;
-        }
-        .input-login:focus { border-color: var(--ciano); outline: none; }
-        .btn-login {
-            background: var(--ciano); color: #000; width: 100%; padding: 13px;
-            border-radius: 8px; font-size: 15px; font-weight: 700; border: none;
-            cursor: pointer; font-family: 'Sora', sans-serif; transition: all 0.2s;
-        }
-        .btn-login:hover { background: #5ed6de; box-shadow: 0 0 30px var(--ciano-glow); }
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
 
-        /* ══ APP ══ */
-        #app { display: none; flex-direction: column; min-height: 100vh; }
+.logo{
+    font-size:28px;
+    font-weight:700;
+}
 
-        .navbar {
-            background: var(--preto); border-bottom: 2px solid var(--ciano);
-            padding: 14px 30px; display: flex; justify-content: space-between;
-            align-items: center; position: sticky; top: 0; z-index: 100;
-        }
-        .navbar .logo { font-size: 18px; font-weight: 800; letter-spacing: 2px; }
-        .navbar .logo span { color: var(--ciano); }
-        .nav-tabs { display: flex; gap: 4px; }
-        .nav-tab {
-            background: transparent; border: 1px solid var(--borda);
-            color: var(--muted); padding: 8px 18px; border-radius: 6px;
-            cursor: pointer; font-family: 'Sora', sans-serif; font-size: 13px;
-            font-weight: 600; transition: all 0.2s; width: auto; margin: 0;
-        }
-        .nav-tab:hover, .nav-tab.ativo { background: var(--ciano-dim); border-color: var(--ciano); color: var(--ciano); }
-        .nav-user { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--ciano); }
+.logo span{
+    color:var(--primary);
+}
 
-        .conteudo { flex: 1; padding: 30px; max-width: 1200px; margin: 0 auto; width: 100%; }
-        .aba { display: none; }
-        .aba.ativa { display: block; }
+.dashboard{
+    margin-bottom:25px;
+}
 
-        /* ══ CARDS ══ */
-        .card { background: var(--card); border: 1px solid var(--borda); border-radius: 10px; padding: 26px; margin-bottom: 20px; }
-        .card-titulo {
-            font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--ciano);
-            text-transform: uppercase; margin-bottom: 22px; display: flex; align-items: center; gap: 10px;
-        }
-        .card-titulo::before { content: ''; display: block; width: 3px; height: 16px; background: var(--ciano); border-radius: 2px; }
+.dashboard-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
+}
 
-        /* ══ GRID ══ */
-        .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-        .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; }
-        .s2 { grid-column: span 2; }
-        .s3 { grid-column: span 3; }
-        .s4 { grid-column: span 4; }
+.dashboard-card{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:20px;
+    border-radius:12px;
+}
 
-        @media(max-width:768px) {
-            .g2,.g3,.g4 { grid-template-columns: 1fr; }
-            .s2,.s3,.s4 { grid-column: span 1; }
-            .conteudo { padding: 14px; }
-            .navbar { flex-wrap: wrap; gap: 10px; }
-        }
+.dashboard-card span{
+    color:var(--text-secondary);
+    font-size:14px;
+}
 
-        /* ══ CAMPOS ══ */
-        .campo { display: flex; flex-direction: column; gap: 7px; }
-        label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; }
-        input[type="text"], input[type="number"], input[type="password"], select, textarea {
-            background: var(--bg); border: 1px solid var(--borda); color: var(--branco);
-            padding: 11px 14px; border-radius: 7px; font-family: 'Sora', sans-serif;
-            font-size: 14px; transition: border-color 0.2s, box-shadow 0.2s; width: 100%;
-        }
-        input:focus, select:focus, textarea:focus { border-color: var(--ciano); box-shadow: 0 0 0 3px var(--ciano-dim); outline: none; }
-        input[readonly] { color: var(--muted); cursor: not-allowed; }
-        textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
-        select option { background: #0f1419; }
+.dashboard-card h2{
+    margin-top:10px;
+    font-size:30px;
+}
 
-        /* ══ BOTÕES ══ */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-            padding: 10px 20px; border-radius: 7px; font-family: 'Sora', sans-serif;
-            font-weight: 600; font-size: 13px; cursor: pointer; border: none;
-            transition: all 0.2s; width: auto; white-space: nowrap;
-        }
-        .btn-p  { background: var(--ciano); color: #000; }
-        .btn-p:hover  { background: #5ed6de; box-shadow: 0 0 20px var(--ciano-glow); }
-        .btn-s  { background: transparent; color: var(--ciano); border: 1px solid var(--ciano); }
-        .btn-s:hover  { background: var(--ciano-dim); }
-        .btn-d  { background: transparent; color: var(--vermelho); border: 1px solid var(--vermelho); }
-        .btn-d:hover  { background: rgba(224,82,82,0.1); }
-        .btn-full { width: 100%; }
-        .btn-sm { padding: 7px 13px; font-size: 12px; }
+.formulario{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px;
+    margin-bottom:25px;
+}
 
-        /* ══ MSGS ══ */
-        .msg { padding: 11px 15px; border-radius: 7px; font-size: 13px; margin-bottom: 14px; display: none; }
-        .msg.ok   { background: rgba(62,207,142,0.1); border: 1px solid var(--verde);    color: var(--verde);    display: block; }
-        .msg.erro { background: rgba(224,82,82,0.1);  border: 1px solid var(--vermelho); color: var(--vermelho); display: block; }
+.formulario h3{
+    margin-bottom:15px;
+}
 
-        /* ══ STATUS BADGE ══ */
-        .status-badge {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;
-        }
-        .status-aberto   { background: rgba(240,136,62,0.15); color: var(--laranja); border: 1px solid rgba(240,136,62,0.35); }
-        .status-andamento{ background: rgba(240,192,64,0.15); color: var(--amarelo); border: 1px solid rgba(240,192,64,0.35); }
-        .status-fechado  { background: rgba(62,207,142,0.12); color: var(--verde);   border: 1px solid rgba(62,207,142,0.3);  }
-        
-        .barra-acoes { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
-        .divisor { border: none; border-top: 1px solid var(--borda); margin: 22px 0; }
+input, textarea{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#0f172a;
+    color:white;
+    margin-bottom:10px;
+}
 
-        /* ══ TABELA HISTÓRICO ══ */
-        .tabela-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--borda); }
-        table { width: 100%; border-collapse: collapse; }
-        thead { background: var(--bg); }
-        th { padding: 13px 16px; text-align: left; font-size: 11px; letter-spacing: 1.5px; color: var(--muted); text-transform: uppercase; font-weight: 600; white-space: nowrap; }
-        td { padding: 13px 16px; border-top: 1px solid var(--borda); font-size: 14px; vertical-align: middle; }
-        tr:hover td { background: rgba(255,255,255,0.015); }
-        .mono { font-family: 'JetBrains Mono', monospace; }
+textarea{
+    resize:vertical;
+    min-height:100px;
+}
 
-        .badge { display: inline-block; padding: 4px 10px; border-radius: 5px; font-size: 12px; font-weight: 600; }
-        .badge-c { background: var(--ciano-dim); color: var(--ciano); border: 1px solid rgba(63,193,201,0.25); }
-        .badge-v { background: rgba(62,207,142,0.1); color: var(--verde); border: 1px solid rgba(62,207,142,0.25); }
+button{
+    background:var(--primary);
+    color:white;
+    border:none;
+    padding:12px 18px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+}
 
-        /* linha expandida */
-        .linha-exp td { padding: 0 !important; border-top: none !important; }
-        .painel-det {
-            background: var(--bg); border-top: 1px dashed var(--borda); padding: 22px 24px;
-        }
+button:hover{
+    opacity:.9;
+}
 
-        .det-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 25px; flex-wrap: wrap; gap: 12px;
-            background: var(--card); padding: 20px; border-radius: 8px; border: 1px solid var(--borda);
-        }
-        .det-info h3 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--branco); }
-        .det-info p  { font-size: 12px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px;}
-        .det-info .assunto-destaque { color: var(--ciano); font-size: 14px; font-weight: 600; }
-        
-        .det-status-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.kanban{
+    display:flex;
+    gap:20px;
+}
 
-        /* linha do tempo de descrições */
-        .timeline-container { background: var(--card); border: 1px solid var(--borda); border-radius: 8px; overflow: hidden; }
-        .timeline-header { padding: 15px 20px; background: rgba(63,193,201,0.05); border-bottom: 1px solid var(--borda); font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center;}
-        
-        .timeline { padding: 20px; display: flex; flex-direction: column; gap: 0; }
-        .timeline-item { display: flex; gap: 14px; position: relative; padding-bottom: 20px; }
-        .timeline-item:last-child { padding-bottom: 0; }
-        .tl-left { display: flex; flex-direction: column; align-items: center; min-width: 18px; }
-        .tl-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--ciano); border: 3px solid var(--card); box-shadow: 0 0 0 1px var(--ciano); flex-shrink: 0; margin-top: 3px; }
-        .tl-line { flex: 1; width: 2px; background: var(--borda); margin-top: 4px; }
-        .timeline-item:last-child .tl-line { display: none; }
-        .tl-right { flex: 1; background: var(--bg); border: 1px solid var(--borda); padding: 12px 16px; border-radius: 8px; }
-        .tl-meta { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 8px; border-bottom: 1px solid var(--borda); padding-bottom: 6px;}
-        .tl-meta span { color: var(--ciano); margin-right: 8px; font-weight: bold; }
-        .tl-texto { font-size: 13px; line-height: 1.65; color: var(--branco); white-space: pre-wrap; }
+.coluna{
+    flex:1;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    overflow:hidden;
+}
 
-        /* formulário de nova descrição no histórico */
-        .form-nova-desc { padding: 20px; border-top: 1px dashed var(--borda); background: rgba(63,193,201,0.02); }
-        .form-nova-desc textarea { margin-bottom: 12px; }
+.coluna-header{
+    padding:15px;
+    font-weight:700;
+    text-align:center;
+}
 
-        /* chips condomínios */
-        .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-        .chip { background: var(--borda); border-radius: 20px; padding: 6px 14px; font-size: 13px; display: flex; align-items: center; gap: 8px; }
-        .chip-del { cursor: pointer; color: var(--muted); font-size: 13px; transition: color 0.2s; }
-        .chip-del:hover { color: var(--vermelho); }
-        .vazio { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+.a-fazer{
+    border-top:4px solid var(--warning);
+}
 
-        /* btn expandir */
-        .btn-exp {
-            background: transparent; border: none; cursor: pointer; color: var(--ciano); font-size: 16px; padding: 2px 8px; width: auto; margin: 0; transition: transform 0.2s;
-        }
-        .btn-exp.aberto { transform: rotate(90deg); }
+.fazendo{
+    border-top:4px solid var(--primary);
+}
 
-        .filtro-bar { display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; align-items: flex-end; }
-        .filtro-bar input, .filtro-bar select { max-width: 220px; }
-    </style>
+.concluido{
+    border-top:4px solid var(--success);
+}
+
+.lista{
+    padding:15px;
+    min-height:500px;
+}
+
+.tarefa{
+    background:#273449;
+    border-left:4px solid var(--primary);
+    border-radius:10px;
+    padding:15px;
+    margin-bottom:12px;
+    cursor:grab;
+    transition:.2s;
+}
+
+.tarefa:hover{
+    background:var(--card-hover);
+    transform:translateY(-2px);
+}
+
+.tarefa h4{
+    margin-bottom:8px;
+}
+
+.tarefa p{
+    color:var(--text-secondary);
+    margin-bottom:10px;
+    font-size:14px;
+}
+
+.info{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    color:#cbd5e1;
+}
+
+.progresso{
+    margin-top:20px;
+    background:#111827;
+    border-radius:20px;
+    overflow:hidden;
+    height:12px;
+}
+
+.progresso-barra{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#2563eb,#22c55e);
+    transition:.4s;
+}
+
+footer{
+    margin-top:30px;
+    text-align:center;
+    color:var(--text-secondary);
+    font-size:13px;
+}
+
+@media(max-width:900px){
+    .kanban{
+        flex-direction:column;
+    }
+}
+</style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="tela-login">
-    <div class="login-box">
-        <div class="logo">FF <span>REGISTROS</span></div>
-        <div class="sub">SISTEMA NOC · CONTROLE DE ACESSO</div>
-        <input class="input-login" type="text" id="login-usuario" placeholder="Nome do Operador">
-        <input class="input-login" type="password" id="login-senha" placeholder="Senha (opcional)">
-        <button class="btn-login" onclick="logar()">ACESSAR SISTEMA</button>
+<header>
+    <div class="logo">
+        FF <span>Geristro</span>
     </div>
-</div>
+</header>
 
-<!-- APP -->
-<div id="app">
-    <div class="navbar">
-        <div class="logo">FF <span>REGISTROS</span></div>
-        <div class="nav-tabs">
-            <button class="nav-tab ativo" onclick="mudarAba('novo','this')" id="tab-novo">＋ Nova O.S.</button>
-            <button class="nav-tab" onclick="mudarAba('historico','this')" id="tab-historico">Histórico</button>
-            <button class="nav-tab" onclick="mudarAba('condominios','this')" id="tab-condominios">Condomínios</button>
-        </div>
-        <div class="nav-user" id="status-op">— OPERADOR —</div>
-    </div>
+<section class="dashboard">
 
-    <div class="conteudo">
+    <div class="dashboard-grid">
 
-        <!-- ══ ABA: NOVA O.S. ══ -->
-        <div id="aba-novo" class="aba ativa">
-            <div class="card">
-                <div class="card-titulo">Dados da O.S.</div>
-                <div id="msg-reg" class="msg"></div>
-                <div class="g4">
-                    <div class="campo s2">
-                        <label>Condomínio</label>
-                        <select id="sel-condo"><option value="">— Selecione —</option></select>
-                    </div>
-                    <div class="campo">
-                        <label>Número da O.S.</label>
-                        <input type="number" id="campo-os" placeholder="0000">
-                    </div>
-                    <div class="campo">
-                        <label>Status Inicial</label>
-                        <select id="campo-status">
-                            <option value="aberto">🟠 Em Aberto</option>
-                            <option value="andamento">🟡 Em Andamento</option>
-                            <option value="fechado">🟢 Fechado</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-titulo">Detalhes e Ocorrência</div>
-                <div class="campo" style="margin-bottom: 18px;">
-                    <label>Assunto / Título da O.S.</label>
-                    <input type="text" id="campo-assunto" placeholder="Ex: Troca de Equipamento, Instalação de Câmera...">
-                </div>
-                <div class="campo">
-                    <label>Descrição Inicial do Serviço</label>
-                    <textarea id="campo-desc" placeholder="Descreva o problema relatado ou o serviço inicial executado..." style="min-height: 120px;"></textarea>
-                </div>
-                
-                <hr class="divisor">
-                
-                <div class="barra-acoes">
-                    <button class="btn btn-p" onclick="salvarRegistro()">✓ Salvar O.S.</button>
-                    <button class="btn btn-d" onclick="limparForm()">✕ Limpar Tudo</button>
-                </div>
-            </div>
+        <div class="dashboard-card">
+            <span>Total de Atividades</span>
+            <h2 id="total">0</h2>
         </div>
 
-        <!-- ══ ABA: HISTÓRICO ══ -->
-        <div id="aba-historico" class="aba">
-            <div class="card">
-                <div class="card-titulo">Histórico de O.S. e Atualizações</div>
-                <div class="filtro-bar">
-                    <div class="campo">
-                        <label>Buscar</label>
-                        <input type="text" id="filtro-texto" placeholder="Condomínio, O.S., assunto..." oninput="renderHistorico()">
-                    </div>
-                    <div class="campo">
-                        <label>Status</label>
-                        <select id="filtro-status" onchange="renderHistorico()">
-                            <option value="">Todos</option>
-                            <option value="aberto">Em Aberto</option>
-                            <option value="andamento">Em Andamento</option>
-                            <option value="fechado">Fechado</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="tabela-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th>Data Inicial</th>
-                                <th>Operador</th>
-                                <th>Condomínio</th>
-                                <th>O.S.</th>
-                                <th>Assunto</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tbody-hist"></tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="dashboard-card">
+            <span>A Fazer</span>
+            <h2 id="todoCount">0</h2>
         </div>
 
-        <!-- ══ ABA: CONDOMÍNIOS ══ -->
-        <div id="aba-condominios" class="aba">
-            <div class="card">
-                <div class="card-titulo">Cadastrar Condomínio</div>
-                <div id="msg-condo" class="msg"></div>
-                <div class="g3">
-                    <div class="campo s2">
-                        <label>Nome do Condomínio</label>
-                        <input type="text" id="condo-nome" placeholder="Ex: Village Park Residencial">
-                    </div>
-                    <div style="display:flex;align-items:flex-end;">
-                        <button class="btn btn-p btn-full" onclick="cadastrarCondo()">＋ Cadastrar</button>
-                    </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-titulo">Condomínios Cadastrados</div>
-                <div class="chips" id="chips-condos"><span style="color:var(--muted);font-size:14px;">Nenhum cadastrado ainda.</span></div>
+        <div class="dashboard-card">
+            <span>Fazendo</span>
+            <h2 id="doingCount">0</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <span>Concluído</span>
+            <h2 id="doneCount">0</h2>
+        </div>
+
+        <div class="dashboard-card">
+            <span>Progresso</span>
+            <h2 id="progressText">0%</h2>
+
+            <div class="progresso">
+                <div class="progresso-barra" id="progressBar"></div>
             </div>
         </div>
 
     </div>
-</div>
+
+</section>
+
+<section class="formulario">
+
+    <h3>Nova Atividade</h3>
+
+    <input type="text" id="titulo" placeholder="Título da atividade">
+
+    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
+
+    <button onclick="criarTarefa()">
+        Adicionar Atividade
+    </button>
+
+</section>
+
+<section class="kanban">
+
+    <div class="coluna a-fazer">
+        <div class="coluna-header">
+            📋 A Fazer
+        </div>
+
+        <div class="lista"
+            id="todo"
+            ondragover="allowDrop(event)"
+            ondrop="drop(event)">
+        </div>
+    </div>
+
+    <div class="coluna fazendo">
+        <div class="coluna-header">
+            ⚙️ Fazendo
+        </div>
+
+        <div class="lista"
+            id="doing"
+            ondragover="allowDrop(event)"
+            ondrop="drop(event)">
+        </div>
+    </div>
+
+    <div class="coluna concluido">
+        <div class="coluna-header">
+            ✅ Concluído
+        </div>
+
+        <div class="lista"
+            id="done"
+            ondragover="allowDrop(event)"
+            ondrop="drop(event)">
+        </div>
+    </div>
+
+</section>
+
+<footer>
+    FF Geristro © 2026 - Gestão de Atividades
+</footer>
 
 <script>
-// ═══════════════════════════════════════════════
-// CONFIGURAÇÃO SUPABASE
-// ═══════════════════════════════════════════════
-// IMPORTANTE: Insira a URL do seu projeto Supabase no lugar de 'SUA_URL_AQUI' (Ex: https://xyz.supabase.co)
-const URL_SB  = 'SUA_URL_AQUI'; 
-const CHAVE_SB = 'sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F';
-let db = null;
 
-if (URL_SB !== 'SUA_URL_AQUI' && URL_SB.trim() !== '') {
-    db = supabase.createClient(URL_SB, CHAVE_SB);
-}
+let contador = 0;
 
-// ═══════════════════════════════════════════════
-// ESTADO / LOCALSTORAGE (Fallback caso offline)
-// ═══════════════════════════════════════════════
-let condominios = JSON.parse(localStorage.getItem('ff_condominios') || '[]');
-let registros   = JSON.parse(localStorage.getItem('ff_registros')   || '[]');
+function criarTarefa(){
 
-function salvarLocal() {
-    localStorage.setItem('ff_registros', JSON.stringify(registros));
-}
+    let titulo = document.getElementById("titulo").value.trim();
+    let descricao = document.getElementById("descricao").value.trim();
 
-function salvarCondominiosLocal() { 
-    localStorage.setItem('ff_condominios', JSON.stringify(condominios)); 
-}
-
-// ═══════════════════════════════════════════════
-// LOGIN E NAVEGAÇÃO
-// ═══════════════════════════════════════════════
-function logar() {
-    const nome = document.getElementById('login-usuario').value.trim();
-    if (nome.length < 2) { alert('Digite seu nome para acessar.'); return; }
-    localStorage.setItem('ff_op', nome);
-    iniciar();
-}
-
-async function iniciar() {
-    const op = localStorage.getItem('ff_op');
-    if (!op) return;
-    document.getElementById('tela-login').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    document.getElementById('status-op').textContent = op.toUpperCase();
-    
-    // Sincronizar com o Supabase ao logar, caso esteja configurado
-    if (db) {
-        try {
-            await carregarCondominiosDoSupabase();
-            await carregarRegistrosDoSupabase();
-        } catch (err) {
-            console.error("Falha ao sincronizar com Supabase:", err);
-        }
-    }
-
-    renderSelectCondo();
-    renderCondominios();
-    renderHistorico();
-}
-window.onload = iniciar;
-
-function mudarAba(nome) {
-    document.querySelectorAll('.aba').forEach(a => a.classList.remove('ativa'));
-    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('ativo'));
-    document.getElementById('aba-' + nome).classList.add('ativa');
-    document.getElementById('tab-' + nome).classList.add('ativo');
-}
-
-// ═══════════════════════════════════════════════
-// INTEGRAÇÃO SUPABASE - CONSULTAS
-// ═══════════════════════════════════════════════
-async function carregarCondominiosDoSupabase() {
-    if (!db) return;
-    const { data, error } = await db.from('ff_condominios').select('nome');
-    if (!error && data) {
-        condominios = data.map(c => c.nome);
-        salvarCondominiosLocal();
-    }
-}
-
-async function carregarRegistrosDoSupabase() {
-    if (!db) return;
-    const { data, error } = await db.from('ff_registros').select('*').order('id', { ascending: false });
-    if (!error && data) {
-        registros = data;
-        salvarLocal();
-    }
-}
-
-// ═══════════════════════════════════════════════
-// CONDOMÍNIOS
-// ═══════════════════════════════════════════════
-async function cadastrarCondo() {
-    const nome = document.getElementById('condo-nome').value.trim();
-    if (!nome) { mostrarMsg('msg-condo','Digite o nome do condomínio.','erro'); return; }
-    if (condominios.find(c => c.toLowerCase() === nome.toLowerCase())) {
-        mostrarMsg('msg-condo','Condomínio já cadastrado.','erro'); return;
-    }
-
-    if (db) {
-        const { error } = await db.from('ff_condominios').insert([{ nome: nome }]);
-        if (error) {
-            mostrarMsg('msg-condo', 'Erro Supabase: ' + error.message, 'erro');
-            return;
-        }
-    }
-
-    condominios.push(nome);
-    salvarCondominiosLocal();
-    document.getElementById('condo-nome').value = '';
-    renderCondominios(); 
-    renderSelectCondo();
-    mostrarMsg('msg-condo', `"${nome}" cadastrado!`, 'ok');
-}
-
-async function removerCondo(i) {
-    if (!confirm(`Remover "${condominios[i]}"?`)) return;
-    const nomeRemover = condominios[i];
-
-    if (db) {
-        const { error } = await db.from('ff_condominios').delete().eq('nome', nomeRemover);
-        if (error) {
-            alert('Erro ao deletar do Supabase: ' + error.message);
-            return;
-        }
-    }
-
-    condominios.splice(i,1); 
-    salvarCondominiosLocal();
-    renderCondominios(); 
-    renderSelectCondo();
-}
-
-function renderCondominios() {
-    const el = document.getElementById('chips-condos');
-    if (!condominios.length) { el.innerHTML='<span style="color:var(--muted);font-size:14px;">Nenhum cadastrado ainda.</span>'; return; }
-    el.innerHTML = condominios.map((c,i) =>
-        `<div class="chip">${c}<span class="chip-del" onclick="removerCondo(${i})">✕</span></div>`
-    ).join('');
-}
-
-function renderSelectCondo() {
-    const s = document.getElementById('sel-condo'), v = s.value;
-    s.innerHTML = '<option value="">— Selecione o Condomínio —</option>';
-    condominios.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; s.appendChild(o); });
-    if(v) s.value=v;
-}
-
-// ═══════════════════════════════════════════════
-// SALVAR NOVA O.S. (APENAS CRIAÇÃO INICIAL)
-// ═══════════════════════════════════════════════
-async function salvarRegistro() {
-    const condo   = document.getElementById('sel-condo').value;
-    const os      = document.getElementById('campo-os').value.trim();
-    const status  = document.getElementById('campo-status').value;
-    const assunto = document.getElementById('campo-assunto').value.trim();
-    const desc    = document.getElementById('campo-desc').value.trim();
-
-    if (!condo)   { mostrarMsg('msg-reg','Selecione um condomínio.','erro'); return; }
-    if (!os)      { mostrarMsg('msg-reg','Informe o número da O.S.','erro'); return; }
-    if (!assunto) { mostrarMsg('msg-reg','Informe o Assunto/Título da O.S.','erro'); return; }
-    if (!desc)    { mostrarMsg('msg-reg','A descrição inicial é obrigatória.','erro'); return; }
-
-    const agora = new Date();
-    
-    // Objeto da O.S. contendo os dados fixos e o array de descrições (linha do tempo)
-    const reg = {
-        id: Date.now(),
-        data_hora: agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-        operador: localStorage.getItem('ff_op'),
-        condominio: condo,
-        os: os,
-        status: status,
-        assunto: assunto,
-        descricoes: [
-            {
-                texto: desc,
-                data_hora: agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-                operador: localStorage.getItem('ff_op')
-            }
-        ]
-    };
-
-    if (db) {
-        const { error } = await db.from('ff_registros').insert([reg]);
-        if (error) {
-            mostrarMsg('msg-reg', 'Erro Supabase: ' + error.message, 'erro');
-            return;
-        }
-    }
-
-    registros.unshift(reg);
-    salvarLocal();
-    mostrarMsg('msg-reg','O.S. registrada com sucesso!','ok');
-    renderHistorico();
-    setTimeout(limparForm, 1500);
-}
-
-function limparForm() {
-    document.getElementById('sel-condo').value = '';
-    document.getElementById('campo-os').value  = '';
-    document.getElementById('campo-status').value = 'aberto';
-    document.getElementById('campo-assunto').value = '';
-    document.getElementById('campo-desc').value = '';
-}
-
-// ═══════════════════════════════════════════════
-// HISTÓRICO - RENDERIZAÇÃO
-// ═══════════════════════════════════════════════
-function statusHtml(s) {
-    const map = {
-        aberto:    ['🟠', 'Em Aberto',    'aberto'],
-        andamento: ['🟡', 'Em Andamento', 'andamento'],
-        fechado:   ['🟢', 'Fechado',      'fechado']
-    };
-    const [ico, label, cls] = map[s] || map['aberto'];
-    return `<span class="status-badge status-${cls}">${ico} ${label}</span>`;
-}
-
-function renderHistorico() {
-    const tbody = document.getElementById('tbody-hist');
-    const texto = (document.getElementById('filtro-texto')?.value || '').toLowerCase();
-    const stFil = document.getElementById('filtro-status')?.value || '';
-
-    let lista = registros.filter(r => {
-        const match = !texto || 
-            r.condominio.toLowerCase().includes(texto) || 
-            r.os.includes(texto) || 
-            r.operador.toLowerCase().includes(texto) ||
-            r.assunto.toLowerCase().includes(texto);
-            
-        const stOk = !stFil || r.status === stFil;
-        return match && stOk;
-    });
-
-    if (!lista.length) {
-        tbody.innerHTML = `<tr><td colspan="7" class="vazio">Nenhum registro encontrado.</td></tr>`;
+    if(!titulo){
+        alert("Informe o título da atividade.");
         return;
     }
 
-    tbody.innerHTML = '';
-    lista.forEach(r => {
-        // Linha Principal Resumida
-        const tr = document.createElement('tr');
-        tr.id = 'row-' + r.id;
-        tr.innerHTML = `
-            <td><button class="btn-exp" onclick="toggleDet(${r.id})" id="btnexp-${r.id}">▶</button></td>
-            <td class="mono" style="font-size:12px">${r.data_hora}</td>
-            <td><span class="badge badge-c">${r.operador}</span></td>
-            <td style="font-weight:600">${r.condominio}</td>
-            <td><span class="badge badge-v mono">#${r.os}</span></td>
-            <td style="color:var(--ciano); font-weight:600; font-size:13px;">${r.assunto}</td>
-            <td>${statusHtml(r.status)}</td>
-        `;
-        tbody.appendChild(tr);
+    contador++;
 
-        // Linha de Detalhes (Oculta)
-        const trDet = document.createElement('tr');
-        trDet.id = 'det-' + r.id;
-        trDet.className = 'linha-exp';
-        trDet.style.display = 'none';
-        trDet.innerHTML = `<td colspan="7"><div class="painel-det" id="painel-${r.id}"></div></td>`;
-        tbody.appendChild(trDet);
-    });
-}
+    const tarefa = document.createElement("div");
 
-function toggleDet(id) {
-    const trDet = document.getElementById('det-' + id);
-    const btn   = document.getElementById('btnexp-' + id);
-    const aberto = trDet.style.display !== 'none';
-    if (aberto) {
-        trDet.style.display = 'none';
-        btn.classList.remove('aberto');
-    } else {
-        trDet.style.display = 'table-row';
-        btn.classList.add('aberto');
-        renderPainel(id); 
-    }
-}
+    tarefa.className = "tarefa";
+    tarefa.id = "task"+contador;
+    tarefa.draggable = true;
 
-// ═══════════════════════════════════════════════
-// PAINEL DE DETALHES (LINHA DO TEMPO + NOVA DESC)
-// ═══════════════════════════════════════════════
-function renderPainel(rid) {
-    const r = registros.find(x => x.id === rid);
-    if (!r) return;
-    const painel = document.getElementById('painel-' + rid);
+    tarefa.dataset.inicio = Date.now();
 
-    const statusOptions = ['aberto','andamento','fechado'].map(s =>
-        `<option value="${s}" ${r.status===s?'selected':''}>${s==='aberto'?'🟠 Em Aberto':s==='andamento'?'🟡 Em Andamento':'🟢 Fechado'}</option>`
-    ).join('');
+    tarefa.ondragstart = drag;
 
-    // Gera a Timeline baseada no array de descrições
-    const timelineHtml = r.descricoes.map(d => `
-        <div class="timeline-item">
-            <div class="tl-left"><div class="tl-dot"></div><div class="tl-line"></div></div>
-            <div class="tl-right">
-                <div class="tl-meta"><span>${d.operador}</span> registrou em ${d.data_hora}</div>
-                <div class="tl-texto">${d.texto}</div>
-            </div>
-        </div>
-    `).join('');
+    tarefa.innerHTML = `
+        <h4>${titulo}</h4>
+        <p>${descricao}</p>
 
-    painel.innerHTML = `
-        <div class="det-header">
-            <div class="det-info">
-                <p>CONDOMÍNIO E O.S.</p>
-                <h3>${r.condominio} &nbsp;·&nbsp; <span class="mono" style="color:var(--ciano)">#${r.os}</span></h3>
-                <div class="assunto-destaque">Assunto: ${r.assunto}</div>
-            </div>
-            <div class="det-status-bar">
-                <span style="font-size:12px;color:var(--muted);font-weight:600;letter-spacing:1px;">ALTERAR STATUS:</span>
-                <select style="max-width:180px;padding:8px 12px; font-weight:bold;" onchange="mudarStatus(${rid}, this.value)">
-                    ${statusOptions}
-                </select>
-            </div>
-        </div>
-
-        <div class="timeline-container">
-            <div class="timeline-header">
-                HISTÓRICO DE ATUALIZAÇÕES DA O.S.
-            </div>
-            <div class="timeline">
-                ${timelineHtml}
-            </div>
-            
-            <div class="form-nova-desc">
-                <label>ADICIONAR NOVA DESCRIÇÃO / ATUALIZAÇÃO</label>
-                <textarea id="nd-txt-${rid}" placeholder="Descreva o andamento do serviço, retiradas, devoluções, etc..."></textarea>
-                <button class="btn btn-p" onclick="salvarNovaDesc(${rid})">＋ Salvar Atualização</button>
-            </div>
+        <div class="info">
+            <span>Criado agora</span>
+            <span class="tempo">⏱ Em andamento</span>
         </div>
     `;
+
+    document.getElementById("todo").appendChild(tarefa);
+
+    document.getElementById("titulo").value="";
+    document.getElementById("descricao").value="";
+
+    atualizarDashboard();
 }
 
-async function salvarNovaDesc(rid) {
-    const txt = document.getElementById(`nd-txt-${rid}`).value.trim();
-    if (!txt) { alert('Digite uma descrição antes de salvar.'); return; }
+function allowDrop(ev){
+    ev.preventDefault();
+}
 
-    const r = registros.find(x => x.id === rid);
-    if (!r) return;
+function drag(ev){
+    ev.dataTransfer.setData("text", ev.target.id);
+}
 
-    const agora = new Date();
-    const novaDesc = {
-        texto: txt,
-        data_hora: agora.toLocaleDateString('pt-BR') + ' às ' + agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
-        operador: localStorage.getItem('ff_op')
-    };
+function drop(ev){
 
-    // Cria a lista atualizada de descrições
-    const novasDescricoes = [...r.descricoes, novaDesc];
+    ev.preventDefault();
 
-    if (db) {
-        const { error } = await db.from('ff_registros').update({ descricoes: novasDescricoes }).eq('id', rid);
-        if (error) {
-            alert('Erro ao salvar descrição no Supabase: ' + error.message);
-            return;
-        }
+    const data = ev.dataTransfer.getData("text");
+
+    const tarefa = document.getElementById(data);
+
+    const coluna = ev.target.closest(".lista");
+
+    if(coluna){
+        coluna.appendChild(tarefa);
     }
 
-    // Atualiza localmente apenas após validação do Supabase (ou diretamente se offline)
-    r.descricoes = novasDescricoes;
-    salvarLocal();
-    renderHistorico(); 
-    
-    // Mantém o painel aberto e atualizado
-    const trDet = document.getElementById('det-' + rid);
-    trDet.style.display = 'table-row';
-    document.getElementById('btnexp-' + rid).classList.add('aberto');
-    renderPainel(rid);
-}
+    if(coluna.id === "done"){
 
-async function mudarStatus(rid, novoStatus) {
-    const r = registros.find(x => x.id === rid);
-    if (!r) return;
+        const inicio = Number(tarefa.dataset.inicio);
+        const agora = Date.now();
 
-    if (db) {
-        const { error } = await db.from('ff_registros').update({ status: novoStatus }).eq('id', rid);
-        if (error) {
-            alert('Erro ao atualizar status no Supabase: ' + error.message);
-            return;
-        }
+        const segundos =
+        Math.floor((agora - inicio)/1000);
+
+        const horas =
+        Math.floor(segundos/3600);
+
+        const minutos =
+        Math.floor((segundos%3600)/60);
+
+        const seg =
+        segundos%60;
+
+        tarefa.querySelector(".tempo").innerHTML =
+        `✅ ${horas}h ${minutos}m ${seg}s`;
     }
 
-    r.status = novoStatus;
-    salvarLocal();
-    renderHistorico();
-    
-    const trDet = document.getElementById('det-' + rid);
-    trDet.style.display = 'table-row';
-    document.getElementById('btnexp-' + rid).classList.add('aberto');
-    renderPainel(rid);
+    atualizarDashboard();
 }
 
-function mostrarMsg(id, texto, tipo) {
-    const el = document.getElementById(id);
-    el.textContent = texto;
-    el.className = 'msg ' + tipo;
-    setTimeout(() => { el.className = 'msg'; }, 4000);
+function atualizarDashboard(){
+
+    const todo =
+    document.getElementById("todo").children.length;
+
+    const doing =
+    document.getElementById("doing").children.length;
+
+    const done =
+    document.getElementById("done").children.length;
+
+    const total =
+    todo + doing + done;
+
+    document.getElementById("total").innerText = total;
+    document.getElementById("todoCount").innerText = todo;
+    document.getElementById("doingCount").innerText = doing;
+    document.getElementById("doneCount").innerText = done;
+
+    let progresso = 0;
+
+    if(total > 0){
+        progresso =
+        Math.round((done / total) * 100);
+    }
+
+    document.getElementById("progressText")
+    .innerText = progresso + "%";
+
+    document.getElementById("progressBar")
+    .style.width = progresso + "%";
 }
+
 </script>
+
 </body>
 </html>

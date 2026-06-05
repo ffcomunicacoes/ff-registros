@@ -23,6 +23,7 @@
     --primary:#3b82f6;
     --success:#22c55e;
     --warning:#f59e0b;
+    --danger:#ef4444;
 }
 
 body{
@@ -184,6 +185,25 @@ button:hover{
     color:#cbd5e1;
 }
 
+.acoes{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+    flex-wrap:wrap;
+}
+
+.btn-editar{
+    background:var(--warning);
+    padding:8px 10px;
+    font-size:12px;
+}
+
+.btn-apagar{
+    background:var(--danger);
+    padding:8px 10px;
+    font-size:12px;
+}
+
 .progresso{
     margin-top:20px;
     background:#111827;
@@ -335,27 +355,35 @@ function criarTarefa(){
     const tarefa = document.createElement("div");
 
     tarefa.className = "tarefa";
-    tarefa.id = "task"+contador;
+    tarefa.id = "task" + contador;
     tarefa.draggable = true;
-
     tarefa.dataset.inicio = Date.now();
-
     tarefa.ondragstart = drag;
 
     tarefa.innerHTML = `
-        <h4>${titulo}</h4>
-        <p>${descricao}</p>
+        <h4>${escaparHTML(titulo)}</h4>
+        <p class="descricao">${escaparHTML(descricao)}</p>
 
         <div class="info">
             <span>Criado agora</span>
             <span class="tempo">⏱ Em andamento</span>
         </div>
+
+        <div class="acoes">
+            <button class="btn-editar" onclick="editarDescricao('${tarefa.id}')">
+                Editar descrição
+            </button>
+
+            <button class="btn-apagar" onclick="apagarTarefa('${tarefa.id}')">
+                Apagar
+            </button>
+        </div>
     `;
 
     document.getElementById("todo").appendChild(tarefa);
 
-    document.getElementById("titulo").value="";
-    document.getElementById("descricao").value="";
+    document.getElementById("titulo").value = "";
+    document.getElementById("descricao").value = "";
 
     atualizarDashboard();
 }
@@ -373,52 +401,67 @@ function drop(ev){
     ev.preventDefault();
 
     const data = ev.dataTransfer.getData("text");
-
     const tarefa = document.getElementById(data);
-
     const coluna = ev.target.closest(".lista");
 
-    if(coluna){
+    if(coluna && tarefa){
         coluna.appendChild(tarefa);
-    }
 
-    if(coluna.id === "done"){
+        if(coluna.id === "done"){
 
-        const inicio = Number(tarefa.dataset.inicio);
-        const agora = Date.now();
+            const inicio = Number(tarefa.dataset.inicio);
+            const agora = Date.now();
+            const segundos = Math.floor((agora - inicio) / 1000);
+            const horas = Math.floor(segundos / 3600);
+            const minutos = Math.floor((segundos % 3600) / 60);
+            const seg = segundos % 60;
 
-        const segundos =
-        Math.floor((agora - inicio)/1000);
+            tarefa.querySelector(".tempo").innerHTML =
+            `✅ ${horas}h ${minutos}m ${seg}s`;
 
-        const horas =
-        Math.floor(segundos/3600);
-
-        const minutos =
-        Math.floor((segundos%3600)/60);
-
-        const seg =
-        segundos%60;
-
-        tarefa.querySelector(".tempo").innerHTML =
-        `✅ ${horas}h ${minutos}m ${seg}s`;
+        }else{
+            tarefa.querySelector(".tempo").innerHTML = "⏱ Em andamento";
+        }
     }
 
     atualizarDashboard();
 }
 
+function apagarTarefa(id){
+    const tarefa = document.getElementById(id);
+
+    if(!tarefa){
+        return;
+    }
+
+    if(confirm("Deseja apagar esta atividade?")){
+        tarefa.remove();
+        atualizarDashboard();
+    }
+}
+
+function editarDescricao(id){
+    const tarefa = document.getElementById(id);
+
+    if(!tarefa){
+        return;
+    }
+
+    const descricaoElemento = tarefa.querySelector(".descricao");
+    const descricaoAtual = descricaoElemento.innerText;
+    const novaDescricao = prompt("Editar descrição:", descricaoAtual);
+
+    if(novaDescricao !== null){
+        descricaoElemento.innerText = novaDescricao.trim();
+    }
+}
+
 function atualizarDashboard(){
 
-    const todo =
-    document.getElementById("todo").children.length;
-
-    const doing =
-    document.getElementById("doing").children.length;
-
-    const done =
-    document.getElementById("done").children.length;
-
-    const total =
-    todo + doing + done;
+    const todo = document.getElementById("todo").children.length;
+    const doing = document.getElementById("doing").children.length;
+    const done = document.getElementById("done").children.length;
+    const total = todo + doing + done;
 
     document.getElementById("total").innerText = total;
     document.getElementById("todoCount").innerText = todo;
@@ -428,15 +471,17 @@ function atualizarDashboard(){
     let progresso = 0;
 
     if(total > 0){
-        progresso =
-        Math.round((done / total) * 100);
+        progresso = Math.round((done / total) * 100);
     }
 
-    document.getElementById("progressText")
-    .innerText = progresso + "%";
+    document.getElementById("progressText").innerText = progresso + "%";
+    document.getElementById("progressBar").style.width = progresso + "%";
+}
 
-    document.getElementById("progressBar")
-    .style.width = progresso + "%";
+function escaparHTML(texto){
+    const div = document.createElement("div");
+    div.innerText = texto;
+    return div.innerHTML;
 }
 
 </script>

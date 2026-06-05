@@ -4,124 +4,119 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FF Geristro</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}:root{--bg:#0f172a;--card:#1e293b;--card-hover:#334155;--border:#475569;--text:#f8fafc;--text-secondary:#94a3b8;--primary:#3b82f6;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444}body{background:var(--bg);color:var(--text);min-height:100vh;padding:20px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.logo{font-size:28px;font-weight:700}.logo span{color:var(--primary)}.dashboard{margin-bottom:25px}.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}.dashboard-card{background:var(--card);border:1px solid var(--border);padding:20px;border-radius:12px}.dashboard-card span{color:var(--text-secondary);font-size:14px}.dashboard-card h2{margin-top:10px;font-size:30px}.formulario{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:25px}.formulario h3{margin-bottom:15px}input,textarea{width:100%;padding:12px;border:none;border-radius:8px;background:#0f172a;color:white;margin-bottom:10px}textarea{resize:vertical;min-height:100px}button{background:var(--primary);color:white;border:none;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600}button:hover{opacity:.9}.kanban{display:flex;gap:20px}.coluna{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}.coluna-header{padding:15px;font-weight:700;text-align:center}.a-fazer{border-top:4px solid var(--warning)}.fazendo{border-top:4px solid var(--primary)}.concluido{border-top:4px solid var(--success)}.lista{padding:15px;min-height:500px}.tarefa{background:#273449;border-left:4px solid var(--primary);border-radius:10px;padding:15px;margin-bottom:12px;cursor:grab;transition:.2s}.tarefa:hover{background:var(--card-hover);transform:translateY(-2px)}.tarefa h4{margin-bottom:8px}.tarefa p{color:var(--text-secondary);margin-bottom:10px;font-size:14px;white-space:pre-wrap}.info{display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1}.acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.btn-editar{background:var(--warning)}.btn-apagar{background:var(--danger)}.progresso{margin-top:20px;background:#111827;border-radius:20px;overflow:hidden;height:12px}.progresso-barra{height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#22c55e);transition:.4s}footer{margin-top:30px;text-align:center;color:var(--text-secondary);font-size:13px}.aviso{background:#7f1d1d;border:1px solid #ef4444;color:#fee2e2;padding:12px;border-radius:10px;margin-bottom:15px;display:none}@media(max-width:900px){.kanban{flex-direction:column}}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif} :root{--bg:#0f172a;--card:#1e293b;--card-hover:#334155;--border:#475569;--text:#f8fafc;--text-secondary:#94a3b8;--primary:#3b82f6;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444} body{background:var(--bg);color:var(--text);min-height:100vh;padding:20px} header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.logo{font-size:28px;font-weight:700}.logo span{color:var(--primary)}.dashboard{margin-bottom:25px}.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}.dashboard-card{background:var(--card);border:1px solid var(--border);padding:20px;border-radius:12px}.dashboard-card span{color:var(--text-secondary);font-size:14px}.dashboard-card h2{margin-top:10px;font-size:30px}.formulario{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:25px}.formulario h3{margin-bottom:15px} input,textarea{width:100%;padding:12px;border:none;border-radius:8px;background:#0f172a;color:white;margin-bottom:10px} textarea{resize:vertical;min-height:100px} button{background:var(--primary);color:white;border:none;padding:12px 18px;border-radius:8px;cursor:pointer;font-weight:600} button:hover{opacity:.9}.kanban{display:flex;gap:20px}.coluna{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}.coluna-header{padding:15px;font-weight:700;text-align:center}.a-fazer{border-top:4px solid var(--warning)}.fazendo{border-top:4px solid var(--primary)}.concluido{border-top:4px solid var(--success)}.lista{padding:15px;min-height:500px}.tarefa{background:#273449;border-left:4px solid var(--primary);border-radius:10px;padding:15px;margin-bottom:12px;cursor:grab;transition:.2s}.tarefa:hover{background:var(--card-hover);transform:translateY(-2px)}.tarefa h4{margin-bottom:8px}.tarefa p{color:var(--text-secondary);margin-bottom:10px;font-size:14px;white-space:pre-wrap}.info{display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1}.progresso{margin-top:20px;background:#111827;border-radius:20px;overflow:hidden;height:12px}.progresso-barra{height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#22c55e);transition:.4s}.acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.btn-editar{background:var(--warning)}.btn-apagar{background:var(--danger)}.msg{display:none;margin-bottom:15px;padding:14px;border-radius:8px}.msg.erro{display:block;background:#991b1b;border:1px solid #ef4444}.msg.ok{display:block;background:#14532d;border:1px solid #22c55e} footer{margin-top:30px;text-align:center;color:var(--text-secondary);font-size:13px}@media(max-width:900px){.kanban{flex-direction:column}}
 </style>
 </head>
 <body>
 <header><div class="logo">FF <span>Geristro</span></div></header>
-<div id="aviso" class="aviso"></div>
+<div id="mensagem" class="msg"></div>
 <section class="dashboard"><div class="dashboard-grid"><div class="dashboard-card"><span>Total de Atividades</span><h2 id="total">0</h2></div><div class="dashboard-card"><span>A Fazer</span><h2 id="todoCount">0</h2></div><div class="dashboard-card"><span>Fazendo</span><h2 id="doingCount">0</h2></div><div class="dashboard-card"><span>Concluído</span><h2 id="doneCount">0</h2></div><div class="dashboard-card"><span>Progresso</span><h2 id="progressText">0%</h2><div class="progresso"><div class="progresso-barra" id="progressBar"></div></div></div></div></section>
 <section class="formulario"><h3>Nova Atividade</h3><input type="text" id="titulo" placeholder="Título da atividade"><textarea id="descricao" placeholder="Descrição da atividade"></textarea><button onclick="criarTarefa()">Adicionar Atividade</button></section>
 <section class="kanban"><div class="coluna a-fazer"><div class="coluna-header">📋 A Fazer</div><div class="lista" id="todo" ondragover="allowDrop(event)" ondrop="drop(event)"></div></div><div class="coluna fazendo"><div class="coluna-header">⚙️ Fazendo</div><div class="lista" id="doing" ondragover="allowDrop(event)" ondrop="drop(event)"></div></div><div class="coluna concluido"><div class="coluna-header">✅ Concluído</div><div class="lista" id="done" ondragover="allowDrop(event)" ondrop="drop(event)"></div></div></section>
 <footer>FF Geristro © 2026 - Gestão de Atividades</footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = "https://dkjojycfqzkfrnyphtta.supabase.co";
-const SUPABASE_KEY = "COLE_AQUI_SUA_CHAVE_PUBLICAVEL_COMPLETA"; // cole a chave que começa com sb_publishable_
+const SUPABASE_KEY = "sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function mostrarAviso(msg){const a=document.getElementById('aviso');a.style.display='block';a.innerText=msg;}
-function limparAviso(){const a=document.getElementById('aviso');a.style.display='none';a.innerText='';}
-
-function escapar(texto){return (texto||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-function allowDrop(ev){ev.preventDefault();}
-function drag(ev){ev.dataTransfer.setData('text',ev.target.id);}
+function mostrarMensagem(texto, tipo="erro"){
+    const msg = document.getElementById("mensagem");
+    msg.className = "msg " + tipo;
+    msg.innerText = texto;
+    if(tipo === "ok") setTimeout(() => msg.style.display = "none", 3000);
+}
+function limparMensagem(){document.getElementById("mensagem").className="msg";}
+function escapar(texto){const div=document.createElement("div");div.innerText=texto || "";return div.innerHTML;}
 
 async function carregarTarefas(){
-    limparAviso();
-    const {data,error}=await supabaseClient.from('tarefas').select('*').order('created_at',{ascending:true});
-    if(error){mostrarAviso('Erro ao carregar tarefas: '+error.message);return;}
-    ['todo','doing','done'].forEach(id=>document.getElementById(id).innerHTML='');
-    data.forEach(t=>renderizarTarefa(t));
+    limparMensagem();
+    const { data, error } = await supabaseClient.from("tarefas").select("*").order("created_at", { ascending:true });
+    if(error){mostrarMensagem("Erro ao carregar tarefas: " + error.message);return;}
+    document.getElementById("todo").innerHTML = "";
+    document.getElementById("doing").innerHTML = "";
+    document.getElementById("done").innerHTML = "";
+    data.forEach(renderizarTarefa);
     atualizarDashboard();
 }
 
-function renderizarTarefa(t){
-    const tarefa=document.createElement('div');
-    tarefa.className='tarefa';
-    tarefa.id=t.id;
-    tarefa.draggable=true;
-    tarefa.dataset.inicio=t.inicio || new Date().toISOString();
-    tarefa.ondragstart=drag;
-    tarefa.innerHTML=`
-        <h4>${escapar(t.titulo)}</h4>
-        <p class="descricao">${escapar(t.descricao)}</p>
-        <div class="info"><span>Criado</span><span class="tempo">${t.status==='done'?'✅ Concluído':'⏱ Em andamento'}</span></div>
+function renderizarTarefa(item){
+    const tarefa = document.createElement("div");
+    tarefa.className = "tarefa";
+    tarefa.id = item.id;
+    tarefa.draggable = true;
+    tarefa.dataset.inicio = item.inicio || new Date().toISOString();
+    tarefa.ondragstart = drag;
+    tarefa.innerHTML = `
+        <h4>${escapar(item.titulo)}</h4>
+        <p class="descricao">${escapar(item.descricao || "")}</p>
+        <div class="info"><span>Criado</span><span class="tempo">${item.status === "done" ? "✅ Concluído" : "⏱ Em andamento"}</span></div>
         <div class="acoes">
-            <button class="btn-editar" onclick="editarDescricao('${t.id}')">Editar descrição</button>
-            <button class="btn-apagar" onclick="apagarTarefa('${t.id}')">Apagar</button>
+            <button class="btn-editar" onclick="editarDescricao('${item.id}')">Editar descrição</button>
+            <button class="btn-apagar" onclick="apagarTarefa('${item.id}')">Apagar</button>
         </div>`;
-    const coluna=document.getElementById(t.status || 'todo');
-    (coluna || document.getElementById('todo')).appendChild(tarefa);
+    const coluna = document.getElementById(item.status || "todo") || document.getElementById("todo");
+    coluna.appendChild(tarefa);
 }
 
 async function criarTarefa(){
-    const titulo=document.getElementById('titulo').value.trim();
-    const descricao=document.getElementById('descricao').value.trim();
-    if(!titulo){alert('Informe o título da atividade.');return;}
-    const nova={titulo,descricao,status:'todo',inicio:new Date().toISOString()};
-    const {data,error}=await supabaseClient.from('tarefas').insert(nova).select().single();
-    if(error){mostrarAviso('Erro ao criar tarefa: '+error.message);return;}
-    document.getElementById('titulo').value='';
-    document.getElementById('descricao').value='';
-    renderizarTarefa(data);
+    const titulo = document.getElementById("titulo").value.trim();
+    const descricao = document.getElementById("descricao").value.trim();
+    if(!titulo){alert("Informe o título da atividade.");return;}
+    const { error } = await supabaseClient.from("tarefas").insert([{ titulo, descricao, status:"todo", inicio:new Date().toISOString() }]);
+    if(error){mostrarMensagem("Erro ao criar tarefa: " + error.message);return;}
+    document.getElementById("titulo").value = "";
+    document.getElementById("descricao").value = "";
+    await carregarTarefas();
+}
+function allowDrop(ev){ev.preventDefault();}
+function drag(ev){ev.dataTransfer.setData("text", ev.target.id);}
+
+async function drop(ev){
+    ev.preventDefault();
+    const id = ev.dataTransfer.getData("text");
+    const tarefa = document.getElementById(id);
+    const coluna = ev.target.closest(".lista");
+    if(!coluna || !tarefa) return;
+    coluna.appendChild(tarefa);
+    const { error } = await supabaseClient.from("tarefas").update({ status: coluna.id }).eq("id", id);
+    if(error){mostrarMensagem("Erro ao atualizar status: " + error.message);await carregarTarefas();return;}
+    if(coluna.id === "done") tarefa.querySelector(".tempo").innerHTML = "✅ Concluído";
+    else tarefa.querySelector(".tempo").innerHTML = "⏱ Em andamento";
+    atualizarDashboard();
+}
+
+async function apagarTarefa(id){
+    if(!confirm("Deseja apagar esta atividade?")) return;
+    const { error } = await supabaseClient.from("tarefas").delete().eq("id", id);
+    if(error){mostrarMensagem("Erro ao apagar tarefa: " + error.message);return;}
+    document.getElementById(id)?.remove();
     atualizarDashboard();
 }
 
 async function editarDescricao(id){
-    const tarefa=document.getElementById(id);
-    const descricaoAtual=tarefa.querySelector('.descricao').innerText;
-    const novaDescricao=prompt('Editar descrição:',descricaoAtual);
-    if(novaDescricao===null)return;
-    const {error}=await supabaseClient.from('tarefas').update({descricao:novaDescricao.trim()}).eq('id',id);
-    if(error){mostrarAviso('Erro ao editar descrição: '+error.message);return;}
-    tarefa.querySelector('.descricao').innerText=novaDescricao.trim();
-}
-
-async function apagarTarefa(id){
-    if(!confirm('Deseja apagar esta atividade?'))return;
-    const {error}=await supabaseClient.from('tarefas').delete().eq('id',id);
-    if(error){mostrarAviso('Erro ao apagar tarefa: '+error.message);return;}
-    document.getElementById(id).remove();
-    atualizarDashboard();
-}
-
-async function drop(ev){
-    ev.preventDefault();
-    const data=ev.dataTransfer.getData('text');
-    const tarefa=document.getElementById(data);
-    const coluna=ev.target.closest('.lista');
-    if(!coluna || !tarefa)return;
-    coluna.appendChild(tarefa);
-    const status=coluna.id;
-    const {error}=await supabaseClient.from('tarefas').update({status}).eq('id',data);
-    if(error){mostrarAviso('Erro ao atualizar status: '+error.message);}
-    if(status==='done'){
-        const inicio=new Date(tarefa.dataset.inicio).getTime();
-        const segundos=Math.floor((Date.now()-inicio)/1000);
-        const horas=Math.floor(segundos/3600);
-        const minutos=Math.floor((segundos%3600)/60);
-        const seg=segundos%60;
-        tarefa.querySelector('.tempo').innerHTML=`✅ ${horas}h ${minutos}m ${seg}s`;
-    }else{
-        tarefa.querySelector('.tempo').innerHTML='⏱ Em andamento';
-    }
-    atualizarDashboard();
+    const tarefa = document.getElementById(id);
+    const descricaoAtual = tarefa.querySelector(".descricao").innerText;
+    const novaDescricao = prompt("Editar descrição:", descricaoAtual);
+    if(novaDescricao === null) return;
+    const { error } = await supabaseClient.from("tarefas").update({ descricao: novaDescricao.trim() }).eq("id", id);
+    if(error){mostrarMensagem("Erro ao editar descrição: " + error.message);return;}
+    tarefa.querySelector(".descricao").innerText = novaDescricao.trim();
 }
 
 function atualizarDashboard(){
-    const todo=document.getElementById('todo').children.length;
-    const doing=document.getElementById('doing').children.length;
-    const done=document.getElementById('done').children.length;
-    const total=todo+doing+done;
-    document.getElementById('total').innerText=total;
-    document.getElementById('todoCount').innerText=todo;
-    document.getElementById('doingCount').innerText=doing;
-    document.getElementById('doneCount').innerText=done;
-    const progresso=total>0?Math.round((done/total)*100):0;
-    document.getElementById('progressText').innerText=progresso+'%';
-    document.getElementById('progressBar').style.width=progresso+'%';
+    const todo = document.getElementById("todo").children.length;
+    const doing = document.getElementById("doing").children.length;
+    const done = document.getElementById("done").children.length;
+    const total = todo + doing + done;
+    document.getElementById("total").innerText = total;
+    document.getElementById("todoCount").innerText = todo;
+    document.getElementById("doingCount").innerText = doing;
+    document.getElementById("doneCount").innerText = done;
+    const progresso = total > 0 ? Math.round((done / total) * 100) : 0;
+    document.getElementById("progressText").innerText = progresso + "%";
+    document.getElementById("progressBar").style.width = progresso + "%";
 }
 
 carregarTarefas();

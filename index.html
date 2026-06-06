@@ -120,6 +120,19 @@ function atualizarDashboard(){
 }
 
 carregarTarefas();
+
+let atualizando = false;
+
+setInterval(async () => {
+    if (atualizando) return;
+
+    atualizando = true;
+    try {
+        await carregarTarefas();
+    } finally {
+        atualizando = false;
+    }
+}, 5000);
 </script>
 </body>
 </html>

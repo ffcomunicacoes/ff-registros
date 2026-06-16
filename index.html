@@ -1,138 +1,1053 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FF Geristro</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FF Registro | Gestão de Atividades</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif} :root{--bg:#0f172a;--card:#1e293b;--card-hover:#334155;--border:#475569;--text:#f8fafc;--text-secondary:#94a3b8;--primary:#3b82f6;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444} body{background:var(--bg);color:var(--text);min-height:100vh;padding:20px} header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px}.logo{font-size:28px;font-weight:700}.logo span{color:var(--primary)}.dashboard{margin-bottom:25px}.dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}.dashboard-card{background:var(--card);border:1px solid var(--border);padding:20px;border-radius:12px}.dashboard-card span{color:var(--text-secondary);font-size:14px}.dashboard-card h2{margin-top:10px;font-size:30px}.formulario{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:25px}.formulario h3{margin-bottom:15px} input,textarea{width:100%;padding:12px;border:none;border-radius:8px;background:#0f172a;color:white;margin-bottom:10px} textarea{resize:vertical;min-height:100px} button{background:var(--primary);color:white;border:none;padding:12px 18px;border-radius:8px;cursor:pointer;font-weight:600} button:hover{opacity:.9}.kanban{display:flex;gap:20px}.coluna{flex:1;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}.coluna-header{padding:15px;font-weight:700;text-align:center}.a-fazer{border-top:4px solid var(--warning)}.fazendo{border-top:4px solid var(--primary)}.concluido{border-top:4px solid var(--success)}.lista{padding:15px;min-height:500px}.tarefa{background:#273449;border-left:4px solid var(--primary);border-radius:10px;padding:15px;margin-bottom:12px;cursor:grab;transition:.2s}.tarefa:hover{background:var(--card-hover);transform:translateY(-2px)}.tarefa h4{margin-bottom:8px}.tarefa p{color:var(--text-secondary);margin-bottom:10px;font-size:14px;white-space:pre-wrap}.info{display:flex;justify-content:space-between;font-size:12px;color:#cbd5e1}.progresso{margin-top:20px;background:#111827;border-radius:20px;overflow:hidden;height:12px}.progresso-barra{height:100%;width:0%;background:linear-gradient(90deg,#2563eb,#22c55e);transition:.4s}.acoes{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.btn-editar{background:var(--warning)}.btn-apagar{background:var(--danger)}.msg{display:none;margin-bottom:15px;padding:14px;border-radius:8px}.msg.erro{display:block;background:#991b1b;border:1px solid #ef4444}.msg.ok{display:block;background:#14532d;border:1px solid #22c55e} footer{margin-top:30px;text-align:center;color:var(--text-secondary);font-size:13px}@media(max-width:900px){.kanban{flex-direction:column}}
+:root{
+    --bg:#0b1120;
+    --bg-soft:#111827;
+    --card:#162033;
+    --card-2:#1f2a44;
+    --border:#334155;
+    --text:#f8fafc;
+    --muted:#94a3b8;
+    --primary:#2563eb;
+    --primary-2:#3b82f6;
+    --success:#22c55e;
+    --warning:#f59e0b;
+    --danger:#ef4444;
+    --purple:#8b5cf6;
+    --shadow:0 18px 40px rgba(0,0,0,.25);
+    --radius:18px;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter, "Segoe UI", Arial, sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:
+        radial-gradient(circle at top left, rgba(37,99,235,.22), transparent 35%),
+        radial-gradient(circle at top right, rgba(34,197,94,.12), transparent 30%),
+        var(--bg);
+    color:var(--text);
+    padding:24px;
+}
+
+button,input,textarea,select{
+    font:inherit;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+    border-radius:12px;
+    padding:11px 16px;
+    font-weight:700;
+    color:white;
+    background:var(--primary);
+    transition:.2s;
+}
+
+button:hover{
+    transform:translateY(-1px);
+    opacity:.95;
+}
+
+button:disabled{
+    opacity:.55;
+    cursor:not-allowed;
+    transform:none;
+}
+
+input,textarea,select{
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#0f172a;
+    color:var(--text);
+    outline:none;
+}
+
+input:focus,textarea:focus,select:focus{
+    border-color:var(--primary-2);
+    box-shadow:0 0 0 3px rgba(59,130,246,.18);
+}
+
+textarea{
+    resize:vertical;
+    min-height:96px;
+}
+
+.app{
+    max-width:1450px;
+    margin:auto;
+}
+
+.topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    margin-bottom:22px;
+}
+
+.logo-area{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.logo-icon{
+    width:48px;
+    height:48px;
+    border-radius:16px;
+    background:linear-gradient(135deg,var(--primary),var(--success));
+    display:grid;
+    place-items:center;
+    box-shadow:var(--shadow);
+    font-size:24px;
+}
+
+.logo h1{
+    font-size:26px;
+    line-height:1.1;
+}
+
+.logo span{
+    color:var(--muted);
+    font-size:14px;
+}
+
+.status-area{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--muted);
+    font-size:14px;
+}
+
+.pill{
+    border:1px solid var(--border);
+    background:rgba(22,32,51,.85);
+    padding:8px 12px;
+    border-radius:999px;
+}
+
+.grid-dashboard{
+    display:grid;
+    grid-template-columns:repeat(5, minmax(160px,1fr));
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.card{
+    background:linear-gradient(180deg, rgba(22,32,51,.96), rgba(15,23,42,.96));
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+}
+
+.metric{
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+}
+
+.metric::after{
+    content:"";
+    position:absolute;
+    right:-30px;
+    top:-30px;
+    width:90px;
+    height:90px;
+    background:rgba(59,130,246,.12);
+    border-radius:50%;
+}
+
+.metric span{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.metric h2{
+    font-size:32px;
+    margin-top:8px;
+}
+
+.progress{
+    margin-top:12px;
+    height:10px;
+    background:#0f172a;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,var(--primary),var(--success));
+    transition:.35s;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:20px;
+    align-items:start;
+}
+
+.side{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+.panel{
+    padding:20px;
+}
+
+.panel-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.panel-title h3{
+    font-size:18px;
+}
+
+.form-grid{
+    display:grid;
+    gap:10px;
+}
+
+.inline-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+.btn-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.btn-success{background:var(--success)}
+.btn-warning{background:var(--warning)}
+.btn-danger{background:var(--danger)}
+.btn-purple{background:var(--purple)}
+.btn-ghost{
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text);
+}
+
+.msg{
+    display:none;
+    padding:13px 15px;
+    border-radius:12px;
+    margin-bottom:18px;
+    border:1px solid;
+}
+
+.msg.ok{
+    display:block;
+    background:rgba(20,83,45,.8);
+    border-color:rgba(34,197,94,.7);
+}
+
+.msg.erro{
+    display:block;
+    background:rgba(127,29,29,.8);
+    border-color:rgba(239,68,68,.75);
+}
+
+.filters{
+    display:grid;
+    grid-template-columns:1.2fr .8fr .8fr;
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.kanban{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:16px;
+}
+
+.coluna{
+    min-width:0;
+    overflow:hidden;
+}
+
+.coluna-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:15px 16px;
+    border-bottom:1px solid var(--border);
+    font-weight:800;
+}
+
+.badge{
+    min-width:28px;
+    height:28px;
+    padding:0 9px;
+    display:grid;
+    place-items:center;
+    border-radius:999px;
+    background:#0f172a;
+    color:var(--muted);
+    font-size:13px;
+}
+
+.lista{
+    padding:14px;
+    min-height:430px;
+}
+
+.lista.drag-over{
+    outline:2px dashed var(--primary-2);
+    outline-offset:-10px;
+    background:rgba(59,130,246,.08);
+}
+
+.tarefa{
+    background:linear-gradient(180deg,#23304a,#1b263d);
+    border:1px solid rgba(148,163,184,.18);
+    border-left:5px solid var(--primary);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+    cursor:grab;
+    transition:.2s;
+}
+
+.tarefa:hover{
+    transform:translateY(-2px);
+    border-color:rgba(148,163,184,.38);
+}
+
+.tarefa h4{
+    margin-bottom:8px;
+    word-break:break-word;
+}
+
+.tarefa p{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.45;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+.meta{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:12px;
+    color:var(--muted);
+    font-size:12px;
+}
+
+.acoes{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+
+.acoes button{
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:12px;
+}
+
+.table-wrap{
+    overflow:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+}
+
+th,td{
+    padding:12px;
+    border-bottom:1px solid var(--border);
+    text-align:left;
+    vertical-align:top;
+    font-size:14px;
+}
+
+th{
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    background:rgba(15,23,42,.65);
+}
+
+td{
+    color:#e5e7eb;
+}
+
+.tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:999px;
+    padding:5px 9px;
+    font-size:12px;
+    font-weight:800;
+}
+
+.tag.pendente{background:rgba(245,158,11,.14);color:#fbbf24}
+.tag.concluido{background:rgba(34,197,94,.14);color:#86efac}
+.tag.cancelado{background:rgba(239,68,68,.14);color:#fca5a5}
+
+.empty{
+    color:var(--muted);
+    text-align:center;
+    padding:34px 10px;
+    border:1px dashed var(--border);
+    border-radius:16px;
+}
+
+footer{
+    margin-top:28px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+}
+
+@media(max-width:1150px){
+    .layout{grid-template-columns:1fr}
+    .grid-dashboard{grid-template-columns:repeat(2,1fr)}
+}
+
+@media(max-width:800px){
+    body{padding:14px}
+    .topbar{flex-direction:column;align-items:flex-start}
+    .grid-dashboard{grid-template-columns:1fr}
+    .kanban{grid-template-columns:1fr}
+    .filters{grid-template-columns:1fr}
+    .inline-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
+
 <body>
-<header><div class="logo">FF <span>Geristro</span></div></header>
-<div id="mensagem" class="msg"></div>
-<section class="dashboard"><div class="dashboard-grid"><div class="dashboard-card"><span>Total de Atividades</span><h2 id="total">0</h2></div><div class="dashboard-card"><span>A Fazer</span><h2 id="todoCount">0</h2></div><div class="dashboard-card"><span>Fazendo</span><h2 id="doingCount">0</h2></div><div class="dashboard-card"><span>Concluído</span><h2 id="doneCount">0</h2></div><div class="dashboard-card"><span>Progresso</span><h2 id="progressText">0%</h2><div class="progresso"><div class="progresso-barra" id="progressBar"></div></div></div></div></section>
-<section class="formulario"><h3>Nova Atividade</h3><input type="text" id="titulo" placeholder="Título da atividade"><textarea id="descricao" placeholder="Descrição da atividade"></textarea><button onclick="criarTarefa()">Adicionar Atividade</button></section>
-<section class="kanban"><div class="coluna a-fazer"><div class="coluna-header">📋 A Fazer</div><div class="lista" id="todo" ondragover="allowDrop(event)" ondrop="drop(event)"></div></div><div class="coluna fazendo"><div class="coluna-header">⚙️ Fazendo</div><div class="lista" id="doing" ondragover="allowDrop(event)" ondrop="drop(event)"></div></div><div class="coluna concluido"><div class="coluna-header">✅ Concluído</div><div class="lista" id="done" ondragover="allowDrop(event)" ondrop="drop(event)"></div></div></section>
-<footer>FF Geristro © 2026 - Gestão de Atividades</footer>
+<div class="app">
+    <header class="topbar">
+        <div class="logo-area">
+            <div class="logo-icon">📋</div>
+            <div class="logo">
+                <h1>FF Registro</h1>
+                <span>Gestão de atividades e agendamentos</span>
+            </div>
+        </div>
+
+        <div class="status-area">
+            <div class="pill" id="statusConexao">Conectando...</div>
+            <button class="btn-ghost" onclick="carregarTudo()">Atualizar</button>
+        </div>
+    </header>
+
+    <div id="mensagem" class="msg"></div>
+
+    <section class="grid-dashboard">
+        <div class="card metric"><span>Total de Atividades</span><h2 id="total">0</h2></div>
+        <div class="card metric"><span>A Fazer</span><h2 id="todoCount">0</h2></div>
+        <div class="card metric"><span>Fazendo</span><h2 id="doingCount">0</h2></div>
+        <div class="card metric"><span>Concluído</span><h2 id="doneCount">0</h2></div>
+        <div class="card metric">
+            <span>Progresso</span>
+            <h2 id="progressText">0%</h2>
+            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+    </section>
+
+    <main class="layout">
+        <aside class="side">
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Nova atividade</h3>
+                    <span class="badge">+</span>
+                </div>
+
+                <div class="form-grid">
+                    <input type="text" id="titulo" placeholder="Título da atividade" maxlength="90" />
+                    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
+
+                    <div class="inline-grid">
+                        <select id="prioridade">
+                            <option value="normal">Prioridade normal</option>
+                            <option value="alta">Alta prioridade</option>
+                            <option value="baixa">Baixa prioridade</option>
+                        </select>
+
+                        <input type="date" id="prazo" />
+                    </div>
+
+                    <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
+                </div>
+            </section>
+
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Novo agendamento</h3>
+                    <span class="badge">🗓️</span>
+                </div>
+
+                <div class="form-grid">
+                    <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
+                    <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
+
+                    <div class="inline-grid">
+                        <input type="date" id="agData" />
+                        <input type="time" id="agHora" />
+                    </div>
+
+                    <input type="text" id="agResponsavel" placeholder="Responsável" maxlength="80" />
+
+                    <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
+                </div>
+            </section>
+        </aside>
+
+        <section>
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Quadro de atividades</h3>
+                    <span id="ultimaAtualizacao" class="pill">--</span>
+                </div>
+
+                <div class="filters">
+                    <input type="search" id="busca" placeholder="Pesquisar atividade..." oninput="filtrarTarefas()" />
+                    <select id="filtroStatus" onchange="filtrarTarefas()">
+                        <option value="">Todos os status</option>
+                        <option value="todo">A fazer</option>
+                        <option value="doing">Fazendo</option>
+                        <option value="done">Concluído</option>
+                    </select>
+                    <select id="filtroPrioridade" onchange="filtrarTarefas()">
+                        <option value="">Todas as prioridades</option>
+                        <option value="alta">Alta</option>
+                        <option value="normal">Normal</option>
+                        <option value="baixa">Baixa</option>
+                    </select>
+                </div>
+
+                <div class="kanban">
+                    <div class="card coluna">
+                        <div class="coluna-header">📋 A Fazer <span class="badge" id="badgeTodo">0</span></div>
+                        <div class="lista" id="todo" data-status="todo"></div>
+                    </div>
+
+                    <div class="card coluna">
+                        <div class="coluna-header">⚙️ Fazendo <span class="badge" id="badgeDoing">0</span></div>
+                        <div class="lista" id="doing" data-status="doing"></div>
+                    </div>
+
+                    <div class="card coluna">
+                        <div class="coluna-header">✅ Concluído <span class="badge" id="badgeDone">0</span></div>
+                        <div class="lista" id="done" data-status="done"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card panel" style="margin-top:20px">
+                <div class="panel-title">
+                    <h3>Tabela de agendamentos</h3>
+                    <span class="pill" id="totalAgendamentos">0 agendamentos</span>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Hora</th>
+                                <th>Título</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAgendamentos">
+                            <tr><td colspan="6">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <footer>FF Registro © 2026 - Gestão de Atividades</footer>
+</div>
+
 <script>
 const SUPABASE_URL = "https://dkjojycfqzkfrnyphtta.supabase.co";
 const SUPABASE_KEY = "sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function mostrarMensagem(texto, tipo="erro"){
-    const msg = document.getElementById("mensagem");
-    msg.className = "msg " + tipo;
-    msg.innerText = texto;
-    if(tipo === "ok") setTimeout(() => msg.style.display = "none", 3000);
+let tarefasCache = [];
+let agendamentosCache = [];
+let carregando = false;
+
+const STATUS_LABEL = {
+    todo: "A fazer",
+    doing: "Fazendo",
+    done: "Concluído"
+};
+
+const PRIORIDADE_COR = {
+    alta: "var(--danger)",
+    normal: "var(--primary)",
+    baixa: "var(--success)"
+};
+
+function el(id){
+    return document.getElementById(id);
 }
-function limparMensagem(){document.getElementById("mensagem").className="msg";}
-function escapar(texto){const div=document.createElement("div");div.innerText=texto || "";return div.innerHTML;}
+
+function mostrarMensagem(texto, tipo = "erro"){
+    const msg = el("mensagem");
+    msg.className = "msg " + tipo;
+    msg.textContent = texto;
+
+    if(tipo === "ok"){
+        setTimeout(() => {
+            msg.className = "msg";
+            msg.textContent = "";
+        }, 3500);
+    }
+}
+
+function limparMensagem(){
+    el("mensagem").className = "msg";
+    el("mensagem").textContent = "";
+}
+
+function escapar(texto){
+    const div = document.createElement("div");
+    div.textContent = texto || "";
+    return div.innerHTML;
+}
+
+function formatarData(dataISO){
+    if(!dataISO) return "-";
+    const data = new Date(dataISO + "T00:00:00");
+    return data.toLocaleDateString("pt-BR");
+}
+
+function hojeBR(){
+    return new Date().toLocaleString("pt-BR", {
+        day:"2-digit",
+        month:"2-digit",
+        year:"numeric",
+        hour:"2-digit",
+        minute:"2-digit"
+    });
+}
+
+function setLoading(botaoId, ativo, textoLoading = "Salvando..."){
+    const botao = el(botaoId);
+    if(!botao) return;
+
+    if(ativo){
+        botao.dataset.textoOriginal = botao.textContent;
+        botao.textContent = textoLoading;
+        botao.disabled = true;
+    }else{
+        botao.textContent = botao.dataset.textoOriginal || botao.textContent;
+        botao.disabled = false;
+    }
+}
+
+async function carregarTudo(){
+    if(carregando) return;
+
+    carregando = true;
+    limparMensagem();
+    el("statusConexao").textContent = "Sincronizando...";
+
+    try{
+        await Promise.all([carregarTarefas(), carregarAgendamentos()]);
+        el("statusConexao").textContent = "Online";
+        el("ultimaAtualizacao").textContent = "Atualizado: " + hojeBR();
+    }catch(e){
+        el("statusConexao").textContent = "Erro de conexão";
+        mostrarMensagem("Erro ao carregar dados: " + e.message);
+    }finally{
+        carregando = false;
+    }
+}
 
 async function carregarTarefas(){
-    limparMensagem();
-    const { data, error } = await supabaseClient.from("tarefas").select("*").order("created_at", { ascending:true });
-    if(error){mostrarMensagem("Erro ao carregar tarefas: " + error.message);return;}
-    document.getElementById("todo").innerHTML = "";
-    document.getElementById("doing").innerHTML = "";
-    document.getElementById("done").innerHTML = "";
-    data.forEach(renderizarTarefa);
+    const { data, error } = await supabaseClient
+        .from("tarefas")
+        .select("*")
+        .order("created_at", { ascending:true });
+
+    if(error) throw error;
+
+    tarefasCache = data || [];
+    renderizarTarefas(tarefasCache);
     atualizarDashboard();
+}
+
+function renderizarTarefas(lista){
+    ["todo","doing","done"].forEach(status => {
+        el(status).innerHTML = "";
+    });
+
+    const busca = el("busca").value.toLowerCase().trim();
+    const filtroStatus = el("filtroStatus").value;
+    const filtroPrioridade = el("filtroPrioridade").value;
+
+    const filtradas = lista.filter(item => {
+        const texto = `${item.titulo || ""} ${item.descricao || ""}`.toLowerCase();
+        const statusOk = !filtroStatus || item.status === filtroStatus;
+        const prioridadeOk = !filtroPrioridade || (item.prioridade || "normal") === filtroPrioridade;
+        const buscaOk = !busca || texto.includes(busca);
+        return statusOk && prioridadeOk && buscaOk;
+    });
+
+    filtradas.forEach(renderizarTarefa);
+
+    ["todo","doing","done"].forEach(status => {
+        if(el(status).children.length === 0){
+            el(status).innerHTML = `<div class="empty">Nenhuma atividade</div>`;
+        }
+    });
 }
 
 function renderizarTarefa(item){
+    const status = item.status || "todo";
+    const prioridade = item.prioridade || "normal";
+
     const tarefa = document.createElement("div");
     tarefa.className = "tarefa";
-    tarefa.id = item.id;
+    tarefa.id = "task-" + item.id;
     tarefa.draggable = true;
-    tarefa.dataset.inicio = item.inicio || new Date().toISOString();
-    tarefa.ondragstart = drag;
+    tarefa.dataset.id = item.id;
+    tarefa.dataset.status = status;
+    tarefa.style.borderLeftColor = PRIORIDADE_COR[prioridade] || PRIORIDADE_COR.normal;
+
     tarefa.innerHTML = `
         <h4>${escapar(item.titulo)}</h4>
-        <p class="descricao">${escapar(item.descricao || "")}</p>
-        <div class="info"><span>Criado</span><span class="tempo">${item.status === "done" ? "✅ Concluído" : "⏱ Em andamento"}</span></div>
+        <p class="descricao">${escapar(item.descricao || "Sem descrição")}</p>
+
+        <div class="meta">
+            <span>Prioridade: ${escapar(prioridade)}</span>
+            <span>Prazo: ${item.prazo ? formatarData(item.prazo) : "-"}</span>
+        </div>
+
+        <div class="meta">
+            <span>Status: ${STATUS_LABEL[status] || "A fazer"}</span>
+            <span>${status === "done" ? "✅ Concluído" : "⏱ Em andamento"}</span>
+        </div>
+
         <div class="acoes">
-            <button class="btn-editar" onclick="editarDescricao('${item.id}')">Editar descrição</button>
-            <button class="btn-apagar" onclick="apagarTarefa('${item.id}')">Apagar</button>
-        </div>`;
-    const coluna = document.getElementById(item.status || "todo") || document.getElementById("todo");
-    coluna.appendChild(tarefa);
+            <button class="btn-warning" onclick="editarTarefa('${item.id}')">Editar</button>
+            <button class="btn-danger" onclick="apagarTarefa('${item.id}')">Apagar</button>
+        </div>
+    `;
+
+    tarefa.addEventListener("dragstart", drag);
+    el(status).appendChild(tarefa);
 }
 
 async function criarTarefa(){
-    const titulo = document.getElementById("titulo").value.trim();
-    const descricao = document.getElementById("descricao").value.trim();
-    if(!titulo){alert("Informe o título da atividade.");return;}
-    const { error } = await supabaseClient.from("tarefas").insert([{ titulo, descricao, status:"todo", inicio:new Date().toISOString() }]);
-    if(error){mostrarMensagem("Erro ao criar tarefa: " + error.message);return;}
-    document.getElementById("titulo").value = "";
-    document.getElementById("descricao").value = "";
-    await carregarTarefas();
-}
-function allowDrop(ev){ev.preventDefault();}
-function drag(ev){ev.dataTransfer.setData("text", ev.target.id);}
+    const titulo = el("titulo").value.trim();
+    const descricao = el("descricao").value.trim();
+    const prioridade = el("prioridade").value;
+    const prazo = el("prazo").value || null;
 
-async function drop(ev){
-    ev.preventDefault();
-    const id = ev.dataTransfer.getData("text");
-    const tarefa = document.getElementById(id);
-    const coluna = ev.target.closest(".lista");
-    if(!coluna || !tarefa) return;
-    coluna.appendChild(tarefa);
-    const { error } = await supabaseClient.from("tarefas").update({ status: coluna.id }).eq("id", id);
-    if(error){mostrarMensagem("Erro ao atualizar status: " + error.message);await carregarTarefas();return;}
-    if(coluna.id === "done") tarefa.querySelector(".tempo").innerHTML = "✅ Concluído";
-    else tarefa.querySelector(".tempo").innerHTML = "⏱ Em andamento";
-    atualizarDashboard();
+    if(!titulo){
+        mostrarMensagem("Informe o título da atividade.");
+        el("titulo").focus();
+        return;
+    }
+
+    setLoading("btnCriarTarefa", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("tarefas")
+            .insert([{ titulo, descricao, prioridade, prazo, status:"todo", inicio:new Date().toISOString() }]);
+
+        if(error) throw error;
+
+        el("titulo").value = "";
+        el("descricao").value = "";
+        el("prioridade").value = "normal";
+        el("prazo").value = "";
+
+        mostrarMensagem("Atividade criada com sucesso.", "ok");
+        await carregarTarefas();
+    }catch(e){
+        mostrarMensagem("Erro ao criar tarefa: " + e.message);
+    }finally{
+        setLoading("btnCriarTarefa", false);
+    }
+}
+
+async function editarTarefa(id){
+    const item = tarefasCache.find(t => t.id === id);
+    if(!item) return;
+
+    const novoTitulo = prompt("Editar título:", item.titulo || "");
+    if(novoTitulo === null) return;
+
+    const novaDescricao = prompt("Editar descrição:", item.descricao || "");
+    if(novaDescricao === null) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("tarefas")
+            .update({
+                titulo: novoTitulo.trim(),
+                descricao: novaDescricao.trim()
+            })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Atividade atualizada.", "ok");
+        await carregarTarefas();
+    }catch(e){
+        mostrarMensagem("Erro ao editar tarefa: " + e.message);
+    }
 }
 
 async function apagarTarefa(id){
     if(!confirm("Deseja apagar esta atividade?")) return;
-    const { error } = await supabaseClient.from("tarefas").delete().eq("id", id);
-    if(error){mostrarMensagem("Erro ao apagar tarefa: " + error.message);return;}
-    document.getElementById(id)?.remove();
-    atualizarDashboard();
+
+    try{
+        const { error } = await supabaseClient
+            .from("tarefas")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Atividade apagada.", "ok");
+        await carregarTarefas();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar tarefa: " + e.message);
+    }
 }
 
-async function editarDescricao(id){
-    const tarefa = document.getElementById(id);
-    const descricaoAtual = tarefa.querySelector(".descricao").innerText;
-    const novaDescricao = prompt("Editar descrição:", descricaoAtual);
-    if(novaDescricao === null) return;
-    const { error } = await supabaseClient.from("tarefas").update({ descricao: novaDescricao.trim() }).eq("id", id);
-    if(error){mostrarMensagem("Erro ao editar descrição: " + error.message);return;}
-    tarefa.querySelector(".descricao").innerText = novaDescricao.trim();
+function filtrarTarefas(){
+    renderizarTarefas(tarefasCache);
 }
 
 function atualizarDashboard(){
-    const todo = document.getElementById("todo").children.length;
-    const doing = document.getElementById("doing").children.length;
-    const done = document.getElementById("done").children.length;
+    const todo = tarefasCache.filter(t => (t.status || "todo") === "todo").length;
+    const doing = tarefasCache.filter(t => t.status === "doing").length;
+    const done = tarefasCache.filter(t => t.status === "done").length;
     const total = todo + doing + done;
-    document.getElementById("total").innerText = total;
-    document.getElementById("todoCount").innerText = todo;
-    document.getElementById("doingCount").innerText = doing;
-    document.getElementById("doneCount").innerText = done;
-    const progresso = total > 0 ? Math.round((done / total) * 100) : 0;
-    document.getElementById("progressText").innerText = progresso + "%";
-    document.getElementById("progressBar").style.width = progresso + "%";
+    const progresso = total ? Math.round((done / total) * 100) : 0;
+
+    el("total").textContent = total;
+    el("todoCount").textContent = todo;
+    el("doingCount").textContent = doing;
+    el("doneCount").textContent = done;
+
+    el("badgeTodo").textContent = todo;
+    el("badgeDoing").textContent = doing;
+    el("badgeDone").textContent = done;
+
+    el("progressText").textContent = progresso + "%";
+    el("progressBar").style.width = progresso + "%";
 }
 
-carregarTarefas();
+document.querySelectorAll(".lista").forEach(lista => {
+    lista.addEventListener("dragover", allowDrop);
+    lista.addEventListener("drop", drop);
+    lista.addEventListener("dragenter", () => lista.classList.add("drag-over"));
+    lista.addEventListener("dragleave", () => lista.classList.remove("drag-over"));
+});
 
-let atualizando = false;
+function allowDrop(ev){
+    ev.preventDefault();
+}
 
-setInterval(async () => {
-    if (atualizando) return;
+function drag(ev){
+    ev.dataTransfer.setData("taskId", ev.currentTarget.dataset.id);
+}
 
-    atualizando = true;
-    try {
+async function drop(ev){
+    ev.preventDefault();
+
+    const coluna = ev.currentTarget;
+    coluna.classList.remove("drag-over");
+
+    const id = ev.dataTransfer.getData("taskId");
+    const novoStatus = coluna.dataset.status;
+    const tarefa = tarefasCache.find(t => t.id === id);
+
+    if(!id || !novoStatus || !tarefa || tarefa.status === novoStatus) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("tarefas")
+            .update({ status: novoStatus })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        tarefa.status = novoStatus;
+        renderizarTarefas(tarefasCache);
+        atualizarDashboard();
+    }catch(e){
+        mostrarMensagem("Erro ao atualizar status: " + e.message);
         await carregarTarefas();
-    } finally {
-        atualizando = false;
     }
-}, 5000);
+}
+
+async function carregarAgendamentos(){
+    const { data, error } = await supabaseClient
+        .from("agendamentos")
+        .select("*")
+        .order("data", { ascending:true })
+        .order("hora", { ascending:true });
+
+    if(error) throw error;
+
+    agendamentosCache = data || [];
+    renderizarAgendamentos();
+}
+
+function renderizarAgendamentos(){
+    const tbody = el("tabelaAgendamentos");
+    tbody.innerHTML = "";
+
+    el("totalAgendamentos").textContent = `${agendamentosCache.length} agendamento(s)`;
+
+    if(agendamentosCache.length === 0){
+        tbody.innerHTML = `<tr><td colspan="6">Nenhum agendamento cadastrado.</td></tr>`;
+        return;
+    }
+
+    agendamentosCache.forEach(item => {
+        const tr = document.createElement("tr");
+        const status = item.status || "pendente";
+
+        tr.innerHTML = `
+            <td>${formatarData(item.data)}</td>
+            <td>${escapar(item.hora || "-")}</td>
+            <td>
+                <strong>${escapar(item.titulo)}</strong><br>
+                <span style="color:var(--muted)">${escapar(item.descricao || "")}</span>
+            </td>
+            <td>${escapar(item.responsavel || "-")}</td>
+            <td><span class="tag ${status}">${escapar(status)}</span></td>
+            <td>
+                <div class="btn-row">
+                    <button class="btn-success" onclick="alterarStatusAgendamento('${item.id}','concluido')">Concluir</button>
+                    <button class="btn-warning" onclick="alterarStatusAgendamento('${item.id}','pendente')">Pendente</button>
+                    <button class="btn-danger" onclick="apagarAgendamento('${item.id}')">Apagar</button>
+                </div>
+            </td>
+        `;
+
+        tbody.appendChild(tr);
+    });
+}
+
+async function criarAgendamento(){
+    const titulo = el("agTitulo").value.trim();
+    const descricao = el("agDescricao").value.trim();
+    const data = el("agData").value;
+    const hora = el("agHora").value;
+    const responsavel = el("agResponsavel").value.trim();
+
+    if(!titulo || !data || !hora){
+        mostrarMensagem("Informe título, data e hora do agendamento.");
+        return;
+    }
+
+    setLoading("btnCriarAgendamento", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("agendamentos")
+            .insert([{ titulo, descricao, data, hora, responsavel, status:"pendente" }]);
+
+        if(error) throw error;
+
+        el("agTitulo").value = "";
+        el("agDescricao").value = "";
+        el("agData").value = "";
+        el("agHora").value = "";
+        el("agResponsavel").value = "";
+
+        mostrarMensagem("Agendamento salvo com sucesso.", "ok");
+        await carregarAgendamentos();
+    }catch(e){
+        mostrarMensagem("Erro ao criar agendamento: " + e.message);
+    }finally{
+        setLoading("btnCriarAgendamento", false);
+    }
+}
+
+async function alterarStatusAgendamento(id, status){
+    try{
+        const { error } = await supabaseClient
+            .from("agendamentos")
+            .update({ status })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        await carregarAgendamentos();
+    }catch(e){
+        mostrarMensagem("Erro ao alterar agendamento: " + e.message);
+    }
+}
+
+async function apagarAgendamento(id){
+    if(!confirm("Deseja apagar este agendamento?")) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("agendamentos")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Agendamento apagado.", "ok");
+        await carregarAgendamentos();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar agendamento: " + e.message);
+    }
+}
+
+carregarTudo();
+
+setInterval(() => {
+    carregarTudo();
+}, 15000);
 </script>
 </body>
 </html>

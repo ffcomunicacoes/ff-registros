@@ -663,6 +663,159 @@ body::after{
     .filters{grid-template-columns:1fr}
     .inline-grid{grid-template-columns:1fr}
 }
+
+
+/* ===== AJUSTE VISUAL: PAINEL TV BONITO ===== */
+body{
+    padding:18px 22px;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 12% 8%, rgba(34,211,238,.28), transparent 28%),
+        radial-gradient(circle at 92% 18%, rgba(99,102,241,.30), transparent 30%),
+        linear-gradient(135deg,#020617 0%,#0f172a 48%,#111827 100%);
+}
+.app{max-width:100%; height:calc(100vh - 36px); display:flex; flex-direction:column;}
+.topbar{
+    padding:14px 18px;
+    border:1px solid rgba(148,163,184,.22);
+    border-radius:24px;
+    background:linear-gradient(135deg,rgba(15,23,42,.72),rgba(30,41,59,.55));
+    box-shadow:0 20px 55px rgba(0,0,0,.32);
+    margin-bottom:14px;
+}
+.logo-icon{
+    width:58px;height:58px;border-radius:20px;
+    background:linear-gradient(135deg,#22d3ee,#2563eb,#8b5cf6);
+    box-shadow:0 0 34px rgba(34,211,238,.45);
+}
+.logo h1{font-size:34px; letter-spacing:-.04em;}
+.logo span{font-size:16px;color:#cbd5e1;}
+.status-area .pill{
+    background:rgba(15,23,42,.75);
+    border-color:rgba(34,197,94,.35);
+    color:#bbf7d0;
+    font-weight:800;
+}
+.tabs{margin-bottom:14px;}
+.tab-btn{
+    padding:12px 20px;
+    border-radius:999px;
+    background:rgba(15,23,42,.65);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+.tab-btn.ativo{
+    background:linear-gradient(135deg,#06b6d4,#2563eb,#8b5cf6);
+    box-shadow:0 12px 34px rgba(37,99,235,.32);
+}
+.grid-dashboard{
+    grid-template-columns:1.1fr .9fr .9fr .9fr 1.35fr;
+    gap:16px;
+    margin-bottom:16px;
+}
+.metric{
+    min-height:118px;
+    border:1px solid rgba(148,163,184,.18);
+    background:linear-gradient(145deg,rgba(30,41,59,.78),rgba(15,23,42,.84));
+    box-shadow:0 18px 45px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.07);
+}
+.metric span{font-size:15px;font-weight:800;color:#cbd5e1;}
+.metric h2{font-size:44px;text-shadow:0 0 24px rgba(125,211,252,.55);}
+.progress{height:14px;background:rgba(2,6,23,.9);}
+.progress-bar{background:linear-gradient(90deg,#38bdf8,#22c55e);box-shadow:0 0 22px rgba(34,197,94,.65);}
+#telaAtividades.layout{
+    grid-template-columns:1fr;
+    gap:0;
+    min-height:0;
+    flex:1;
+}
+#telaAtividades .side{
+    display:none;
+}
+#telaAtividades > section{
+    min-height:0;
+}
+#telaAtividades > section > .card.panel:first-child{
+    height:calc(100vh - 270px);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    background:linear-gradient(145deg,rgba(15,23,42,.78),rgba(30,41,59,.58));
+    border:1px solid rgba(148,163,184,.22);
+}
+#telaAtividades > section > .card.panel:first-child .panel-title h3{
+    font-size:26px;
+    letter-spacing:-.03em;
+}
+#ultimaAtualizacao{
+    font-size:16px;
+    background:rgba(15,23,42,.68);
+    color:#dbeafe;
+}
+.filters{
+    grid-template-columns:1.5fr .7fr .7fr;
+    gap:12px;
+}
+.filters input,.filters select{
+    height:54px;
+    border-radius:16px;
+    font-size:16px;
+    background:rgba(2,6,23,.62);
+    border-color:rgba(148,163,184,.22);
+}
+.kanban{
+    flex:1;
+    min-height:0;
+    grid-template-columns:repeat(3,1fr);
+    gap:18px;
+}
+.coluna{
+    display:flex;
+    flex-direction:column;
+    min-height:0;
+    background:linear-gradient(180deg,rgba(30,41,59,.74),rgba(15,23,42,.78));
+    border:1px solid rgba(148,163,184,.20);
+    border-radius:24px;
+    overflow:hidden;
+}
+.coluna-header{
+    padding:18px 20px;
+    font-size:20px;
+    background:linear-gradient(90deg,rgba(59,130,246,.20),rgba(15,23,42,.12));
+}
+.badge{background:rgba(2,6,23,.75); color:#e0f2fe; font-size:15px;}
+.lista{
+    flex:1;
+    min-height:0;
+    overflow:auto;
+    padding:18px;
+}
+.lista::-webkit-scrollbar{width:8px}.lista::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px}
+.tarefa{
+    padding:18px;
+    border-radius:22px;
+    border-left-width:7px;
+    background:linear-gradient(145deg,rgba(51,65,85,.92),rgba(30,41,59,.92));
+    box-shadow:0 16px 36px rgba(0,0,0,.28);
+}
+.tarefa h4{font-size:20px;line-height:1.15;text-transform:uppercase;}
+.tarefa p{font-size:16px;line-height:1.42;color:#e2e8f0;}
+.meta{font-size:14px;color:#cbd5e1;}
+.acoes button{font-size:13px;padding:9px 13px;box-shadow:0 0 18px rgba(255,255,255,.08)}
+#telaAtividades > section > .card.panel:nth-child(2){display:none;}
+footer{display:none;}
+
+/* Aba Câmeras continua administrativa, mas mais limpa */
+#telaCameras{overflow:auto;padding-bottom:18px;}
+#telaCameras .camera-grid{grid-template-columns:420px 1fr;}
+#telaCameras .panel-title h3{font-size:24px;}
+#telaCameras .camera-card{
+    border-radius:22px;
+    padding:18px;
+    background:linear-gradient(145deg,rgba(30,41,59,.95),rgba(15,23,42,.95));
+    box-shadow:0 14px 35px rgba(0,0,0,.24);
+}
+#telaCameras .camera-card h4{font-size:20px;}
+
 </style>
 </head>
 
@@ -673,7 +826,7 @@ body::after{
             <div class="logo-icon">📋</div>
             <div class="logo">
                 <h1>FF Registro</h1>
-                <span>Gestão de atividades e agendamentos</span>
+                <span>Painel de atividades em tempo real</span>
             </div>
         </div>
 

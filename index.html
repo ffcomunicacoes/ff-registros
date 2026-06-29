@@ -1012,6 +1012,52 @@ body{
     #telaCameras .camera-grid{grid-template-columns:1fr;}
 }
 
+/* ===== Gerenciamento na segunda aba ===== */
+.admin-manager{
+    margin:18px 0;
+}
+.admin-manager-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+.admin-table{
+    width:100%;
+    min-width:680px;
+}
+.admin-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.admin-actions button{
+    padding:8px 10px;
+    font-size:12px;
+    border-radius:10px;
+}
+.admin-section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+}
+.admin-section-title h3{font-size:18px}
+.camera-card{
+    border:1px solid rgba(148,163,184,.22);
+    background:linear-gradient(180deg, rgba(30,41,59,.94), rgba(15,23,42,.94));
+    border-radius:18px;
+    padding:15px;
+    margin-bottom:12px;
+}
+.camera-card h4{margin-bottom:8px;font-size:17px}
+.camera-info{color:#cbd5e1;line-height:1.7;font-size:14px}
+.copy-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.copy-row button{padding:8px 10px;font-size:12px}
+.tag.nao-adicionada,.tag.nao-adicionado{background:rgba(239,68,68,.14);color:#fca5a5}
+.tag.adicionada,.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
+@media(max-width:1150px){.admin-manager-grid{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -1181,6 +1227,51 @@ body{
         </aside>
 
 
+        <div class="admin-manager admin-manager-grid">
+            <section class="card panel">
+                <div class="admin-section-title">
+                    <h3>Gerenciar atividades</h3>
+                    <span class="pill" id="totalAdminAtividades">0 atividade(s)</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Status</th>
+                                <th>Prioridade</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAdminAtividades">
+                            <tr><td colspan="4">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card panel">
+                <div class="admin-section-title">
+                    <h3>Gerenciar agendamentos</h3>
+                    <span class="pill" id="totalAdminAgendamentos">0 agendamento(s)</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Título</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAdminAgendamentos">
+                            <tr><td colspan="4">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
 
         <div class="camera-grid">
             <aside class="side">
@@ -1271,6 +1362,63 @@ body{
         </div>
     </div>
 </div>
+
+<div class="modal-bg" id="modalEditarAgendamento">
+    <div class="modal">
+        <h3>Editar agendamento</h3>
+        <div class="form-grid">
+            <input type="hidden" id="editAgId" />
+            <input type="text" id="editAgTitulo" placeholder="Título do agendamento" maxlength="90" />
+            <textarea id="editAgDescricao" placeholder="Observação / descrição"></textarea>
+            <div class="inline-grid">
+                <input type="date" id="editAgData" />
+                <input type="time" id="editAgHora" />
+            </div>
+            <input type="text" id="editAgResponsavel" placeholder="Responsável" maxlength="80" />
+            <select id="editAgStatus">
+                <option value="pendente">Pendente</option>
+                <option value="concluido">Concluído</option>
+                <option value="cancelado">Cancelado</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="fecharModalEditarAgendamento()">Cancelar</button>
+                <button class="btn-success" id="btnSalvarAgendamentoEdicao" onclick="salvarEdicaoAgendamento()">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-bg" id="modalEditarCamera">
+    <div class="modal">
+        <h3>Editar câmera</h3>
+        <div class="form-grid">
+            <input type="hidden" id="editCamId" />
+            <input type="text" id="editCamLocal" placeholder="Nome do local" maxlength="120" />
+            <div class="inline-grid">
+                <input type="text" id="editCamTipo" placeholder="Tipo" maxlength="80" />
+                <input type="text" id="editCamNome" placeholder="Nome da câmera" maxlength="100" />
+            </div>
+            <input type="text" id="editCamIp" placeholder="IP da câmera" maxlength="80" />
+            <textarea id="editCamDescricao" placeholder="Descrição"></textarea>
+            <input type="text" id="editCamLocalizacao" placeholder="Coordenadas" maxlength="120" />
+            <div class="inline-grid">
+                <select id="editCamStatus">
+                    <option value="adicionada">Câmera adicionada</option>
+                    <option value="nao-adicionada">Câmera não adicionada</option>
+                </select>
+                <select id="editCamGravador">
+                    <option value="adicionado">Gravador adicionado</option>
+                    <option value="nao-adicionado">Gravador não adicionado</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="fecharModalEditarCamera()">Cancelar</button>
+                <button class="btn-success" id="btnSalvarCameraEdicao" onclick="salvarEdicaoCamera()">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <footer>FF Registro © 2026 - Gestão de Atividades</footer>
 </div>
@@ -1384,6 +1532,7 @@ async function carregarTarefas(){
 
     tarefasCache = data || [];
     renderizarTarefas(tarefasCache);
+    renderizarAdminAtividades();
     atualizarDashboard();
 }
 
@@ -1448,6 +1597,39 @@ function renderizarTarefa(item){
 
     tarefa.addEventListener("dragstart", drag);
     el(status).appendChild(tarefa);
+}
+
+
+function renderizarAdminAtividades(){
+    const tbody = el("tabelaAdminAtividades");
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+    el("totalAdminAtividades").textContent = `${tarefasCache.length} atividade(s)`;
+
+    if(tarefasCache.length === 0){
+        tbody.innerHTML = `<tr><td colspan="4">Nenhuma atividade cadastrada.</td></tr>`;
+        return;
+    }
+
+    tarefasCache.forEach(item => {
+        const status = item.status || "todo";
+        const prioridade = item.prioridade || "normal";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.descricao || "")}</span></td>
+            <td>${STATUS_LABEL[status] || "A fazer"}</td>
+            <td>${escapar(prioridade)}</td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn-warning" onclick="editarTarefa('${item.id}')">Editar</button>
+                    ${status !== "done" ? `<button class="btn-success" onclick="concluirTarefa('${item.id}')">Concluir</button>` : `<button class="btn-ghost" onclick="moverTarefa('${item.id}','doing')">Reabrir</button>`}
+                    <button class="btn-danger" onclick="apagarTarefa('${item.id}')">Apagar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 }
 
 async function criarTarefa(){
@@ -1657,6 +1839,7 @@ async function carregarAgendamentos(){
 
     agendamentosCache = data || [];
     renderizarAgendamentos();
+    renderizarAdminAgendamentos();
 }
 
 function renderizarAgendamentos(){
@@ -1694,6 +1877,91 @@ function renderizarAgendamentos(){
 
         tbody.appendChild(tr);
     });
+}
+
+
+function renderizarAdminAgendamentos(){
+    const tbody = el("tabelaAdminAgendamentos");
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+    el("totalAdminAgendamentos").textContent = `${agendamentosCache.length} agendamento(s)`;
+
+    if(agendamentosCache.length === 0){
+        tbody.innerHTML = `<tr><td colspan="4">Nenhum agendamento cadastrado.</td></tr>`;
+        return;
+    }
+
+    agendamentosCache.forEach(item => {
+        const status = item.status || "pendente";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${formatarData(item.data)}<br><span style="color:var(--muted)">${escapar(item.hora || "-")}</span></td>
+            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.responsavel || "")}</span></td>
+            <td><span class="tag ${status}">${escapar(status)}</span></td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn-warning" onclick="editarAgendamento('${item.id}')">Editar</button>
+                    <button class="btn-success" onclick="alterarStatusAgendamento('${item.id}','concluido')">Concluir</button>
+                    <button class="btn-ghost" onclick="alterarStatusAgendamento('${item.id}','pendente')">Pendente</button>
+                    <button class="btn-danger" onclick="apagarAgendamento('${item.id}')">Apagar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function editarAgendamento(id){
+    const item = agendamentosCache.find(a => a.id === id);
+    if(!item) return;
+
+    el("editAgId").value = item.id;
+    el("editAgTitulo").value = item.titulo || "";
+    el("editAgDescricao").value = item.descricao || "";
+    el("editAgData").value = item.data || "";
+    el("editAgHora").value = item.hora || "";
+    el("editAgResponsavel").value = item.responsavel || "";
+    el("editAgStatus").value = item.status || "pendente";
+    el("modalEditarAgendamento").classList.add("ativo");
+}
+
+function fecharModalEditarAgendamento(){
+    el("modalEditarAgendamento").classList.remove("ativo");
+}
+
+async function salvarEdicaoAgendamento(){
+    const id = el("editAgId").value;
+    const titulo = el("editAgTitulo").value.trim();
+    const descricao = el("editAgDescricao").value.trim();
+    const data = el("editAgData").value;
+    const hora = el("editAgHora").value;
+    const responsavel = el("editAgResponsavel").value.trim();
+    const status = el("editAgStatus").value;
+
+    if(!titulo || !data || !hora){
+        mostrarMensagem("Informe título, data e hora do agendamento.");
+        return;
+    }
+
+    setLoading("btnSalvarAgendamentoEdicao", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("agendamentos")
+            .update({ titulo, descricao, data, hora, responsavel, status })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        fecharModalEditarAgendamento();
+        mostrarMensagem("Agendamento atualizado com sucesso.", "ok");
+        await carregarAgendamentos();
+    }catch(e){
+        mostrarMensagem("Erro ao editar agendamento: " + e.message);
+    }finally{
+        setLoading("btnSalvarAgendamentoEdicao", false);
+    }
 }
 
 async function criarAgendamento(){
@@ -1880,6 +2148,7 @@ function renderizarCameras(lista){
                     <button onclick="copiarTexto('${escapar((item.ip || "").replace(/'/g, "\\'"))}', 'IP')">Copiar IP</button>
                     <button class="btn-warning" onclick="copiarTexto('${escapar((item.descricao || "").replace(/'/g, "\\'"))}', 'Descrição')">Copiar descrição</button>
                     <button class="btn-success" onclick="copiarTexto('${escapar((item.localizacao || "").replace(/'/g, "\\'"))}', 'Localização')">Copiar localização</button>
+                    <button class="btn-warning" onclick="editarCamera('${item.id}')">Editar</button>
                     <button class="btn-danger" onclick="apagarCamera('${item.id}')">Apagar</button>
                 </div>
             `;
@@ -1936,6 +2205,63 @@ function filtrarCameras(){
     renderizarCameras(camerasCache);
 }
 
+
+function editarCamera(id){
+    const item = camerasCache.find(c => c.id === id);
+    if(!item) return;
+
+    el("editCamId").value = item.id;
+    el("editCamLocal").value = item.nome_local || "";
+    el("editCamTipo").value = item.tipo || "";
+    el("editCamNome").value = item.nome_camera || "";
+    el("editCamIp").value = item.ip || "";
+    el("editCamDescricao").value = item.descricao || "";
+    el("editCamLocalizacao").value = item.localizacao || "";
+    el("editCamStatus").value = item.status_camera || "adicionada";
+    el("editCamGravador").value = item.status_gravador || "adicionado";
+    el("modalEditarCamera").classList.add("ativo");
+}
+
+function fecharModalEditarCamera(){
+    el("modalEditarCamera").classList.remove("ativo");
+}
+
+async function salvarEdicaoCamera(){
+    const id = el("editCamId").value;
+    const nome_local = el("editCamLocal").value.trim();
+    const tipo = el("editCamTipo").value.trim();
+    const nome_camera = el("editCamNome").value.trim();
+    const ip = el("editCamIp").value.trim();
+    const descricao = el("editCamDescricao").value.trim();
+    const localizacao = el("editCamLocalizacao").value.trim();
+    const status_camera = el("editCamStatus").value;
+    const status_gravador = el("editCamGravador").value;
+
+    if(!nome_local || !nome_camera){
+        mostrarMensagem("Informe pelo menos o local e o nome da câmera.");
+        return;
+    }
+
+    setLoading("btnSalvarCameraEdicao", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("cameras")
+            .update({ nome_local, tipo, nome_camera, ip, descricao, localizacao, status_camera, status_gravador })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        fecharModalEditarCamera();
+        mostrarMensagem("Câmera atualizada com sucesso.", "ok");
+        await carregarCameras();
+    }catch(e){
+        mostrarMensagem("Erro ao editar câmera: " + e.message);
+    }finally{
+        setLoading("btnSalvarCameraEdicao", false);
+    }
+}
+
 async function apagarCamera(id){
     if(!confirm("Deseja apagar esta câmera?")) return;
 
@@ -1959,9 +2285,15 @@ async function apagarCamera(id){
 el("modalEditar").addEventListener("click", function(ev){
     if(ev.target === this) fecharModalEditar();
 });
+el("modalEditarAgendamento").addEventListener("click", function(ev){
+    if(ev.target === this) fecharModalEditarAgendamento();
+});
+el("modalEditarCamera").addEventListener("click", function(ev){
+    if(ev.target === this) fecharModalEditarCamera();
+});
 
 document.addEventListener("keydown", function(ev){
-    if(ev.key === "Escape") fecharModalEditar();
+    if(ev.key === "Escape"){ fecharModalEditar(); fecharModalEditarAgendamento(); fecharModalEditarCamera(); }
 });
 
 carregarTudo();

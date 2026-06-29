@@ -572,6 +572,84 @@ body::after{
     flex-wrap:wrap;
 }
 
+
+.tabs{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin:0 0 20px;
+}
+
+.tab-btn{
+    background:rgba(22,32,51,.85);
+    border:1px solid var(--border);
+    color:var(--text);
+}
+
+.tab-btn.ativo{
+    background:linear-gradient(135deg,var(--primary),var(--purple));
+    border-color:rgba(255,255,255,.18);
+}
+
+.tela{
+    display:none;
+}
+
+.tela.ativa{
+    display:block;
+}
+
+.camera-grid{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:20px;
+    align-items:start;
+}
+
+.camera-card{
+    background:linear-gradient(180deg,#23304a,#1b263d);
+    border:1px solid rgba(148,163,184,.18);
+    border-left:5px solid var(--purple);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+}
+
+.camera-card h4{
+    margin-bottom:6px;
+}
+
+.camera-info{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.5;
+    word-break:break-word;
+}
+
+.copy-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+
+.copy-row button{
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:12px;
+}
+
+.tag.adicionada,
+.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
+
+.tag.nao-adicionada,
+.tag.nao-adicionado{background:rgba(239,68,68,.14);color:#fca5a5}
+
+@media(max-width:1150px){
+    .camera-grid{grid-template-columns:1fr}
+}
+
+
 @media(max-width:1150px){
     .layout{grid-template-columns:1fr}
     .grid-dashboard{grid-template-columns:repeat(2,1fr)}
@@ -607,7 +685,13 @@ body::after{
 
     <div id="mensagem" class="msg"></div>
 
-    <section class="grid-dashboard">
+
+    <nav class="tabs">
+        <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
+        <button class="tab-btn" id="tabCameras" onclick="abrirAba('Cameras')">📷 Câmeras</button>
+    </nav>
+
+    <section class="grid-dashboard tela ativa" id="telaAtividadesDashboard">
         <div class="card metric"><span>Total de Atividades</span><h2 id="total">0</h2></div>
         <div class="card metric"><span>A Fazer</span><h2 id="todoCount">0</h2></div>
         <div class="card metric"><span>Fazendo</span><h2 id="doingCount">0</h2></div>
@@ -619,7 +703,7 @@ body::after{
         </div>
     </section>
 
-    <main class="layout">
+    <main class="layout tela ativa" id="telaAtividades">
         <aside class="side">
             <section class="card panel">
                 <div class="panel-title">
@@ -736,6 +820,74 @@ body::after{
     </main>
 
 
+    <section class="tela" id="telaCameras">
+        <div class="camera-grid">
+            <aside class="side">
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Nova câmera</h3>
+                        <span class="badge">📷</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <input type="text" id="camLocal" placeholder="Nome do local. Ex: Totem Guarajuba" maxlength="120" />
+
+                        <div class="inline-grid">
+                            <input type="text" id="camTipo" placeholder="Tipo. Ex: Facial, LPR, CFTV" maxlength="80" />
+                            <input type="text" id="camNome" placeholder="Nome da câmera. Ex: Câmera 01" maxlength="100" />
+                        </div>
+
+                        <input type="text" id="camIp" placeholder="IP da câmera. Ex: 192.168.1.20" maxlength="80" />
+
+                        <textarea id="camDescricao" placeholder="Descrição. Ex: Câmera frontal apontada para entrada"></textarea>
+
+                        <input type="text" id="camLocalizacao" placeholder="Coordenadas. Ex: -1323131 -2321313" maxlength="120" />
+
+                        <div class="inline-grid">
+                            <select id="camStatus">
+                                <option value="adicionada">Câmera adicionada</option>
+                                <option value="nao-adicionada">Câmera não adicionada</option>
+                            </select>
+
+                            <select id="camGravador">
+                                <option value="adicionado">Gravador adicionado</option>
+                                <option value="nao-adicionado">Gravador não adicionado</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-purple" id="btnCriarCamera" onclick="criarCamera()">Adicionar câmera</button>
+                    </div>
+                </section>
+            </aside>
+
+            <section>
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Lista de câmeras por local</h3>
+                        <span class="pill" id="totalCameras">0 câmera(s)</span>
+                    </div>
+
+                    <div class="filters">
+                        <input type="search" id="buscaCamera" placeholder="Pesquisar por local, tipo, nome ou IP..." oninput="filtrarCameras()" />
+                        <select id="filtroCameraStatus" onchange="filtrarCameras()">
+                            <option value="">Todos os status</option>
+                            <option value="adicionada">Adicionada</option>
+                            <option value="nao-adicionada">Não adicionada</option>
+                        </select>
+                        <select id="filtroCameraGravador" onchange="filtrarCameras()">
+                            <option value="">Todos os gravadores</option>
+                            <option value="adicionado">Gravador adicionado</option>
+                            <option value="nao-adicionado">Gravador não adicionado</option>
+                        </select>
+                    </div>
+
+                    <div id="listaCameras"></div>
+                </section>
+            </section>
+        </div>
+    </section>
+
+
 <div class="modal-bg" id="modalEditar">
     <div class="modal">
         <h3>Editar atividade completa</h3>
@@ -769,6 +921,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let tarefasCache = [];
 let agendamentosCache = [];
+let camerasCache = [];
 let carregando = false;
 
 const STATUS_LABEL = {
@@ -849,7 +1002,7 @@ async function carregarTudo(){
     el("statusConexao").textContent = "Sincronizando...";
 
     try{
-        await Promise.all([carregarTarefas(), carregarAgendamentos()]);
+        await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras()]);
         el("statusConexao").textContent = "Online";
         el("ultimaAtualizacao").textContent = "Atualizado: " + hojeBR();
     }catch(e){
@@ -1250,6 +1403,196 @@ async function apagarAgendamento(id){
         mostrarMensagem("Erro ao apagar agendamento: " + e.message);
     }
 }
+
+
+function abrirAba(nome){
+    const abas = ["Atividades", "Cameras"];
+
+    abas.forEach(aba => {
+        const tela = el("tela" + aba);
+        const tab = el("tab" + aba);
+        if(tela) tela.classList.toggle("ativa", aba === nome);
+        if(tab) tab.classList.toggle("ativo", aba === nome);
+    });
+
+    const dash = el("telaAtividadesDashboard");
+    if(dash) dash.classList.toggle("ativa", nome === "Atividades");
+}
+
+function normalizarClasseStatus(status){
+    return (status || "").replace("ã","a").replace("ç","c");
+}
+
+async function copiarTexto(texto, campo){
+    try{
+        await navigator.clipboard.writeText(texto || "");
+        mostrarMensagem(campo + " copiado.", "ok");
+    }catch(e){
+        const temp = document.createElement("textarea");
+        temp.value = texto || "";
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand("copy");
+        document.body.removeChild(temp);
+        mostrarMensagem(campo + " copiado.", "ok");
+    }
+}
+
+async function carregarCameras(){
+    const { data, error } = await supabaseClient
+        .from("cameras")
+        .select("*")
+        .order("nome_local", { ascending:true })
+        .order("created_at", { ascending:true });
+
+    if(error) throw error;
+
+    camerasCache = data || [];
+    renderizarCameras(camerasCache);
+}
+
+function renderizarCameras(lista){
+    const container = el("listaCameras");
+    if(!container) return;
+
+    container.innerHTML = "";
+
+    const busca = (el("buscaCamera")?.value || "").toLowerCase().trim();
+    const filtroStatus = el("filtroCameraStatus")?.value || "";
+    const filtroGravador = el("filtroCameraGravador")?.value || "";
+
+    const filtradas = lista.filter(item => {
+        const texto = `${item.nome_local || ""} ${item.tipo || ""} ${item.nome_camera || ""} ${item.ip || ""} ${item.descricao || ""} ${item.localizacao || ""}`.toLowerCase();
+        const buscaOk = !busca || texto.includes(busca);
+        const statusOk = !filtroStatus || item.status_camera === filtroStatus;
+        const gravadorOk = !filtroGravador || item.status_gravador === filtroGravador;
+        return buscaOk && statusOk && gravadorOk;
+    });
+
+    el("totalCameras").textContent = `${filtradas.length} câmera(s)`;
+
+    if(filtradas.length === 0){
+        container.innerHTML = `<div class="empty">Nenhuma câmera cadastrada.</div>`;
+        return;
+    }
+
+    const grupos = {};
+    filtradas.forEach(item => {
+        const local = item.nome_local || "Sem local informado";
+        if(!grupos[local]) grupos[local] = [];
+        grupos[local].push(item);
+    });
+
+    Object.keys(grupos).forEach(local => {
+        const bloco = document.createElement("section");
+        bloco.className = "card panel";
+        bloco.style.marginBottom = "16px";
+
+        bloco.innerHTML = `
+            <div class="panel-title">
+                <h3>${escapar(local)}</h3>
+                <span class="badge">${grupos[local].length}</span>
+            </div>
+            <div></div>
+        `;
+
+        const listaLocal = bloco.querySelector("div:last-child");
+
+        grupos[local].forEach(item => {
+            const card = document.createElement("div");
+            const statusCamera = item.status_camera || "nao-adicionada";
+            const statusGravador = item.status_gravador || "nao-adicionado";
+
+            card.className = "camera-card";
+            card.innerHTML = `
+                <h4>${escapar(item.nome_camera || "Câmera sem nome")}</h4>
+                <div class="camera-info">
+                    <strong>Tipo:</strong> ${escapar(item.tipo || "-")}<br>
+                    <strong>IP:</strong> ${escapar(item.ip || "-")}<br>
+                    <strong>Descrição:</strong> ${escapar(item.descricao || "-")}<br>
+                    <strong>Localização:</strong> ${escapar(item.localizacao || "-")}<br>
+                    <strong>Status:</strong> <span class="tag ${statusCamera}">${statusCamera === "adicionada" ? "Adicionada" : "Não adicionada"}</span>
+                    <strong style="margin-left:8px">Gravador:</strong> <span class="tag ${statusGravador}">${statusGravador === "adicionado" ? "Adicionado" : "Não adicionado"}</span>
+                </div>
+
+                <div class="copy-row">
+                    <button onclick="copiarTexto('${escapar((item.ip || "").replace(/'/g, "\\'"))}', 'IP')">Copiar IP</button>
+                    <button class="btn-warning" onclick="copiarTexto('${escapar((item.descricao || "").replace(/'/g, "\\'"))}', 'Descrição')">Copiar descrição</button>
+                    <button class="btn-success" onclick="copiarTexto('${escapar((item.localizacao || "").replace(/'/g, "\\'"))}', 'Localização')">Copiar localização</button>
+                    <button class="btn-danger" onclick="apagarCamera('${item.id}')">Apagar</button>
+                </div>
+            `;
+
+            listaLocal.appendChild(card);
+        });
+
+        container.appendChild(bloco);
+    });
+}
+
+async function criarCamera(){
+    const nome_local = el("camLocal").value.trim();
+    const tipo = el("camTipo").value.trim();
+    const nome_camera = el("camNome").value.trim();
+    const ip = el("camIp").value.trim();
+    const descricao = el("camDescricao").value.trim();
+    const localizacao = el("camLocalizacao").value.trim();
+    const status_camera = el("camStatus").value;
+    const status_gravador = el("camGravador").value;
+
+    if(!nome_local || !nome_camera){
+        mostrarMensagem("Informe pelo menos o nome do local e o nome da câmera.");
+        return;
+    }
+
+    setLoading("btnCriarCamera", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("cameras")
+            .insert([{ nome_local, tipo, nome_camera, ip, descricao, localizacao, status_camera, status_gravador }]);
+
+        if(error) throw error;
+
+        el("camTipo").value = "";
+        el("camNome").value = "";
+        el("camIp").value = "";
+        el("camDescricao").value = "";
+        el("camLocalizacao").value = "";
+        el("camStatus").value = "adicionada";
+        el("camGravador").value = "adicionado";
+
+        mostrarMensagem("Câmera adicionada com sucesso.", "ok");
+        await carregarCameras();
+    }catch(e){
+        mostrarMensagem("Erro ao adicionar câmera: " + e.message);
+    }finally{
+        setLoading("btnCriarCamera", false);
+    }
+}
+
+function filtrarCameras(){
+    renderizarCameras(camerasCache);
+}
+
+async function apagarCamera(id){
+    if(!confirm("Deseja apagar esta câmera?")) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("cameras")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Câmera apagada.", "ok");
+        await carregarCameras();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar câmera: " + e.message);
+    }
+}
+
 
 
 el("modalEditar").addEventListener("click", function(ev){

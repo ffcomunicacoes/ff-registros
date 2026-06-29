@@ -921,6 +921,97 @@ body{
     .grid-dashboard.tela.ativa{grid-template-columns:repeat(2,1fr) !important;}
 }
 
+
+
+/* ===== Segunda aba: área de cadastros bonita ===== */
+#telaCameras{
+    max-height:calc(100vh - 170px);
+    overflow:auto;
+    padding-right:6px;
+}
+#telaCameras::-webkit-scrollbar{width:10px}
+#telaCameras::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px}
+.admin-header{
+    margin-bottom:18px;
+    padding:24px 28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    background:
+        radial-gradient(circle at 10% 20%,rgba(34,211,238,.25),transparent 34%),
+        linear-gradient(135deg,rgba(30,41,59,.95),rgba(15,23,42,.92));
+    border:1px solid rgba(148,163,184,.22);
+}
+.admin-kicker{
+    display:inline-block;
+    color:#67e8f9;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    font-size:12px;
+    margin-bottom:8px;
+}
+.admin-header h2{
+    font-size:34px;
+    line-height:1;
+    letter-spacing:-.04em;
+}
+.admin-header p{
+    color:#cbd5e1;
+    margin-top:8px;
+    font-size:16px;
+}
+.admin-badge{
+    width:70px;
+    height:70px;
+    border-radius:24px;
+    display:grid;
+    place-items:center;
+    font-size:32px;
+    background:linear-gradient(135deg,#06b6d4,#2563eb,#8b5cf6);
+    box-shadow:0 18px 42px rgba(37,99,235,.35);
+}
+#telaCameras .admin-forms{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:18px;
+    margin-bottom:18px;
+}
+#telaCameras .admin-forms .panel{
+    min-height:100%;
+    border-radius:26px;
+    background:linear-gradient(145deg,rgba(30,41,59,.92),rgba(15,23,42,.96));
+    border:1px solid rgba(148,163,184,.22);
+    box-shadow:0 18px 45px rgba(0,0,0,.28);
+}
+#telaCameras .admin-forms .panel-title h3{font-size:24px;}
+#telaCameras .admin-forms input,
+#telaCameras .admin-forms textarea,
+#telaCameras .admin-forms select,
+#telaCameras .camera-grid input,
+#telaCameras .camera-grid textarea,
+#telaCameras .camera-grid select{
+    background:rgba(2,6,23,.58);
+    border-color:rgba(148,163,184,.24);
+    border-radius:16px;
+}
+#telaCameras .admin-forms button,
+#telaCameras .camera-grid button{
+    height:48px;
+    border-radius:16px;
+    box-shadow:0 12px 28px rgba(37,99,235,.22);
+}
+#telaCameras .camera-grid{
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:18px;
+}
+@media(max-width:1050px){
+    #telaCameras .admin-forms,
+    #telaCameras .camera-grid{grid-template-columns:1fr;}
+}
+
 </style>
 </head>
 
@@ -946,7 +1037,7 @@ body{
 
     <nav class="tabs">
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
-        <button class="tab-btn" id="tabCameras" onclick="abrirAba('Cameras')">📷 Câmeras</button>
+        <button class="tab-btn" id="tabCameras" onclick="abrirAba('Cameras')">⚙️ Cadastros</button>
     </nav>
 
     <section class="grid-dashboard tela ativa" id="telaAtividadesDashboard">
@@ -962,53 +1053,6 @@ body{
     </section>
 
     <main class="layout tela ativa" id="telaAtividades">
-        <aside class="side">
-            <section class="card panel">
-                <div class="panel-title">
-                    <h3>Nova atividade</h3>
-                    <span class="badge">+</span>
-                </div>
-
-                <div class="form-grid">
-                    <input type="text" id="titulo" placeholder="Título da atividade" maxlength="90" />
-                    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
-
-                    <div class="inline-grid">
-                        <select id="prioridade">
-                            <option value="normal">Prioridade normal</option>
-                            <option value="alta">Alta prioridade</option>
-                            <option value="baixa">Baixa prioridade</option>
-                        </select>
-
-                        <input type="date" id="prazo" />
-                    </div>
-
-                    <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
-                </div>
-            </section>
-
-            <section class="card panel">
-                <div class="panel-title">
-                    <h3>Novo agendamento</h3>
-                    <span class="badge">🗓️</span>
-                </div>
-
-                <div class="form-grid">
-                    <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
-                    <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
-
-                    <div class="inline-grid">
-                        <input type="date" id="agData" />
-                        <input type="time" id="agHora" />
-                    </div>
-
-                    <input type="text" id="agResponsavel" placeholder="Responsável" maxlength="80" />
-
-                    <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
-                </div>
-            </section>
-        </aside>
-
         <section>
             <section class="card panel">
                 <div class="panel-title">
@@ -1079,6 +1123,65 @@ body{
 
 
     <section class="tela" id="telaCameras">
+
+        <div class="admin-header card">
+            <div>
+                <span class="admin-kicker">Área administrativa</span>
+                <h2>Cadastros do FF Registro</h2>
+                <p>Adicione atividades, agendamentos e câmeras sem mexer na tela principal da TV.</p>
+            </div>
+            <div class="admin-badge">⚙️</div>
+        </div>
+
+        <aside class="side admin-forms">
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Nova atividade</h3>
+                    <span class="badge">+</span>
+                </div>
+
+                <div class="form-grid">
+                    <input type="text" id="titulo" placeholder="Título da atividade" maxlength="90" />
+                    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
+
+                    <div class="inline-grid">
+                        <select id="prioridade">
+                            <option value="normal">Prioridade normal</option>
+                            <option value="alta">Alta prioridade</option>
+                            <option value="baixa">Baixa prioridade</option>
+                        </select>
+
+                        <input type="date" id="prazo" />
+                    </div>
+
+                    <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
+                </div>
+            </section>
+
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Novo agendamento</h3>
+                    <span class="badge">🗓️</span>
+                </div>
+
+                <div class="form-grid">
+                    <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
+                    <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
+
+                    <div class="inline-grid">
+                        <input type="date" id="agData" />
+                        <input type="time" id="agHora" />
+                    </div>
+
+                    <input type="text" id="agResponsavel" placeholder="Responsável" maxlength="80" />
+
+                    <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
+                </div>
+            </section>
+        </aside>
+
+
+
         <div class="camera-grid">
             <aside class="side">
                 <section class="card panel">

@@ -599,6 +599,35 @@ body::after{
     display:block;
 }
 
+.tabs.subtabs{
+    margin-bottom:18px;
+}
+.tabs.subtabs .tab-btn{
+    padding:9px 16px;
+    font-size:14px;
+}
+
+.config-tela{
+    display:none;
+}
+.config-tela.ativa{
+    display:block;
+}
+
+.quick-form{
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(148,163,184,.2);
+    border-radius:16px;
+    padding:16px;
+    margin-bottom:16px;
+}
+
+.config-hint{
+    color:var(--muted);
+    font-size:13px;
+    margin-bottom:14px;
+}
+
 .camera-grid{
     display:grid;
     grid-template-columns:380px 1fr;
@@ -665,272 +694,8 @@ body::after{
 }
 
 
-/* ===== AJUSTE VISUAL: PAINEL TV BONITO ===== */
-body{
-    padding:18px 22px;
-    overflow:hidden;
-    background:
-        radial-gradient(circle at 12% 8%, rgba(34,211,238,.28), transparent 28%),
-        radial-gradient(circle at 92% 18%, rgba(99,102,241,.30), transparent 30%),
-        linear-gradient(135deg,#020617 0%,#0f172a 48%,#111827 100%);
-}
-.app{max-width:100%; height:calc(100vh - 36px); display:flex; flex-direction:column;}
-.topbar{
-    padding:14px 18px;
-    border:1px solid rgba(148,163,184,.22);
-    border-radius:24px;
-    background:linear-gradient(135deg,rgba(15,23,42,.72),rgba(30,41,59,.55));
-    box-shadow:0 20px 55px rgba(0,0,0,.32);
-    margin-bottom:14px;
-}
-.logo-icon{
-    width:58px;height:58px;border-radius:20px;
-    background:linear-gradient(135deg,#22d3ee,#2563eb,#8b5cf6);
-    box-shadow:0 0 34px rgba(34,211,238,.45);
-}
-.logo h1{font-size:34px; letter-spacing:-.04em;}
-.logo span{font-size:16px;color:#cbd5e1;}
-.status-area .pill{
-    background:rgba(15,23,42,.75);
-    border-color:rgba(34,197,94,.35);
-    color:#bbf7d0;
-    font-weight:800;
-}
-.tabs{margin-bottom:14px;}
-.tab-btn{
-    padding:12px 20px;
-    border-radius:999px;
-    background:rgba(15,23,42,.65);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-}
-.tab-btn.ativo{
-    background:linear-gradient(135deg,#06b6d4,#2563eb,#8b5cf6);
-    box-shadow:0 12px 34px rgba(37,99,235,.32);
-}
-.grid-dashboard{
-    grid-template-columns:1.1fr .9fr .9fr .9fr 1.35fr;
-    gap:16px;
-    margin-bottom:16px;
-}
-.metric{
-    min-height:118px;
-    border:1px solid rgba(148,163,184,.18);
-    background:linear-gradient(145deg,rgba(30,41,59,.78),rgba(15,23,42,.84));
-    box-shadow:0 18px 45px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.07);
-}
-.metric span{font-size:15px;font-weight:800;color:#cbd5e1;}
-.metric h2{font-size:44px;text-shadow:0 0 24px rgba(125,211,252,.55);}
-.progress{height:14px;background:rgba(2,6,23,.9);}
-.progress-bar{background:linear-gradient(90deg,#38bdf8,#22c55e);box-shadow:0 0 22px rgba(34,197,94,.65);}
-#telaAtividades.layout{
-    grid-template-columns:1fr;
-    gap:0;
-    min-height:0;
-    flex:1;
-}
-#telaAtividades .side{
-    display:none;
-}
-#telaAtividades > section{
-    min-height:0;
-}
-#telaAtividades > section > .card.panel:first-child{
-    height:calc(100vh - 270px);
-    padding:20px;
-    display:flex;
-    flex-direction:column;
-    background:linear-gradient(145deg,rgba(15,23,42,.78),rgba(30,41,59,.58));
-    border:1px solid rgba(148,163,184,.22);
-}
-#telaAtividades > section > .card.panel:first-child .panel-title h3{
-    font-size:26px;
-    letter-spacing:-.03em;
-}
-#ultimaAtualizacao{
-    font-size:16px;
-    background:rgba(15,23,42,.68);
-    color:#dbeafe;
-}
-.filters{
-    grid-template-columns:1.5fr .7fr .7fr;
-    gap:12px;
-}
-.filters input,.filters select{
-    height:54px;
-    border-radius:16px;
-    font-size:16px;
-    background:rgba(2,6,23,.62);
-    border-color:rgba(148,163,184,.22);
-}
-.kanban{
-    flex:1;
-    min-height:0;
-    grid-template-columns:repeat(3,1fr);
-    gap:18px;
-}
-.coluna{
-    display:flex;
-    flex-direction:column;
-    min-height:0;
-    background:linear-gradient(180deg,rgba(30,41,59,.74),rgba(15,23,42,.78));
-    border:1px solid rgba(148,163,184,.20);
-    border-radius:24px;
-    overflow:hidden;
-}
-.coluna-header{
-    padding:18px 20px;
-    font-size:20px;
-    background:linear-gradient(90deg,rgba(59,130,246,.20),rgba(15,23,42,.12));
-}
-.badge{background:rgba(2,6,23,.75); color:#e0f2fe; font-size:15px;}
-.lista{
-    flex:1;
-    min-height:0;
-    overflow:auto;
-    padding:18px;
-}
-.lista::-webkit-scrollbar{width:8px}.lista::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px}
-.tarefa{
-    padding:18px;
-    border-radius:22px;
-    border-left-width:7px;
-    background:linear-gradient(145deg,rgba(51,65,85,.92),rgba(30,41,59,.92));
-    box-shadow:0 16px 36px rgba(0,0,0,.28);
-}
-.tarefa h4{font-size:20px;line-height:1.15;text-transform:uppercase;}
-.tarefa p{font-size:16px;line-height:1.42;color:#e2e8f0;}
-.meta{font-size:14px;color:#cbd5e1;}
-.acoes button{font-size:13px;padding:9px 13px;box-shadow:0 0 18px rgba(255,255,255,.08)}
-#telaAtividades > section > .card.panel:nth-child(2){display:none;}
-footer{display:none;}
-
-/* Aba Câmeras continua administrativa, mas mais limpa */
-#telaCameras{overflow:auto;padding-bottom:18px;}
-#telaCameras .camera-grid{grid-template-columns:420px 1fr;}
-#telaCameras .panel-title h3{font-size:24px;}
-#telaCameras .camera-card{
-    border-radius:22px;
-    padding:18px;
-    background:linear-gradient(145deg,rgba(30,41,59,.95),rgba(15,23,42,.95));
-    box-shadow:0 14px 35px rgba(0,0,0,.24);
-}
-#telaCameras .camera-card h4{font-size:20px;}
-
-
-
-/* ===== CORREÇÃO FINAL TV: NÃO DEIXAR OS CARDS EMPILHADOS ===== */
-.grid-dashboard.tela.ativa{
-    display:grid !important;
-    grid-template-columns:repeat(5, minmax(0,1fr)) !important;
-}
-.layout.tela.ativa{
-    display:grid !important;
-}
-#telaAtividadesDashboard{
-    width:100%;
-}
-#telaAtividadesDashboard .metric{
-    min-width:0;
-}
-
-/* Visual mais bonito e limpo para TV */
-body{
-    padding:16px 20px !important;
-    overflow:hidden !important;
-    background:
-        radial-gradient(circle at 8% 14%, rgba(56,189,248,.35), transparent 24%),
-        radial-gradient(circle at 86% 12%, rgba(139,92,246,.28), transparent 30%),
-        radial-gradient(circle at 72% 92%, rgba(34,197,94,.14), transparent 30%),
-        linear-gradient(135deg,#020617 0%,#07111f 45%,#0f172a 100%) !important;
-}
-.app{
-    max-width:100% !important;
-    height:calc(100vh - 32px) !important;
-}
-.topbar{
-    height:96px;
-    margin-bottom:12px !important;
-    background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,41,59,.42)) !important;
-    border:1px solid rgba(148,163,184,.18) !important;
-    box-shadow:0 20px 60px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08) !important;
-}
-.logo-icon{
-    width:64px !important;
-    height:64px !important;
-    font-size:30px !important;
-    border-radius:22px !important;
-    background:linear-gradient(135deg,#67e8f9,#3b82f6,#a78bfa) !important;
-}
-.logo h1{font-size:38px !important;}
-.logo span{font-size:18px !important;color:#dbeafe !important;}
-.tabs{
-    height:58px;
-    margin-bottom:12px !important;
-    display:flex !important;
-    gap:12px !important;
-}
-.tab-btn{
-    height:54px;
-    min-width:190px;
-    font-size:18px;
-    border-radius:18px !important;
-}
-.tab-btn.ativo{
-    background:linear-gradient(135deg,#22d3ee,#2563eb,#8b5cf6) !important;
-    box-shadow:0 0 28px rgba(34,211,238,.38) !important;
-}
-.grid-dashboard{
-    gap:14px !important;
-    margin-bottom:14px !important;
-}
-.metric{
-    height:118px !important;
-    padding:18px 20px !important;
-    border-radius:24px !important;
-    background:linear-gradient(145deg,rgba(30,41,59,.68),rgba(15,23,42,.88)) !important;
-    border:1px solid rgba(148,163,184,.18) !important;
-}
-.metric span{font-size:16px !important;color:#dbeafe !important;font-weight:800 !important;}
-.metric h2{font-size:46px !important;line-height:1 !important;margin-top:12px !important;}
-.progress{height:16px !important;margin-top:14px !important;}
-#telaAtividades > section > .card.panel:first-child{
-    height:calc(100vh - 308px) !important;
-    border-radius:28px !important;
-    padding:18px !important;
-    background:linear-gradient(145deg,rgba(15,23,42,.70),rgba(30,41,59,.50)) !important;
-}
-#telaAtividades .panel-title{margin-bottom:12px !important;}
-#telaAtividades .panel-title h3{font-size:28px !important;}
-.filters{display:grid !important;grid-template-columns:1.6fr .7fr .7fr !important;gap:12px !important;margin-bottom:14px !important;}
-.filters input,.filters select{height:52px !important;font-size:17px !important;border-radius:18px !important;}
-.kanban{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr)) !important;gap:16px !important;}
-.coluna{border-radius:26px !important;}
-.coluna-header{height:64px !important;font-size:22px !important;padding:18px 20px !important;}
-.lista{padding:16px !important;}
-.tarefa{
-    border-radius:22px !important;
-    padding:16px !important;
-    margin-bottom:12px !important;
-}
-.tarefa h4{font-size:21px !important;line-height:1.12 !important;}
-.tarefa p{font-size:16px !important;line-height:1.35 !important;}
-.meta{font-size:14px !important;}
-.acoes{display:none !important;}
-#telaAtividades > section > .card.panel:nth-child(2){display:none !important;}
-@media(max-width:900px){
-    .grid-dashboard.tela.ativa{grid-template-columns:repeat(2,1fr) !important;}
-}
-
-
 
 /* ===== Segunda aba: área de cadastros bonita ===== */
-#telaCameras{
-    max-height:calc(100vh - 170px);
-    overflow:auto;
-    padding-right:6px;
-}
-#telaCameras::-webkit-scrollbar{width:10px}
-#telaCameras::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px}
 .admin-header{
     margin-bottom:18px;
     padding:24px 28px;
@@ -972,55 +737,28 @@ body{
     background:linear-gradient(135deg,#06b6d4,#2563eb,#8b5cf6);
     box-shadow:0 18px 42px rgba(37,99,235,.35);
 }
-#telaCameras .admin-forms{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:18px;
-    margin-bottom:18px;
-}
-#telaCameras .admin-forms .panel{
-    min-height:100%;
-    border-radius:26px;
-    background:linear-gradient(145deg,rgba(30,41,59,.92),rgba(15,23,42,.96));
-    border:1px solid rgba(148,163,184,.22);
-    box-shadow:0 18px 45px rgba(0,0,0,.28);
-}
-#telaCameras .admin-forms .panel-title h3{font-size:24px;}
-#telaCameras .admin-forms input,
-#telaCameras .admin-forms textarea,
-#telaCameras .admin-forms select,
-#telaCameras .camera-grid input,
-#telaCameras .camera-grid textarea,
-#telaCameras .camera-grid select{
+#telaConfiguracoes .camera-grid input,
+#telaConfiguracoes .camera-grid textarea,
+#telaConfiguracoes .camera-grid select{
     background:rgba(2,6,23,.58);
     border-color:rgba(148,163,184,.24);
     border-radius:16px;
 }
-#telaCameras .admin-forms button,
-#telaCameras .camera-grid button{
+#telaConfiguracoes .camera-grid button{
     height:48px;
     border-radius:16px;
     box-shadow:0 12px 28px rgba(37,99,235,.22);
 }
-#telaCameras .camera-grid{
+#telaConfiguracoes .camera-grid{
     display:grid;
     grid-template-columns:420px 1fr;
     gap:18px;
 }
 @media(max-width:1050px){
-    #telaCameras .admin-forms,
-    #telaCameras .camera-grid{grid-template-columns:1fr;}
+    #telaConfiguracoes .camera-grid{grid-template-columns:1fr;}
 }
 
-/* ===== Gerenciamento na segunda aba ===== */
-.admin-manager{
-    margin:18px 0;
-}
-.admin-manager-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:18px;
-}
+/* ===== Gerenciamento nas abas de configurações ===== */
 .admin-table{
     width:100%;
     min-width:680px;
@@ -1056,7 +794,6 @@ body{
 .copy-row button{padding:8px 10px;font-size:12px}
 .tag.nao-adicionada,.tag.nao-adicionado{background:rgba(239,68,68,.14);color:#fca5a5}
 .tag.adicionada,.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
-@media(max-width:1150px){.admin-manager-grid{grid-template-columns:1fr}}
 
 
 /* ===== TELA DE LOGIN ===== */
@@ -1145,9 +882,7 @@ body{
 }
 
 /* ===== ABA CALENDÁRIO ===== */
-#telaCalendario{overflow:auto;padding-bottom:18px;max-height:calc(100vh - 170px);}
-#telaCalendario::-webkit-scrollbar{width:10px}
-#telaCalendario::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px}
+#telaCalendario{padding-bottom:18px;}
 
 .cal-layout{
     display:grid;
@@ -1347,8 +1082,9 @@ body{
 
     <nav class="tabs">
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
-        <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🗓️ Calendário</button>
-        <button class="tab-btn" id="tabCameras" onclick="abrirAba('Cameras')">⚙️ Cadastros</button>
+        <button class="tab-btn" id="tabAgendamentos" onclick="abrirAba('Agendamentos')">🗓️ Agendamentos</button>
+        <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🚐 Calendário CFTV</button>
+        <button class="tab-btn" id="tabConfiguracoes" onclick="abrirAba('Configuracoes')">⚙️ Configurações</button>
     </nav>
 
     <section class="grid-dashboard tela ativa" id="telaAtividadesDashboard">
@@ -1368,7 +1104,27 @@ body{
             <section class="card panel">
                 <div class="panel-title">
                     <h3>Quadro de atividades</h3>
-                    <span id="ultimaAtualizacao" class="pill">--</span>
+                    <div class="btn-row">
+                        <span id="ultimaAtualizacao" class="pill">--</span>
+                        <button onclick="alternarFormAtividade()" id="btnToggleFormAtividade">+ Nova atividade</button>
+                    </div>
+                </div>
+
+                <div class="form-grid quick-form" id="formNovaAtividade" style="display:none">
+                    <input type="text" id="titulo" placeholder="Título da atividade" maxlength="90" />
+                    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
+
+                    <div class="inline-grid">
+                        <select id="prioridade">
+                            <option value="normal">Prioridade normal</option>
+                            <option value="alta">Alta prioridade</option>
+                            <option value="baixa">Baixa prioridade</option>
+                        </select>
+
+                        <input type="date" id="prazo" />
+                    </div>
+
+                    <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
                 </div>
 
                 <div class="filters">
@@ -1404,33 +1160,54 @@ body{
                     </div>
                 </div>
             </section>
-
-            <section class="card panel" style="margin-top:20px">
-                <div class="panel-title">
-                    <h3>Tabela de agendamentos</h3>
-                    <span class="pill" id="totalAgendamentos">0 agendamentos</span>
-                </div>
-
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Hora</th>
-                                <th>Título</th>
-                                <th>Responsável</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaAgendamentos">
-                            <tr><td colspan="6">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
         </section>
     </main>
+
+
+    <section class="tela" id="telaAgendamentos">
+
+        <section class="card panel">
+            <div class="panel-title">
+                <h3>Agendamentos</h3>
+                <div class="btn-row">
+                    <span class="pill" id="totalAgendamentos">0 agendamentos</span>
+                    <button class="btn-purple" onclick="alternarFormAgendamento()" id="btnToggleFormAgendamento">+ Novo agendamento</button>
+                </div>
+            </div>
+
+            <div class="form-grid quick-form" id="formNovoAgendamento" style="display:none">
+                <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
+                <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
+
+                <div class="inline-grid">
+                    <input type="date" id="agData" />
+                    <input type="time" id="agHora" />
+                </div>
+
+                <input type="text" id="agResponsavel" placeholder="Responsável" maxlength="80" />
+
+                <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Hora</th>
+                            <th>Título</th>
+                            <th>Responsável</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaAgendamentos">
+                        <tr><td colspan="6">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
 
 
     <section class="tela" id="telaCalendario">
@@ -1538,94 +1315,151 @@ body{
     </section>
 
 
-    <section class="tela" id="telaCameras">
+    <section class="tela" id="telaConfiguracoes">
 
         <div class="admin-header card">
             <div>
                 <span class="admin-kicker">Área administrativa</span>
-                <h2>Cadastros do FF Registro</h2>
-                <p>Adicione atividades, agendamentos e câmeras sem mexer na tela principal da TV.</p>
+                <h2>Configurações</h2>
+                <p>Equipes, câmeras e a lista completa de atividades, organizadas cada uma na sua aba.</p>
             </div>
             <div class="admin-badge">⚙️</div>
         </div>
 
-        <aside class="side admin-forms">
-            <section class="card panel">
-                <div class="panel-title">
-                    <h3>Nova atividade</h3>
-                    <span class="badge">+</span>
-                </div>
+        <nav class="tabs subtabs">
+            <button class="tab-btn ativo" id="subtabEquipes" onclick="abrirConfigAba('Equipes')">👥 Equipes</button>
+            <button class="tab-btn" id="subtabCameras" onclick="abrirConfigAba('Cameras')">📷 Câmeras</button>
+            <button class="tab-btn" id="subtabAtividades" onclick="abrirConfigAba('Atividades')">📋 Atividades</button>
+        </nav>
 
-                <div class="form-grid">
-                    <input type="text" id="titulo" placeholder="Título da atividade" maxlength="90" />
-                    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
+        <div class="config-tela ativa" id="configEquipes">
+            <div class="camera-grid">
+                <aside class="side">
+                    <section class="card panel">
+                        <div class="panel-title">
+                            <h3>Nova equipe CFTV</h3>
+                            <span class="badge">👥</span>
+                        </div>
 
-                    <div class="inline-grid">
-                        <select id="prioridade">
-                            <option value="normal">Prioridade normal</option>
-                            <option value="alta">Alta prioridade</option>
-                            <option value="baixa">Baixa prioridade</option>
-                        </select>
+                        <div class="form-grid">
+                            <input type="text" id="eqNome" placeholder="Nome da equipe. Ex: Equipe Instalação 1" maxlength="90" />
 
-                        <input type="date" id="prazo" />
-                    </div>
+                            <div class="inline-grid">
+                                <input type="text" id="eqEspecialidade" placeholder="Especialidade. Ex: Instalação, Manutenção" maxlength="80" />
+                                <input type="text" id="eqResponsavel" placeholder="Responsável / líder" maxlength="80" />
+                            </div>
 
-                    <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
-                </div>
-            </section>
+                            <div class="inline-grid">
+                                <input type="text" id="eqTelefone" placeholder="Telefone de contato" maxlength="40" />
+                                <input type="color" id="eqCor" value="#2563eb" title="Cor da equipe no calendário" />
+                            </div>
 
-            <section class="card panel">
-                <div class="panel-title">
-                    <h3>Novo agendamento</h3>
-                    <span class="badge">🗓️</span>
-                </div>
+                            <button class="btn-purple" id="btnCriarEquipe" onclick="criarEquipe()">Adicionar equipe</button>
+                        </div>
+                    </section>
+                </aside>
 
-                <div class="form-grid">
-                    <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
-                    <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
+                <section>
+                    <section class="card panel">
+                        <div class="admin-section-title">
+                            <h3>Equipes cadastradas</h3>
+                            <span class="pill" id="totalAdminEquipes">0 equipe(s)</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Equipe</th>
+                                        <th>Especialidade</th>
+                                        <th>Responsável</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaAdminEquipes">
+                                    <tr><td colspan="5">Carregando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </section>
+            </div>
+        </div>
 
-                    <div class="inline-grid">
-                        <input type="date" id="agData" />
-                        <input type="time" id="agHora" />
-                    </div>
+        <div class="config-tela" id="configCameras">
+            <div class="camera-grid">
+                <aside class="side">
+                    <section class="card panel">
+                        <div class="panel-title">
+                            <h3>Nova câmera</h3>
+                            <span class="badge">📷</span>
+                        </div>
 
-                    <input type="text" id="agResponsavel" placeholder="Responsável" maxlength="80" />
+                        <div class="form-grid">
+                            <input type="text" id="camLocal" placeholder="Nome do local. Ex: Totem Guarajuba" maxlength="120" />
 
-                    <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
-                </div>
-            </section>
+                            <div class="inline-grid">
+                                <input type="text" id="camTipo" placeholder="Tipo. Ex: Facial, LPR, CFTV" maxlength="80" />
+                                <input type="text" id="camNome" placeholder="Nome da câmera. Ex: Câmera 01" maxlength="100" />
+                            </div>
 
-            <section class="card panel">
-                <div class="panel-title">
-                    <h3>Nova equipe CFTV</h3>
-                    <span class="badge">👥</span>
-                </div>
+                            <input type="text" id="camIp" placeholder="IP da câmera. Ex: 192.168.1.20" maxlength="80" />
 
-                <div class="form-grid">
-                    <input type="text" id="eqNome" placeholder="Nome da equipe. Ex: Equipe Instalação 1" maxlength="90" />
+                            <textarea id="camDescricao" placeholder="Descrição. Ex: Câmera frontal apontada para entrada"></textarea>
 
-                    <div class="inline-grid">
-                        <input type="text" id="eqEspecialidade" placeholder="Especialidade. Ex: Instalação, Manutenção" maxlength="80" />
-                        <input type="text" id="eqResponsavel" placeholder="Responsável / líder" maxlength="80" />
-                    </div>
+                            <input type="text" id="camLocalizacao" placeholder="Coordenadas. Ex: -1323131 -2321313" maxlength="120" />
 
-                    <div class="inline-grid">
-                        <input type="text" id="eqTelefone" placeholder="Telefone de contato" maxlength="40" />
-                        <input type="color" id="eqCor" value="#2563eb" title="Cor da equipe no calendário" />
-                    </div>
+                            <div class="inline-grid">
+                                <select id="camStatus">
+                                    <option value="adicionada">Câmera adicionada</option>
+                                    <option value="nao-adicionada">Câmera não adicionada</option>
+                                </select>
 
-                    <button class="btn-purple" id="btnCriarEquipe" onclick="criarEquipe()">Adicionar equipe</button>
-                </div>
-            </section>
-        </aside>
+                                <select id="camGravador">
+                                    <option value="adicionado">Gravador adicionado</option>
+                                    <option value="nao-adicionado">Gravador não adicionado</option>
+                                </select>
+                            </div>
 
+                            <button class="btn-purple" id="btnCriarCamera" onclick="criarCamera()">Adicionar câmera</button>
+                        </div>
+                    </section>
+                </aside>
 
-        <div class="admin-manager admin-manager-grid">
+                <section>
+                    <section class="card panel">
+                        <div class="panel-title">
+                            <h3>Lista de câmeras por local</h3>
+                            <span class="pill" id="totalCameras">0 câmera(s)</span>
+                        </div>
+
+                        <div class="filters">
+                            <input type="search" id="buscaCamera" placeholder="Pesquisar por local, tipo, nome ou IP..." oninput="filtrarCameras()" />
+                            <select id="filtroCameraStatus" onchange="filtrarCameras()">
+                                <option value="">Todos os status</option>
+                                <option value="adicionada">Adicionada</option>
+                                <option value="nao-adicionada">Não adicionada</option>
+                            </select>
+                            <select id="filtroCameraGravador" onchange="filtrarCameras()">
+                                <option value="">Todos os gravadores</option>
+                                <option value="adicionado">Gravador adicionado</option>
+                                <option value="nao-adicionado">Gravador não adicionado</option>
+                            </select>
+                        </div>
+
+                        <div id="listaCameras"></div>
+                    </section>
+                </section>
+            </div>
+        </div>
+
+        <div class="config-tela" id="configAtividades">
             <section class="card panel">
                 <div class="admin-section-title">
-                    <h3>Gerenciar atividades</h3>
+                    <h3>Todas as atividades</h3>
                     <span class="pill" id="totalAdminAtividades">0 atividade(s)</span>
                 </div>
+                <p class="config-hint">Lista completa para revisão em formato de tabela. Para criar uma atividade nova, use o botão "+ Nova atividade" na aba Atividades.</p>
                 <div class="table-wrap">
                     <table class="admin-table">
                         <thead>
@@ -1641,116 +1475,6 @@ body{
                         </tbody>
                     </table>
                 </div>
-            </section>
-
-            <section class="card panel">
-                <div class="admin-section-title">
-                    <h3>Gerenciar agendamentos</h3>
-                    <span class="pill" id="totalAdminAgendamentos">0 agendamento(s)</span>
-                </div>
-                <div class="table-wrap">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Data/Hora</th>
-                                <th>Título</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaAdminAgendamentos">
-                            <tr><td colspan="4">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <section class="card panel">
-                <div class="admin-section-title">
-                    <h3>Gerenciar equipes CFTV</h3>
-                    <span class="pill" id="totalAdminEquipes">0 equipe(s)</span>
-                </div>
-                <div class="table-wrap">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Equipe</th>
-                                <th>Especialidade</th>
-                                <th>Responsável</th>
-                                <th>Status</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabelaAdminEquipes">
-                            <tr><td colspan="5">Carregando...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-
-        <div class="camera-grid">
-            <aside class="side">
-                <section class="card panel">
-                    <div class="panel-title">
-                        <h3>Nova câmera</h3>
-                        <span class="badge">📷</span>
-                    </div>
-
-                    <div class="form-grid">
-                        <input type="text" id="camLocal" placeholder="Nome do local. Ex: Totem Guarajuba" maxlength="120" />
-
-                        <div class="inline-grid">
-                            <input type="text" id="camTipo" placeholder="Tipo. Ex: Facial, LPR, CFTV" maxlength="80" />
-                            <input type="text" id="camNome" placeholder="Nome da câmera. Ex: Câmera 01" maxlength="100" />
-                        </div>
-
-                        <input type="text" id="camIp" placeholder="IP da câmera. Ex: 192.168.1.20" maxlength="80" />
-
-                        <textarea id="camDescricao" placeholder="Descrição. Ex: Câmera frontal apontada para entrada"></textarea>
-
-                        <input type="text" id="camLocalizacao" placeholder="Coordenadas. Ex: -1323131 -2321313" maxlength="120" />
-
-                        <div class="inline-grid">
-                            <select id="camStatus">
-                                <option value="adicionada">Câmera adicionada</option>
-                                <option value="nao-adicionada">Câmera não adicionada</option>
-                            </select>
-
-                            <select id="camGravador">
-                                <option value="adicionado">Gravador adicionado</option>
-                                <option value="nao-adicionado">Gravador não adicionado</option>
-                            </select>
-                        </div>
-
-                        <button class="btn-purple" id="btnCriarCamera" onclick="criarCamera()">Adicionar câmera</button>
-                    </div>
-                </section>
-            </aside>
-
-            <section>
-                <section class="card panel">
-                    <div class="panel-title">
-                        <h3>Lista de câmeras por local</h3>
-                        <span class="pill" id="totalCameras">0 câmera(s)</span>
-                    </div>
-
-                    <div class="filters">
-                        <input type="search" id="buscaCamera" placeholder="Pesquisar por local, tipo, nome ou IP..." oninput="filtrarCameras()" />
-                        <select id="filtroCameraStatus" onchange="filtrarCameras()">
-                            <option value="">Todos os status</option>
-                            <option value="adicionada">Adicionada</option>
-                            <option value="nao-adicionada">Não adicionada</option>
-                        </select>
-                        <select id="filtroCameraGravador" onchange="filtrarCameras()">
-                            <option value="">Todos os gravadores</option>
-                            <option value="adicionado">Gravador adicionado</option>
-                            <option value="nao-adicionado">Gravador não adicionado</option>
-                        </select>
-                    </div>
-
-                    <div id="listaCameras"></div>
-                </section>
             </section>
         </div>
     </section>
@@ -2260,6 +1984,8 @@ async function criarTarefa(){
 
         mostrarMensagem("Atividade criada com sucesso.", "ok");
         await carregarTarefas();
+        el("formNovaAtividade").style.display = "none";
+        el("btnToggleFormAtividade").textContent = "+ Nova atividade";
     }catch(e){
         mostrarMensagem("Erro ao criar tarefa: " + e.message);
     }finally{
@@ -2439,7 +2165,6 @@ async function carregarAgendamentos(){
 
     agendamentosCache = data || [];
     renderizarAgendamentos();
-    renderizarAdminAgendamentos();
 }
 
 function renderizarAgendamentos(){
@@ -2463,44 +2188,12 @@ function renderizarAgendamentos(){
             <td>
                 <strong>${escapar(item.titulo)}</strong><br>
                 <span style="color:var(--muted)">${escapar(item.descricao || "")}</span>
+                <span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span>
             </td>
             <td>${escapar(item.responsavel || "-")}</td>
             <td><span class="tag ${status}">${escapar(status)}</span></td>
             <td>
                 <div class="btn-row">
-                    <button class="btn-success" onclick="alterarStatusAgendamento('${item.id}','concluido')">Concluir</button>
-                    <button class="btn-warning" onclick="alterarStatusAgendamento('${item.id}','pendente')">Pendente</button>
-                    <button class="btn-danger" onclick="apagarAgendamento('${item.id}')">Apagar</button>
-                </div>
-            </td>
-        `;
-
-        tbody.appendChild(tr);
-    });
-}
-
-
-function renderizarAdminAgendamentos(){
-    const tbody = el("tabelaAdminAgendamentos");
-    if(!tbody) return;
-
-    tbody.innerHTML = "";
-    el("totalAdminAgendamentos").textContent = `${agendamentosCache.length} agendamento(s)`;
-
-    if(agendamentosCache.length === 0){
-        tbody.innerHTML = `<tr><td colspan="4">Nenhum agendamento cadastrado.</td></tr>`;
-        return;
-    }
-
-    agendamentosCache.forEach(item => {
-        const status = item.status || "pendente";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${formatarData(item.data)}<br><span style="color:var(--muted)">${escapar(item.hora || "-")}</span></td>
-            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.responsavel || "")}</span><span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span></td>
-            <td><span class="tag ${status}">${escapar(status)}</span></td>
-            <td>
-                <div class="admin-actions">
                     <button class="btn-warning" onclick="editarAgendamento('${item.id}')">Editar</button>
                     <button class="btn-success" onclick="alterarStatusAgendamento('${item.id}','concluido')">Concluir</button>
                     <button class="btn-ghost" onclick="alterarStatusAgendamento('${item.id}','pendente')">Pendente</button>
@@ -2508,6 +2201,7 @@ function renderizarAdminAgendamentos(){
                 </div>
             </td>
         `;
+
         tbody.appendChild(tr);
     });
 }
@@ -2593,6 +2287,8 @@ async function criarAgendamento(){
 
         mostrarMensagem("Agendamento salvo com sucesso.", "ok");
         await carregarAgendamentos();
+        el("formNovoAgendamento").style.display = "none";
+        el("btnToggleFormAgendamento").textContent = "+ Novo agendamento";
     }catch(e){
         mostrarMensagem("Erro ao criar agendamento: " + e.message);
     }finally{
@@ -2635,7 +2331,7 @@ async function apagarAgendamento(id){
 
 
 function abrirAba(nome){
-    const abas = ["Atividades", "Calendario", "Cameras"];
+    const abas = ["Atividades", "Agendamentos", "Calendario", "Configuracoes"];
 
     abas.forEach(aba => {
         const tela = el("tela" + aba);
@@ -2648,6 +2344,33 @@ function abrirAba(nome){
     if(dash) dash.classList.toggle("ativa", nome === "Atividades");
 
     if(nome === "Calendario") renderizarCalendario();
+}
+
+function abrirConfigAba(nome){
+    const abas = ["Equipes", "Cameras", "Atividades"];
+
+    abas.forEach(aba => {
+        const tela = el("config" + aba);
+        const tab = el("subtab" + aba);
+        if(tela) tela.classList.toggle("ativa", aba === nome);
+        if(tab) tab.classList.toggle("ativo", aba === nome);
+    });
+}
+
+function alternarFormAtividade(){
+    const form = el("formNovaAtividade");
+    const visivel = form.style.display !== "none";
+    form.style.display = visivel ? "none" : "grid";
+    el("btnToggleFormAtividade").textContent = visivel ? "+ Nova atividade" : "Fechar formulário";
+    if(!visivel) el("titulo").focus();
+}
+
+function alternarFormAgendamento(){
+    const form = el("formNovoAgendamento");
+    const visivel = form.style.display !== "none";
+    form.style.display = visivel ? "none" : "grid";
+    el("btnToggleFormAgendamento").textContent = visivel ? "+ Novo agendamento" : "Fechar formulário";
+    if(!visivel) el("agTitulo").focus();
 }
 
 function normalizarClasseStatus(status){

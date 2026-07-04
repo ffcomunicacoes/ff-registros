@@ -152,6 +152,38 @@ textarea{
     margin-bottom:20px;
 }
 
+.resumo-atividades{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px 22px;
+    padding:12px 16px;
+    margin-bottom:14px;
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:14px;
+}
+.resumo-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--muted);
+    white-space:nowrap;
+}
+.resumo-item strong{
+    font-size:18px;
+    color:var(--text);
+}
+.resumo-progresso{
+    flex:1;
+    min-width:160px;
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+}
+.resumo-progresso .progress{margin-top:0; height:7px;}
+
 .card{
     background:linear-gradient(180deg, rgba(22,32,51,.96), rgba(15,23,42,.96));
     border:1px solid var(--border);
@@ -634,43 +666,88 @@ body::after{
     margin-bottom:14px;
 }
 
-/* ===== ABA TV ===== */
+/* ===== ABA TV — precisa caber inteira na tela, sem rolagem ===== */
+#telaTV.tela.ativa{
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 210px);
+    min-height:420px;
+    overflow:auto;
+}
+#telaTV .admin-header{
+    flex:0 0 auto;
+    padding:12px 20px;
+    margin-bottom:10px;
+}
+#telaTV .admin-header h2{font-size:19px; line-height:1.2;}
+#telaTV .admin-header p{font-size:12px; margin-top:3px;}
+#telaTV .admin-kicker{font-size:10.5px; margin-bottom:4px;}
+#telaTV .admin-badge{width:42px; height:42px; font-size:20px; border-radius:16px;}
+
 .tv-kpis{
+    flex:0 0 auto;
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(190px, 1fr));
-    gap:14px;
-    margin-bottom:18px;
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    gap:10px;
+    margin-bottom:10px;
 }
-.tv-metric h2{font-size:38px;}
+.tv-metric{padding:10px 14px;}
+.tv-metric span{font-size:11.5px;}
+.tv-metric h2{font-size:26px; margin-top:4px;}
+
 .tv-charts{
+    flex:1 1 auto;
+    min-height:0;
     display:grid;
     grid-template-columns:repeat(2, 1fr);
-    gap:18px;
-    margin-bottom:18px;
+    grid-template-rows:repeat(2, 1fr);
+    gap:10px;
+    margin-bottom:10px;
 }
-.tv-charts .panel{height:320px; display:flex; flex-direction:column;}
+.tv-charts .panel{
+    height:100%;
+    min-height:0;
+    padding:10px 14px;
+    display:flex;
+    flex-direction:column;
+}
+.tv-charts .panel-title{margin-bottom:4px;}
+.tv-charts .panel-title h3{font-size:12.5px;}
 .tv-charts canvas{flex:1; min-height:0; max-width:100%;}
+
 .tv-listas{
+    flex:0 0 auto;
+    max-height:150px;
     display:grid;
     grid-template-columns:repeat(2, 1fr);
-    gap:18px;
+    gap:10px;
 }
+.tv-listas .panel{
+    padding:10px 14px;
+    overflow:auto;
+    max-height:150px;
+}
+.tv-listas .panel-title{margin-bottom:6px;}
+.tv-listas .panel-title h3{font-size:12.5px;}
 .tv-item{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:12px;
-    padding:12px 14px;
-    border-radius:12px;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:10px;
     background:rgba(15,23,42,.55);
     border:1px solid rgba(148,163,184,.16);
-    margin-bottom:10px;
+    margin-bottom:6px;
+    font-size:12px;
 }
 .tv-item:last-child{margin-bottom:0;}
-.tv-item strong{display:block;}
-.tv-item span.tv-sub{color:var(--muted); font-size:12.5px;}
+.tv-item strong{display:block; font-size:12.5px;}
+.tv-item span.tv-sub{color:var(--muted); font-size:11px;}
 @media(max-width:1000px){
-    .tv-charts, .tv-listas{grid-template-columns:1fr;}
+    #telaTV.tela.ativa{height:auto; overflow:visible;}
+    .tv-charts, .tv-listas{grid-template-columns:1fr; grid-template-rows:none;}
+    .tv-charts .panel{height:220px;}
 }
 
 .camera-grid{
@@ -1131,18 +1208,6 @@ body::after{
         <button class="tab-btn" id="tabConfiguracoes" onclick="abrirAba('Configuracoes')">⚙️ Configurações</button>
     </nav>
 
-    <section class="grid-dashboard tela ativa" id="telaAtividadesDashboard">
-        <div class="card metric"><span>Total de Atividades</span><h2 id="total">0</h2></div>
-        <div class="card metric"><span>A Fazer</span><h2 id="todoCount">0</h2></div>
-        <div class="card metric"><span>Fazendo</span><h2 id="doingCount">0</h2></div>
-        <div class="card metric"><span>Concluído</span><h2 id="doneCount">0</h2></div>
-        <div class="card metric">
-            <span>Progresso</span>
-            <h2 id="progressText">0%</h2>
-            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
-        </div>
-    </section>
-
     <main class="layout tela ativa" id="telaAtividades">
         <section>
             <section class="card panel">
@@ -1151,6 +1216,17 @@ body::after{
                     <div class="btn-row">
                         <span id="ultimaAtualizacao" class="pill">--</span>
                         <button onclick="alternarFormAtividade()" id="btnToggleFormAtividade">+ Nova atividade</button>
+                    </div>
+                </div>
+
+                <div class="resumo-atividades">
+                    <div class="resumo-item"><span>Total</span><strong id="total">0</strong></div>
+                    <div class="resumo-item"><span>A Fazer</span><strong id="todoCount">0</strong></div>
+                    <div class="resumo-item"><span>Fazendo</span><strong id="doingCount">0</strong></div>
+                    <div class="resumo-item"><span>Concluído</span><strong id="doneCount">0</strong></div>
+                    <div class="resumo-item resumo-progresso">
+                        <span>Progresso <strong id="progressText">0%</strong></span>
+                        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
                     </div>
                 </div>
 
@@ -2436,9 +2512,6 @@ function abrirAba(nome){
         if(tela) tela.classList.toggle("ativa", aba === nome);
         if(tab) tab.classList.toggle("ativo", aba === nome);
     });
-
-    const dash = el("telaAtividadesDashboard");
-    if(dash) dash.classList.toggle("ativa", nome === "Atividades");
 
     if(nome === "Calendario") renderizarCalendario();
     if(nome === "TV") renderizarTV();

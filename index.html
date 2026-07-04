@@ -1058,11 +1058,270 @@ body{
 .tag.adicionada,.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
 @media(max-width:1150px){.admin-manager-grid{grid-template-columns:1fr}}
 
+
+/* ===== TELA DE LOGIN ===== */
+.login-bg{
+    position:fixed;
+    inset:0;
+    z-index:2000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:
+        radial-gradient(circle at 15% 20%, rgba(34,211,238,.28), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(139,92,246,.28), transparent 32%),
+        linear-gradient(135deg,#020617 0%,#0b1120 50%,#111827 100%);
+}
+.login-bg.oculto{display:none;}
+.login-box{
+    width:min(420px,100%);
+    background:linear-gradient(180deg,#17233a,#0f172a);
+    border:1px solid rgba(148,163,184,.28);
+    border-radius:24px;
+    box-shadow:0 30px 90px rgba(0,0,0,.55);
+    padding:32px 28px;
+    animation:modalZoom .3s ease both;
+}
+.login-box .logo-area{
+    justify-content:center;
+    margin-bottom:10px;
+}
+.login-box h2{
+    text-align:center;
+    font-size:22px;
+    margin:14px 0 4px;
+}
+.login-box p.sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:22px;
+}
+.login-box .form-grid{margin-bottom:6px;}
+.login-box button{width:100%;margin-top:6px;}
+.login-erro{
+    display:none;
+    background:rgba(127,29,29,.8);
+    border:1px solid rgba(239,68,68,.75);
+    padding:11px 13px;
+    border-radius:12px;
+    font-size:13px;
+    margin-bottom:14px;
+}
+.login-erro.ativo{display:block;}
+.login-dica{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px dashed var(--border);
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+    text-align:center;
+}
+
+/* Usuário logado na topbar */
+.user-pill{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--border);
+    background:rgba(22,32,51,.85);
+    padding:6px 8px 6px 14px;
+    border-radius:999px;
+}
+.user-pill .user-avatar{
+    width:26px;height:26px;border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),var(--purple));
+    display:grid;place-items:center;
+    font-size:12px;font-weight:800;
+}
+.user-pill button{
+    padding:6px 12px;
+    font-size:12px;
+    border-radius:999px;
+    background:rgba(239,68,68,.16);
+    color:#fca5a5;
+}
+
+/* ===== ABA CALENDÁRIO ===== */
+#telaCalendario{overflow:auto;padding-bottom:18px;max-height:calc(100vh - 170px);}
+#telaCalendario::-webkit-scrollbar{width:10px}
+#telaCalendario::-webkit-scrollbar-thumb{background:rgba(148,163,184,.35);border-radius:99px}
+
+.cal-layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:20px;
+    align-items:start;
+}
+@media(max-width:1150px){.cal-layout{grid-template-columns:1fr}}
+
+.cal-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+.cal-nav{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.cal-nav button{
+    padding:9px 14px;
+    background:rgba(22,32,51,.85);
+    border:1px solid var(--border);
+    color:var(--text);
+}
+.cal-nav .cal-titulo{
+    font-weight:800;
+    font-size:16px;
+    min-width:190px;
+    text-align:center;
+}
+.cal-filtro-equipe{max-width:240px;}
+
+.cal-semana{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+}
+.cal-dia{
+    background:linear-gradient(180deg, rgba(22,32,51,.85), rgba(15,23,42,.9));
+    border:1px solid var(--border);
+    border-radius:16px;
+    min-height:200px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.cal-dia.hoje{
+    border-color:var(--primary-2);
+    box-shadow:0 0 0 2px rgba(59,130,246,.25) inset;
+}
+.cal-dia-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    padding-bottom:6px;
+    border-bottom:1px solid rgba(148,163,184,.16);
+}
+.cal-dia-header strong{
+    font-size:15px;
+    color:var(--text);
+    text-transform:none;
+    letter-spacing:0;
+}
+.cal-evento{
+    border-radius:12px;
+    padding:9px 10px;
+    font-size:12.5px;
+    line-height:1.4;
+    color:#f8fafc;
+    border-left:4px solid var(--primary);
+    background:rgba(59,130,246,.14);
+    cursor:pointer;
+    transition:.15s;
+}
+.cal-evento:hover{
+    transform:translateY(-1px);
+    background:rgba(59,130,246,.22);
+}
+.cal-evento .cal-evento-os{
+    display:inline-block;
+    font-weight:800;
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:2px;
+}
+.cal-evento .cal-evento-titulo{
+    font-weight:700;
+    margin-bottom:2px;
+    word-break:break-word;
+}
+.cal-evento .cal-evento-hora{
+    color:var(--muted);
+    font-size:11px;
+}
+.cal-evento.status-concluido{opacity:.6; border-left-color:var(--success);}
+.cal-evento.status-cancelado{opacity:.55; border-left-color:var(--danger); text-decoration:line-through;}
+.cal-evento.status-em_andamento{border-left-color:var(--warning);}
+
+.cal-lista-vazia{
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+    padding:10px 4px;
+    border:1px dashed rgba(148,163,184,.25);
+    border-radius:10px;
+}
+
+.equipe-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.equipe-cor-swatch{
+    width:14px;height:14px;border-radius:50%;
+    display:inline-block;
+    border:1px solid rgba(255,255,255,.4);
+}
+
+.legenda-equipes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:16px;
+}
+
+.auditoria{
+    color:var(--muted);
+    font-size:11px;
+    margin-top:6px;
+    display:block;
+}
 </style>
 </head>
 
 <body>
-<div class="app">
+
+<div class="login-bg" id="telaLogin">
+    <div class="login-box">
+        <div class="logo-area">
+            <div class="logo-icon">📋</div>
+        </div>
+        <h2>FF Registro</h2>
+        <p class="sub">Entre com sua conta para acessar o painel</p>
+
+        <div class="login-erro" id="loginErro"></div>
+
+        <div class="form-grid">
+            <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="username" />
+            <input type="password" id="loginSenha" placeholder="Senha" autocomplete="current-password" />
+            <button id="btnLogin" onclick="fazerLogin()">Entrar</button>
+        </div>
+
+        <div class="login-dica">
+            Acesso restrito à equipe. Todas as ações ficam registradas com o usuário que realizou a edição.<br>
+            Esqueceu a senha ou precisa de um acesso novo? Fale com o administrador do sistema.
+        </div>
+    </div>
+</div>
+
+<div class="app" id="appPrincipal" style="display:none">
     <header class="topbar">
         <div class="logo-area">
             <div class="logo-icon">📋</div>
@@ -1075,6 +1334,11 @@ body{
         <div class="status-area">
             <div class="pill" id="statusConexao">Conectando...</div>
             <button class="btn-ghost" onclick="carregarTudo()">Atualizar</button>
+            <div class="user-pill" id="userPill" style="display:none">
+                <span class="user-avatar" id="userAvatar">?</span>
+                <span id="userNomeLabel">-</span>
+                <button onclick="fazerLogout()">Sair</button>
+            </div>
         </div>
     </header>
 
@@ -1083,6 +1347,7 @@ body{
 
     <nav class="tabs">
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
+        <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🗓️ Calendário</button>
         <button class="tab-btn" id="tabCameras" onclick="abrirAba('Cameras')">⚙️ Cadastros</button>
     </nav>
 
@@ -1168,6 +1433,111 @@ body{
     </main>
 
 
+    <section class="tela" id="telaCalendario">
+
+        <div class="admin-header card">
+            <div>
+                <span class="admin-kicker">Cronograma das equipes</span>
+                <h2>Calendário de agendas CFTV</h2>
+                <p>Direcione atividades e O.S. para as equipes de campo por dia e horário.</p>
+            </div>
+            <div class="admin-badge">🗓️</div>
+        </div>
+
+        <div class="cal-layout">
+            <aside class="side">
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Nova escala</h3>
+                        <span class="badge">+</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <select id="escEquipe"></select>
+                        <input type="text" id="escOs" placeholder="Nº da O.S." maxlength="60" />
+                        <input type="text" id="escTitulo" placeholder="Título / serviço" maxlength="120" />
+                        <textarea id="escDescricao" placeholder="Descrição / observações"></textarea>
+                        <input type="text" id="escLocal" placeholder="Local. Ex: Totem Guarajuba" maxlength="140" />
+
+                        <div class="inline-grid">
+                            <input type="date" id="escData" />
+                            <input type="time" id="escHoraInicio" />
+                        </div>
+
+                        <div class="inline-grid">
+                            <input type="time" id="escHoraFim" />
+                            <select id="escStatus">
+                                <option value="agendado">Agendado</option>
+                                <option value="em_andamento">Em andamento</option>
+                                <option value="concluido">Concluído</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-purple" id="btnCriarEscala" onclick="criarEscala()">Agendar equipe</button>
+                    </div>
+                </section>
+
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Legenda de equipes</h3>
+                        <span class="badge" id="totalEquipesLegenda">0</span>
+                    </div>
+                    <div class="legenda-equipes" id="legendaEquipes">
+                        <span class="cal-lista-vazia" style="width:100%">Cadastre equipes em Cadastros.</span>
+                    </div>
+                </section>
+            </aside>
+
+            <section>
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Semana de agendamentos</h3>
+                        <span class="pill" id="totalEscalasSemana">0 escala(s)</span>
+                    </div>
+
+                    <div class="cal-toolbar">
+                        <div class="cal-nav">
+                            <button class="btn-ghost" onclick="navegarSemana(-1)">← Semana anterior</button>
+                            <span class="cal-titulo" id="calTituloSemana">--</span>
+                            <button class="btn-ghost" onclick="navegarSemana(1)">Próxima semana →</button>
+                            <button class="btn-ghost" onclick="irParaHoje()">Hoje</button>
+                        </div>
+                        <select id="filtroEscalaEquipe" class="cal-filtro-equipe" onchange="renderizarCalendario()">
+                            <option value="">Todas as equipes</option>
+                        </select>
+                    </div>
+
+                    <div class="cal-semana" id="calSemana"></div>
+                </section>
+
+                <section class="card panel" style="margin-top:20px">
+                    <div class="admin-section-title">
+                        <h3>Gerenciar escalas</h3>
+                        <span class="pill" id="totalAdminEscalas">0 escala(s)</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Equipe</th>
+                                    <th>O.S. / Título</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAdminEscalas">
+                                <tr><td colspan="5">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </section>
+
+
     <section class="tela" id="telaCameras">
 
         <div class="admin-header card">
@@ -1224,6 +1594,29 @@ body{
                     <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
                 </div>
             </section>
+
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Nova equipe CFTV</h3>
+                    <span class="badge">👥</span>
+                </div>
+
+                <div class="form-grid">
+                    <input type="text" id="eqNome" placeholder="Nome da equipe. Ex: Equipe Instalação 1" maxlength="90" />
+
+                    <div class="inline-grid">
+                        <input type="text" id="eqEspecialidade" placeholder="Especialidade. Ex: Instalação, Manutenção" maxlength="80" />
+                        <input type="text" id="eqResponsavel" placeholder="Responsável / líder" maxlength="80" />
+                    </div>
+
+                    <div class="inline-grid">
+                        <input type="text" id="eqTelefone" placeholder="Telefone de contato" maxlength="40" />
+                        <input type="color" id="eqCor" value="#2563eb" title="Cor da equipe no calendário" />
+                    </div>
+
+                    <button class="btn-purple" id="btnCriarEquipe" onclick="criarEquipe()">Adicionar equipe</button>
+                </div>
+            </section>
         </aside>
 
 
@@ -1267,6 +1660,29 @@ body{
                         </thead>
                         <tbody id="tabelaAdminAgendamentos">
                             <tr><td colspan="4">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card panel">
+                <div class="admin-section-title">
+                    <h3>Gerenciar equipes CFTV</h3>
+                    <span class="pill" id="totalAdminEquipes">0 equipe(s)</span>
+                </div>
+                <div class="table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Equipe</th>
+                                <th>Especialidade</th>
+                                <th>Responsável</th>
+                                <th>Status</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaAdminEquipes">
+                            <tr><td colspan="5">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -1419,6 +1835,63 @@ body{
     </div>
 </div>
 
+<div class="modal-bg" id="modalEditarEscala">
+    <div class="modal">
+        <h3>Editar escala da equipe</h3>
+        <div class="form-grid">
+            <input type="hidden" id="editEscId" />
+            <select id="editEscEquipe"></select>
+            <input type="text" id="editEscOs" placeholder="Nº da O.S." maxlength="60" />
+            <input type="text" id="editEscTitulo" placeholder="Título / serviço" maxlength="120" />
+            <textarea id="editEscDescricao" placeholder="Descrição / observações"></textarea>
+            <input type="text" id="editEscLocal" placeholder="Local" maxlength="140" />
+            <div class="inline-grid">
+                <input type="date" id="editEscData" />
+                <input type="time" id="editEscHoraInicio" />
+            </div>
+            <div class="inline-grid">
+                <input type="time" id="editEscHoraFim" />
+                <select id="editEscStatus">
+                    <option value="agendado">Agendado</option>
+                    <option value="em_andamento">Em andamento</option>
+                    <option value="concluido">Concluído</option>
+                    <option value="cancelado">Cancelado</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="fecharModalEditarEscala()">Cancelar</button>
+                <button class="btn-success" id="btnSalvarEscalaEdicao" onclick="salvarEdicaoEscala()">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-bg" id="modalEditarEquipe">
+    <div class="modal">
+        <h3>Editar equipe</h3>
+        <div class="form-grid">
+            <input type="hidden" id="editEqId" />
+            <input type="text" id="editEqNome" placeholder="Nome da equipe" maxlength="90" />
+            <div class="inline-grid">
+                <input type="text" id="editEqEspecialidade" placeholder="Especialidade" maxlength="80" />
+                <input type="text" id="editEqResponsavel" placeholder="Responsável / líder" maxlength="80" />
+            </div>
+            <div class="inline-grid">
+                <input type="text" id="editEqTelefone" placeholder="Telefone" maxlength="40" />
+                <input type="color" id="editEqCor" />
+            </div>
+            <select id="editEqAtivo">
+                <option value="true">Ativa</option>
+                <option value="false">Inativa</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="fecharModalEditarEquipe()">Cancelar</button>
+                <button class="btn-success" id="btnSalvarEquipeEdicao" onclick="salvarEdicaoEquipe()">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <footer>FF Registro © 2026 - Gestão de Atividades</footer>
 </div>
@@ -1431,7 +1904,11 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let tarefasCache = [];
 let agendamentosCache = [];
 let camerasCache = [];
+let equipesCache = [];
+let escalasCache = [];
 let carregando = false;
+let currentUser = null;
+let semanaOffset = 0;
 
 const STATUS_LABEL = {
     todo: "A fazer",
@@ -1439,11 +1916,20 @@ const STATUS_LABEL = {
     done: "Concluído"
 };
 
+const ESCALA_STATUS_LABEL = {
+    agendado: "Agendado",
+    em_andamento: "Em andamento",
+    concluido: "Concluído",
+    cancelado: "Cancelado"
+};
+
 const PRIORIDADE_COR = {
     alta: "var(--danger)",
     normal: "var(--primary)",
     baixa: "var(--success)"
 };
+
+const DIAS_SEMANA = ["Domingo","Segunda","Terça","Quarta","Quinta","Sexta","Sábado"];
 
 function el(id){
     return document.getElementById(id);
@@ -1503,15 +1989,129 @@ function setLoading(botaoId, ativo, textoLoading = "Salvando..."){
     }
 }
 
+/* ===================== AUTENTICAÇÃO ===================== */
+
+function mostrarErroLogin(texto){
+    const box = el("loginErro");
+    box.textContent = texto;
+    box.classList.add("ativo");
+}
+
+function limparErroLogin(){
+    const box = el("loginErro");
+    box.textContent = "";
+    box.classList.remove("ativo");
+}
+
+function mostrarTelaLogin(){
+    el("telaLogin").classList.remove("oculto");
+    el("appPrincipal").style.display = "none";
+}
+
+function esconderTelaLogin(){
+    el("telaLogin").classList.add("oculto");
+    el("appPrincipal").style.display = "";
+}
+
+function iniciaisNome(nome){
+    if(!nome) return "?";
+    const partes = nome.trim().split(/\s+/);
+    return (partes[0][0] + (partes[1] ? partes[1][0] : "")).toUpperCase();
+}
+
+async function fazerLogin(){
+    limparErroLogin();
+    const email = el("loginEmail").value.trim();
+    const senha = el("loginSenha").value;
+
+    if(!email || !senha){
+        mostrarErroLogin("Informe e-mail e senha.");
+        return;
+    }
+
+    setLoading("btnLogin", true, "Entrando...");
+
+    try{
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
+        if(error) throw error;
+        el("loginSenha").value = "";
+    }catch(e){
+        mostrarErroLogin("Não foi possível entrar: verifique e-mail e senha.");
+    }finally{
+        setLoading("btnLogin", false, "Entrando...");
+    }
+}
+
+async function fazerLogout(){
+    if(!confirm("Deseja sair da sua conta?")) return;
+    await supabaseClient.auth.signOut();
+}
+
+async function tratarSessao(session){
+    if(!session){
+        currentUser = null;
+        mostrarTelaLogin();
+        return;
+    }
+
+    currentUser = {
+        id: session.user.id,
+        email: session.user.email,
+        nome: session.user.email
+    };
+
+    try{
+        const { data } = await supabaseClient
+            .from("perfis")
+            .select("nome")
+            .eq("id", session.user.id)
+            .single();
+        if(data && data.nome) currentUser.nome = data.nome;
+    }catch(e){
+        /* perfil pode não existir ainda; usa o e-mail */
+    }
+
+    el("userNomeLabel").textContent = currentUser.nome;
+    el("userAvatar").textContent = iniciaisNome(currentUser.nome);
+    el("userPill").style.display = "flex";
+
+    esconderTelaLogin();
+    carregarTudo();
+}
+
+async function initAuth(){
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if(session){
+        await tratarSessao(session);
+    }else{
+        mostrarTelaLogin();
+    }
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if(event === "SIGNED_IN"){
+            tratarSessao(session);
+        }else if(event === "SIGNED_OUT"){
+            currentUser = null;
+            el("userPill").style.display = "none";
+            mostrarTelaLogin();
+        }
+    });
+}
+
+function nomeUsuarioAtual(){
+    return currentUser ? currentUser.nome : "Desconhecido";
+}
+
 async function carregarTudo(){
-    if(carregando) return;
+    if(carregando || !currentUser) return;
 
     carregando = true;
     limparMensagem();
     el("statusConexao").textContent = "Sincronizando...";
 
     try{
-        await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras()]);
+        await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEquipes(), carregarEscalas()]);
         el("statusConexao").textContent = "Online";
         el("ultimaAtualizacao").textContent = "Atualizado: " + hojeBR();
     }catch(e){
@@ -1617,7 +2217,7 @@ function renderizarAdminAtividades(){
         const prioridade = item.prioridade || "normal";
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.descricao || "")}</span></td>
+            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.descricao || "")}</span><span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span></td>
             <td>${STATUS_LABEL[status] || "A fazer"}</td>
             <td>${escapar(prioridade)}</td>
             <td>
@@ -1649,7 +2249,7 @@ async function criarTarefa(){
     try{
         const { error } = await supabaseClient
             .from("tarefas")
-            .insert([{ titulo, descricao, prioridade, prazo, status:"todo", inicio:new Date().toISOString() }]);
+            .insert([{ titulo, descricao, prioridade, prazo, status:"todo", inicio:new Date().toISOString(), criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
@@ -1703,7 +2303,7 @@ async function salvarEdicaoTarefa(){
     try{
         const { error } = await supabaseClient
             .from("tarefas")
-            .update({ titulo, descricao, prioridade, prazo })
+            .update({ titulo, descricao, prioridade, prazo, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -1722,7 +2322,7 @@ async function moverTarefa(id, status){
     try{
         const { error } = await supabaseClient
             .from("tarefas")
-            .update({ status })
+            .update({ status, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -1814,7 +2414,7 @@ async function drop(ev){
     try{
         const { error } = await supabaseClient
             .from("tarefas")
-            .update({ status: novoStatus })
+            .update({ status: novoStatus, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -1897,7 +2497,7 @@ function renderizarAdminAgendamentos(){
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td>${formatarData(item.data)}<br><span style="color:var(--muted)">${escapar(item.hora || "-")}</span></td>
-            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.responsavel || "")}</span></td>
+            <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.responsavel || "")}</span><span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span></td>
             <td><span class="tag ${status}">${escapar(status)}</span></td>
             <td>
                 <div class="admin-actions">
@@ -1949,7 +2549,7 @@ async function salvarEdicaoAgendamento(){
     try{
         const { error } = await supabaseClient
             .from("agendamentos")
-            .update({ titulo, descricao, data, hora, responsavel, status })
+            .update({ titulo, descricao, data, hora, responsavel, status, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -1981,7 +2581,7 @@ async function criarAgendamento(){
     try{
         const { error } = await supabaseClient
             .from("agendamentos")
-            .insert([{ titulo, descricao, data, hora, responsavel, status:"pendente" }]);
+            .insert([{ titulo, descricao, data, hora, responsavel, status:"pendente", criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
@@ -2004,7 +2604,7 @@ async function alterarStatusAgendamento(id, status){
     try{
         const { error } = await supabaseClient
             .from("agendamentos")
-            .update({ status })
+            .update({ status, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -2035,7 +2635,7 @@ async function apagarAgendamento(id){
 
 
 function abrirAba(nome){
-    const abas = ["Atividades", "Cameras"];
+    const abas = ["Atividades", "Calendario", "Cameras"];
 
     abas.forEach(aba => {
         const tela = el("tela" + aba);
@@ -2046,6 +2646,8 @@ function abrirAba(nome){
 
     const dash = el("telaAtividadesDashboard");
     if(dash) dash.classList.toggle("ativa", nome === "Atividades");
+
+    if(nome === "Calendario") renderizarCalendario();
 }
 
 function normalizarClasseStatus(status){
@@ -2142,6 +2744,7 @@ function renderizarCameras(lista){
                     <strong>Localização:</strong> ${escapar(item.localizacao || "-")}<br>
                     <strong>Status:</strong> <span class="tag ${statusCamera}">${statusCamera === "adicionada" ? "Adicionada" : "Não adicionada"}</span>
                     <strong style="margin-left:8px">Gravador:</strong> <span class="tag ${statusGravador}">${statusGravador === "adicionado" ? "Adicionado" : "Não adicionado"}</span>
+                    <span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span>
                 </div>
 
                 <div class="copy-row">
@@ -2180,7 +2783,7 @@ async function criarCamera(){
     try{
         const { error } = await supabaseClient
             .from("cameras")
-            .insert([{ nome_local, tipo, nome_camera, ip, descricao, localizacao, status_camera, status_gravador }]);
+            .insert([{ nome_local, tipo, nome_camera, ip, descricao, localizacao, status_camera, status_gravador, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
@@ -2247,7 +2850,7 @@ async function salvarEdicaoCamera(){
     try{
         const { error } = await supabaseClient
             .from("cameras")
-            .update({ nome_local, tipo, nome_camera, ip, descricao, localizacao, status_camera, status_gravador })
+            .update({ nome_local, tipo, nome_camera, ip, descricao, localizacao, status_camera, status_gravador, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -2282,6 +2885,488 @@ async function apagarCamera(id){
 
 
 
+/* ===================== EQUIPES CFTV ===================== */
+
+async function carregarEquipes(){
+    const { data, error } = await supabaseClient
+        .from("equipes")
+        .select("*")
+        .order("nome", { ascending:true });
+
+    if(error) throw error;
+
+    equipesCache = data || [];
+    renderizarSelectsEquipes();
+    renderizarAdminEquipes();
+    renderizarLegendaEquipes();
+}
+
+function corEquipe(item){
+    return (item && item.cor) ? item.cor : "#2563eb";
+}
+
+function renderizarSelectsEquipes(){
+    const selects = [el("escEquipe"), el("editEscEquipe"), el("filtroEscalaEquipe")];
+    const ativas = equipesCache.filter(e => e.ativo !== false);
+
+    selects.forEach(select => {
+        if(!select) return;
+        const valorAtual = select.value;
+        const ehFiltro = select.id === "filtroEscalaEquipe";
+
+        select.innerHTML = ehFiltro ? `<option value="">Todas as equipes</option>` : "";
+
+        if(!ehFiltro && ativas.length === 0){
+            select.innerHTML = `<option value="">Cadastre uma equipe primeiro</option>`;
+        }
+
+        ativas.forEach(eq => {
+            const opt = document.createElement("option");
+            opt.value = eq.id;
+            opt.textContent = eq.nome + (eq.especialidade ? " · " + eq.especialidade : "");
+            select.appendChild(opt);
+        });
+
+        if(valorAtual) select.value = valorAtual;
+    });
+}
+
+function renderizarLegendaEquipes(){
+    const box = el("legendaEquipes");
+    if(!box) return;
+
+    el("totalEquipesLegenda").textContent = equipesCache.length;
+
+    if(equipesCache.length === 0){
+        box.innerHTML = `<span class="cal-lista-vazia" style="width:100%">Cadastre equipes em Cadastros.</span>`;
+        return;
+    }
+
+    box.innerHTML = equipesCache.map(eq => `
+        <span class="equipe-chip" style="background:${corEquipe(eq)}22;color:${corEquipe(eq)}">
+            <span class="equipe-cor-swatch" style="background:${corEquipe(eq)}"></span>
+            ${escapar(eq.nome)}${eq.ativo === false ? " (inativa)" : ""}
+        </span>
+    `).join("");
+}
+
+function renderizarAdminEquipes(){
+    const tbody = el("tabelaAdminEquipes");
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+    el("totalAdminEquipes").textContent = `${equipesCache.length} equipe(s)`;
+
+    if(equipesCache.length === 0){
+        tbody.innerHTML = `<tr><td colspan="5">Nenhuma equipe cadastrada.</td></tr>`;
+        return;
+    }
+
+    equipesCache.forEach(item => {
+        const tr = document.createElement("tr");
+        const ativo = item.ativo !== false;
+        tr.innerHTML = `
+            <td><span class="equipe-cor-swatch" style="background:${corEquipe(item)}"></span> <strong>${escapar(item.nome)}</strong>${item.telefone ? `<br><span style="color:var(--muted)">${escapar(item.telefone)}</span>` : ""}</td>
+            <td>${escapar(item.especialidade || "-")}</td>
+            <td>${escapar(item.responsavel || "-")}</td>
+            <td><span class="tag ${ativo ? "concluido" : "cancelado"}">${ativo ? "Ativa" : "Inativa"}</span></td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn-warning" onclick="editarEquipe('${item.id}')">Editar</button>
+                    <button class="btn-danger" onclick="apagarEquipe('${item.id}')">Apagar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function criarEquipe(){
+    const nome = el("eqNome").value.trim();
+    const especialidade = el("eqEspecialidade").value.trim();
+    const responsavel = el("eqResponsavel").value.trim();
+    const telefone = el("eqTelefone").value.trim();
+    const cor = el("eqCor").value || "#2563eb";
+
+    if(!nome){
+        mostrarMensagem("Informe o nome da equipe.");
+        el("eqNome").focus();
+        return;
+    }
+
+    setLoading("btnCriarEquipe", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("equipes")
+            .insert([{ nome, especialidade, responsavel, telefone, cor, ativo:true, criado_por: nomeUsuarioAtual() }]);
+
+        if(error) throw error;
+
+        el("eqNome").value = "";
+        el("eqEspecialidade").value = "";
+        el("eqResponsavel").value = "";
+        el("eqTelefone").value = "";
+        el("eqCor").value = "#2563eb";
+
+        mostrarMensagem("Equipe adicionada com sucesso.", "ok");
+        await carregarEquipes();
+        renderizarCalendario();
+    }catch(e){
+        mostrarMensagem("Erro ao adicionar equipe: " + e.message);
+    }finally{
+        setLoading("btnCriarEquipe", false);
+    }
+}
+
+function editarEquipe(id){
+    const item = equipesCache.find(e => e.id === id);
+    if(!item) return;
+
+    el("editEqId").value = item.id;
+    el("editEqNome").value = item.nome || "";
+    el("editEqEspecialidade").value = item.especialidade || "";
+    el("editEqResponsavel").value = item.responsavel || "";
+    el("editEqTelefone").value = item.telefone || "";
+    el("editEqCor").value = corEquipe(item);
+    el("editEqAtivo").value = item.ativo === false ? "false" : "true";
+    el("modalEditarEquipe").classList.add("ativo");
+}
+
+function fecharModalEditarEquipe(){
+    el("modalEditarEquipe").classList.remove("ativo");
+}
+
+async function salvarEdicaoEquipe(){
+    const id = el("editEqId").value;
+    const nome = el("editEqNome").value.trim();
+    const especialidade = el("editEqEspecialidade").value.trim();
+    const responsavel = el("editEqResponsavel").value.trim();
+    const telefone = el("editEqTelefone").value.trim();
+    const cor = el("editEqCor").value || "#2563eb";
+    const ativo = el("editEqAtivo").value === "true";
+
+    if(!nome){
+        mostrarMensagem("Informe o nome da equipe.");
+        return;
+    }
+
+    setLoading("btnSalvarEquipeEdicao", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("equipes")
+            .update({ nome, especialidade, responsavel, telefone, cor, ativo })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        fecharModalEditarEquipe();
+        mostrarMensagem("Equipe atualizada com sucesso.", "ok");
+        await carregarEquipes();
+        renderizarCalendario();
+    }catch(e){
+        mostrarMensagem("Erro ao editar equipe: " + e.message);
+    }finally{
+        setLoading("btnSalvarEquipeEdicao", false);
+    }
+}
+
+async function apagarEquipe(id){
+    if(!confirm("Deseja apagar esta equipe? As escalas vinculadas ficarão sem equipe definida.")) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("equipes")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Equipe apagada.", "ok");
+        await carregarEquipes();
+        await carregarEscalas();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar equipe: " + e.message);
+    }
+}
+
+
+/* ===================== CALENDÁRIO / ESCALAS ===================== */
+
+function inicioDaSemana(data){
+    const d = new Date(data);
+    const diaSemana = d.getDay();
+    d.setDate(d.getDate() - diaSemana);
+    d.setHours(0,0,0,0);
+    return d;
+}
+
+function formatarDataISO(data){
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`;
+}
+
+async function carregarEscalas(){
+    const { data, error } = await supabaseClient
+        .from("escalas")
+        .select("*")
+        .order("data", { ascending:true })
+        .order("hora_inicio", { ascending:true });
+
+    if(error) throw error;
+
+    escalasCache = data || [];
+    renderizarCalendario();
+    renderizarAdminEscalas();
+}
+
+function equipePorId(id){
+    return equipesCache.find(e => e.id === id);
+}
+
+function renderizarCalendario(){
+    const container = el("calSemana");
+    if(!container) return;
+
+    const base = new Date();
+    base.setDate(base.getDate() + (semanaOffset * 7));
+    const inicio = inicioDaSemana(base);
+
+    const hojeISO = formatarDataISO(new Date());
+    const filtroEquipe = el("filtroEscalaEquipe")?.value || "";
+
+    const fimSemana = new Date(inicio);
+    fimSemana.setDate(fimSemana.getDate() + 6);
+    el("calTituloSemana").textContent = `${inicio.toLocaleDateString("pt-BR")} - ${fimSemana.toLocaleDateString("pt-BR")}`;
+
+    let totalSemana = 0;
+    container.innerHTML = "";
+
+    for(let i = 0; i < 7; i++){
+        const dia = new Date(inicio);
+        dia.setDate(dia.getDate() + i);
+        const diaISO = formatarDataISO(dia);
+
+        const eventosDoDia = escalasCache.filter(esc => esc.data === diaISO && (!filtroEquipe || esc.equipe_id === filtroEquipe));
+        totalSemana += eventosDoDia.length;
+
+        const colDia = document.createElement("div");
+        colDia.className = "cal-dia" + (diaISO === hojeISO ? " hoje" : "");
+
+        let htmlEventos = "";
+        if(eventosDoDia.length === 0){
+            htmlEventos = `<div class="cal-lista-vazia">Sem escalas</div>`;
+        }else{
+            htmlEventos = eventosDoDia.map(esc => {
+                const equipe = equipePorId(esc.equipe_id);
+                const cor = corEquipe(equipe);
+                return `
+                    <div class="cal-evento status-${esc.status || 'agendado'}" style="border-left-color:${cor};background:${cor}22" onclick="editarEscala('${esc.id}')">
+                        ${esc.os_numero ? `<span class="cal-evento-os">O.S. ${escapar(esc.os_numero)}</span>` : ""}
+                        <div class="cal-evento-titulo">${escapar(esc.titulo)}</div>
+                        <div class="cal-evento-hora">${esc.hora_inicio ? esc.hora_inicio.slice(0,5) : "--"}${esc.hora_fim ? " às " + esc.hora_fim.slice(0,5) : ""}</div>
+                        <div class="cal-evento-hora">${equipe ? escapar(equipe.nome) : "Sem equipe"}</div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        colDia.innerHTML = `
+            <div class="cal-dia-header">
+                <span>${DIAS_SEMANA[i]}</span>
+                <strong>${dia.getDate()}/${dia.getMonth()+1}</strong>
+            </div>
+            ${htmlEventos}
+        `;
+
+        container.appendChild(colDia);
+    }
+
+    el("totalEscalasSemana").textContent = `${totalSemana} escala(s)`;
+}
+
+function navegarSemana(direcao){
+    semanaOffset += direcao;
+    renderizarCalendario();
+}
+
+function irParaHoje(){
+    semanaOffset = 0;
+    renderizarCalendario();
+}
+
+function renderizarAdminEscalas(){
+    const tbody = el("tabelaAdminEscalas");
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+    el("totalAdminEscalas").textContent = `${escalasCache.length} escala(s)`;
+
+    if(escalasCache.length === 0){
+        tbody.innerHTML = `<tr><td colspan="5">Nenhuma escala cadastrada.</td></tr>`;
+        return;
+    }
+
+    escalasCache.forEach(item => {
+        const equipe = equipePorId(item.equipe_id);
+        const status = item.status || "agendado";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${formatarData(item.data)}<br><span style="color:var(--muted)">${item.hora_inicio ? item.hora_inicio.slice(0,5) : "-"}${item.hora_fim ? " às " + item.hora_fim.slice(0,5) : ""}</span></td>
+            <td>${equipe ? `<span class="equipe-cor-swatch" style="background:${corEquipe(equipe)}"></span> ${escapar(equipe.nome)}` : "Sem equipe"}</td>
+            <td><strong>${item.os_numero ? "O.S. " + escapar(item.os_numero) + " · " : ""}${escapar(item.titulo)}</strong><br><span style="color:var(--muted)">${escapar(item.local || "")}</span><span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span></td>
+            <td><span class="tag ${status === 'concluido' ? 'concluido' : (status === 'cancelado' ? 'cancelado' : 'pendente')}">${ESCALA_STATUS_LABEL[status] || status}</span></td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn-warning" onclick="editarEscala('${item.id}')">Editar</button>
+                    <button class="btn-success" onclick="alterarStatusEscala('${item.id}','concluido')">Concluir</button>
+                    <button class="btn-danger" onclick="apagarEscala('${item.id}')">Apagar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function criarEscala(){
+    const equipe_id = el("escEquipe").value || null;
+    const os_numero = el("escOs").value.trim();
+    const titulo = el("escTitulo").value.trim();
+    const descricao = el("escDescricao").value.trim();
+    const local = el("escLocal").value.trim();
+    const data = el("escData").value;
+    const hora_inicio = el("escHoraInicio").value;
+    const hora_fim = el("escHoraFim").value || null;
+    const status = el("escStatus").value;
+
+    if(!titulo || !data || !hora_inicio){
+        mostrarMensagem("Informe ao menos título, data e hora de início da escala.");
+        return;
+    }
+
+    setLoading("btnCriarEscala", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("escalas")
+            .insert([{ equipe_id, os_numero, titulo, descricao, local, data, hora_inicio, hora_fim, status, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+
+        if(error) throw error;
+
+        el("escOs").value = "";
+        el("escTitulo").value = "";
+        el("escDescricao").value = "";
+        el("escLocal").value = "";
+        el("escData").value = "";
+        el("escHoraInicio").value = "";
+        el("escHoraFim").value = "";
+        el("escStatus").value = "agendado";
+
+        mostrarMensagem("Equipe agendada com sucesso.", "ok");
+        await carregarEscalas();
+    }catch(e){
+        mostrarMensagem("Erro ao agendar equipe: " + e.message);
+    }finally{
+        setLoading("btnCriarEscala", false);
+    }
+}
+
+function editarEscala(id){
+    const item = escalasCache.find(e => e.id === id);
+    if(!item) return;
+
+    el("editEscId").value = item.id;
+    el("editEscEquipe").value = item.equipe_id || "";
+    el("editEscOs").value = item.os_numero || "";
+    el("editEscTitulo").value = item.titulo || "";
+    el("editEscDescricao").value = item.descricao || "";
+    el("editEscLocal").value = item.local || "";
+    el("editEscData").value = item.data || "";
+    el("editEscHoraInicio").value = item.hora_inicio ? item.hora_inicio.slice(0,5) : "";
+    el("editEscHoraFim").value = item.hora_fim ? item.hora_fim.slice(0,5) : "";
+    el("editEscStatus").value = item.status || "agendado";
+    el("modalEditarEscala").classList.add("ativo");
+}
+
+function fecharModalEditarEscala(){
+    el("modalEditarEscala").classList.remove("ativo");
+}
+
+async function salvarEdicaoEscala(){
+    const id = el("editEscId").value;
+    const equipe_id = el("editEscEquipe").value || null;
+    const os_numero = el("editEscOs").value.trim();
+    const titulo = el("editEscTitulo").value.trim();
+    const descricao = el("editEscDescricao").value.trim();
+    const local = el("editEscLocal").value.trim();
+    const data = el("editEscData").value;
+    const hora_inicio = el("editEscHoraInicio").value;
+    const hora_fim = el("editEscHoraFim").value || null;
+    const status = el("editEscStatus").value;
+
+    if(!titulo || !data || !hora_inicio){
+        mostrarMensagem("Informe ao menos título, data e hora de início da escala.");
+        return;
+    }
+
+    setLoading("btnSalvarEscalaEdicao", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("escalas")
+            .update({ equipe_id, os_numero, titulo, descricao, local, data, hora_inicio, hora_fim, status, atualizado_por: nomeUsuarioAtual() })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        fecharModalEditarEscala();
+        mostrarMensagem("Escala atualizada com sucesso.", "ok");
+        await carregarEscalas();
+    }catch(e){
+        mostrarMensagem("Erro ao editar escala: " + e.message);
+    }finally{
+        setLoading("btnSalvarEscalaEdicao", false);
+    }
+}
+
+async function alterarStatusEscala(id, status){
+    try{
+        const { error } = await supabaseClient
+            .from("escalas")
+            .update({ status, atualizado_por: nomeUsuarioAtual() })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        await carregarEscalas();
+        mostrarMensagem("Status da escala atualizado.", "ok");
+    }catch(e){
+        mostrarMensagem("Erro ao alterar escala: " + e.message);
+    }
+}
+
+async function apagarEscala(id){
+    if(!confirm("Deseja apagar esta escala?")) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("escalas")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Escala apagada.", "ok");
+        await carregarEscalas();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar escala: " + e.message);
+    }
+}
+
+
 el("modalEditar").addEventListener("click", function(ev){
     if(ev.target === this) fecharModalEditar();
 });
@@ -2291,15 +3376,27 @@ el("modalEditarAgendamento").addEventListener("click", function(ev){
 el("modalEditarCamera").addEventListener("click", function(ev){
     if(ev.target === this) fecharModalEditarCamera();
 });
-
-document.addEventListener("keydown", function(ev){
-    if(ev.key === "Escape"){ fecharModalEditar(); fecharModalEditarAgendamento(); fecharModalEditarCamera(); }
+el("modalEditarEscala").addEventListener("click", function(ev){
+    if(ev.target === this) fecharModalEditarEscala();
+});
+el("modalEditarEquipe").addEventListener("click", function(ev){
+    if(ev.target === this) fecharModalEditarEquipe();
 });
 
-carregarTudo();
+document.addEventListener("keydown", function(ev){
+    if(ev.key === "Escape"){
+        fecharModalEditar();
+        fecharModalEditarAgendamento();
+        fecharModalEditarCamera();
+        fecharModalEditarEscala();
+        fecharModalEditarEquipe();
+    }
+});
+
+initAuth();
 
 setInterval(() => {
-    carregarTudo();
+    if(currentUser) carregarTudo();
 }, 15000);
 </script>
 </body>

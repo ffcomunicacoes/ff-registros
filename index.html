@@ -311,7 +311,7 @@ textarea{
 
 .filters{
     display:grid;
-    grid-template-columns:1.2fr .8fr .8fr;
+    grid-template-columns:1.1fr .7fr .7fr .8fr;
     gap:10px;
     margin-bottom:16px;
 }
@@ -1244,6 +1244,10 @@ body::after{
                         <input type="date" id="prazo" />
                     </div>
 
+                    <select id="tarefaTecnico">
+                        <option value="">Sem técnico definido</option>
+                    </select>
+
                     <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
                 </div>
 
@@ -1260,6 +1264,9 @@ body::after{
                         <option value="alta">Alta</option>
                         <option value="normal">Normal</option>
                         <option value="baixa">Baixa</option>
+                    </select>
+                    <select id="filtroTecnico" onchange="filtrarTarefas()">
+                        <option value="">Todos os técnicos</option>
                     </select>
                 </div>
 
@@ -1501,6 +1508,7 @@ body::after{
             <button class="tab-btn ativo" id="subtabEquipes" onclick="abrirConfigAba('Equipes')">👥 Equipes</button>
             <button class="tab-btn" id="subtabCameras" onclick="abrirConfigAba('Cameras')">📷 Câmeras</button>
             <button class="tab-btn" id="subtabAtividades" onclick="abrirConfigAba('Atividades')">📋 Atividades</button>
+            <button class="tab-btn" id="subtabFuncionarios" onclick="abrirConfigAba('Funcionarios')">🧑‍🔧 Funcionários</button>
         </nav>
 
         <div class="config-tela ativa" id="configEquipes">
@@ -1636,17 +1644,68 @@ body::after{
                         <thead>
                             <tr>
                                 <th>Título</th>
+                                <th>Técnico</th>
                                 <th>Status</th>
                                 <th>Prioridade</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody id="tabelaAdminAtividades">
-                            <tr><td colspan="4">Carregando...</td></tr>
+                            <tr><td colspan="5">Carregando...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </section>
+        </div>
+
+        <div class="config-tela" id="configFuncionarios">
+            <div class="camera-grid">
+                <aside class="side">
+                    <section class="card panel">
+                        <div class="panel-title">
+                            <h3>Novo funcionário</h3>
+                            <span class="badge">🧑‍🔧</span>
+                        </div>
+
+                        <div class="form-grid">
+                            <input type="text" id="funcNome" placeholder="Nome do funcionário" maxlength="90" />
+
+                            <div class="inline-grid">
+                                <input type="text" id="funcCargo" placeholder="Cargo / Função. Ex: Técnico Instalador" maxlength="80" />
+                                <input type="text" id="funcTelefone" placeholder="Telefone de contato" maxlength="40" />
+                            </div>
+
+                            <button class="btn-purple" id="btnCriarFuncionario" onclick="criarFuncionario()">Adicionar funcionário</button>
+                        </div>
+                    </section>
+                </aside>
+
+                <section>
+                    <section class="card panel">
+                        <div class="admin-section-title">
+                            <h3>Funcionários cadastrados</h3>
+                            <span class="pill" id="totalAdminFuncionarios">0 funcionário(s)</span>
+                        </div>
+                        <p class="config-hint">Cadastre aqui os técnicos que poderão ser selecionados como responsáveis pelas atividades.</p>
+                        <div class="table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Cargo / Função</th>
+                                        <th>Telefone</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaAdminFuncionarios">
+                                    <tr><td colspan="5">Carregando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </section>
+            </div>
         </div>
     </section>
 
@@ -1666,6 +1725,9 @@ body::after{
                 </select>
                 <input type="date" id="editPrazo" />
             </div>
+            <select id="editTecnico">
+                <option value="">Sem técnico definido</option>
+            </select>
             <div class="modal-actions">
                 <button class="btn-ghost" onclick="fecharModalEditar()">Cancelar</button>
                 <button class="btn-success" id="btnSalvarEdicao" onclick="salvarEdicaoTarefa()">Salvar alterações</button>
@@ -1787,6 +1849,28 @@ body::after{
     </div>
 </div>
 
+<div class="modal-bg" id="modalEditarFuncionario">
+    <div class="modal">
+        <h3>Editar funcionário</h3>
+        <div class="form-grid">
+            <input type="hidden" id="editFuncId" />
+            <input type="text" id="editFuncNome" placeholder="Nome do funcionário" maxlength="90" />
+            <div class="inline-grid">
+                <input type="text" id="editFuncCargo" placeholder="Cargo / Função" maxlength="80" />
+                <input type="text" id="editFuncTelefone" placeholder="Telefone" maxlength="40" />
+            </div>
+            <select id="editFuncAtivo">
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="fecharModalEditarFuncionario()">Cancelar</button>
+                <button class="btn-success" id="btnSalvarFuncionarioEdicao" onclick="salvarEdicaoFuncionario()">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <footer>FF Registro © 2026 - Gestão de Atividades</footer>
 </div>
@@ -1801,6 +1885,7 @@ let agendamentosCache = [];
 let camerasCache = [];
 let equipesCache = [];
 let escalasCache = [];
+let funcionariosCache = [];
 let carregando = false;
 let currentUser = null;
 let semanaOffset = 0;
@@ -2006,7 +2091,10 @@ async function carregarTudo(){
     el("statusConexao").textContent = "Sincronizando...";
 
     try{
-        await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEquipes(), carregarEscalas()]);
+        // Equipes e funcionários carregam primeiro: tarefas e escalas dependem
+        // deles para exibir corretamente o nome da equipe/técnico responsável.
+        await Promise.all([carregarEquipes(), carregarFuncionarios()]);
+        await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEscalas()]);
         el("statusConexao").textContent = "Online";
         el("ultimaAtualizacao").textContent = "Atualizado: " + hojeBR();
         renderizarTV();
@@ -2040,13 +2128,15 @@ function renderizarTarefas(lista){
     const busca = el("busca").value.toLowerCase().trim();
     const filtroStatus = el("filtroStatus").value;
     const filtroPrioridade = el("filtroPrioridade").value;
+    const filtroTecnico = el("filtroTecnico")?.value || "";
 
     const filtradas = lista.filter(item => {
         const texto = `${item.titulo || ""} ${item.descricao || ""}`.toLowerCase();
         const statusOk = !filtroStatus || item.status === filtroStatus;
         const prioridadeOk = !filtroPrioridade || (item.prioridade || "normal") === filtroPrioridade;
+        const tecnicoOk = !filtroTecnico || item.funcionario_id === filtroTecnico;
         const buscaOk = !busca || texto.includes(busca);
-        return statusOk && prioridadeOk && buscaOk;
+        return statusOk && prioridadeOk && tecnicoOk && buscaOk;
     });
 
     filtradas.forEach(renderizarTarefa);
@@ -2056,6 +2146,16 @@ function renderizarTarefas(lista){
             el(status).innerHTML = `<div class="empty">Nenhuma atividade</div>`;
         }
     });
+}
+
+function funcionarioPorId(id){
+    return funcionariosCache.find(f => f.id === id);
+}
+
+function nomeTecnico(item){
+    if(!item.funcionario_id) return "Não atribuído";
+    const funcionario = funcionarioPorId(item.funcionario_id);
+    return funcionario ? funcionario.nome : "Não atribuído";
 }
 
 function renderizarTarefa(item){
@@ -2074,6 +2174,10 @@ function renderizarTarefa(item){
     tarefa.innerHTML = `
         <h4>${escapar(item.titulo)}</h4>
         <p class="descricao">${escapar(item.descricao || "Sem descrição")}</p>
+
+        <div class="meta">
+            <span>👤 Técnico: ${escapar(nomeTecnico(item))}</span>
+        </div>
 
         <div class="meta">
             <span>Prioridade: ${escapar(prioridade)}</span>
@@ -2105,7 +2209,7 @@ function renderizarAdminAtividades(){
     el("totalAdminAtividades").textContent = `${tarefasCache.length} atividade(s)`;
 
     if(tarefasCache.length === 0){
-        tbody.innerHTML = `<tr><td colspan="4">Nenhuma atividade cadastrada.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5">Nenhuma atividade cadastrada.</td></tr>`;
         return;
     }
 
@@ -2115,6 +2219,7 @@ function renderizarAdminAtividades(){
         const tr = document.createElement("tr");
         tr.innerHTML = `
             <td><strong>${escapar(item.titulo || "-")}</strong><br><span style="color:var(--muted)">${escapar(item.descricao || "")}</span><span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span></td>
+            <td>${escapar(nomeTecnico(item))}</td>
             <td>${STATUS_LABEL[status] || "A fazer"}</td>
             <td>${escapar(prioridade)}</td>
             <td>
@@ -2134,6 +2239,7 @@ async function criarTarefa(){
     const descricao = el("descricao").value.trim();
     const prioridade = el("prioridade").value;
     const prazo = el("prazo").value || null;
+    const funcionario_id = el("tarefaTecnico").value || null;
 
     if(!titulo){
         mostrarMensagem("Informe o título da atividade.");
@@ -2146,7 +2252,7 @@ async function criarTarefa(){
     try{
         const { error } = await supabaseClient
             .from("tarefas")
-            .insert([{ titulo, descricao, prioridade, prazo, status:"todo", inicio:new Date().toISOString(), criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+            .insert([{ titulo, descricao, prioridade, prazo, funcionario_id, status:"todo", inicio:new Date().toISOString(), criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
@@ -2154,6 +2260,7 @@ async function criarTarefa(){
         el("descricao").value = "";
         el("prioridade").value = "normal";
         el("prazo").value = "";
+        el("tarefaTecnico").value = "";
 
         mostrarMensagem("Atividade criada com sucesso.", "ok");
         await carregarTarefas();
@@ -2175,6 +2282,7 @@ function editarTarefa(id){
     el("editDescricao").value = item.descricao || "";
     el("editPrioridade").value = item.prioridade || "normal";
     el("editPrazo").value = item.prazo || "";
+    el("editTecnico").value = item.funcionario_id || "";
 
     el("modalEditar").classList.add("ativo");
     setTimeout(() => el("editDescricao").focus(), 120);
@@ -2190,6 +2298,7 @@ async function salvarEdicaoTarefa(){
     const descricao = el("editDescricao").value.trim();
     const prioridade = el("editPrioridade").value;
     const prazo = el("editPrazo").value || null;
+    const funcionario_id = el("editTecnico").value || null;
 
     if(!titulo){
         mostrarMensagem("Informe o título da atividade.");
@@ -2202,7 +2311,7 @@ async function salvarEdicaoTarefa(){
     try{
         const { error } = await supabaseClient
             .from("tarefas")
-            .update({ titulo, descricao, prioridade, prazo, atualizado_por: nomeUsuarioAtual() })
+            .update({ titulo, descricao, prioridade, prazo, funcionario_id, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -2518,7 +2627,7 @@ function abrirAba(nome){
 }
 
 function abrirConfigAba(nome){
-    const abas = ["Equipes", "Cameras", "Atividades"];
+    const abas = ["Equipes", "Cameras", "Atividades", "Funcionarios"];
 
     abas.forEach(aba => {
         const tela = el("config" + aba);
@@ -2986,6 +3095,176 @@ async function apagarEquipe(id){
 }
 
 
+/* ===================== FUNCIONÁRIOS (TÉCNICOS) ===================== */
+
+async function carregarFuncionarios(){
+    const { data, error } = await supabaseClient
+        .from("funcionarios")
+        .select("*")
+        .order("nome", { ascending:true });
+
+    if(error) throw error;
+
+    funcionariosCache = data || [];
+    renderizarSelectsFuncionarios();
+    renderizarAdminFuncionarios();
+}
+
+function renderizarSelectsFuncionarios(){
+    const selects = [el("tarefaTecnico"), el("editTecnico"), el("filtroTecnico")];
+
+    selects.forEach(select => {
+        if(!select) return;
+        const valorAtual = select.value;
+        const ehFiltro = select.id === "filtroTecnico";
+
+        select.innerHTML = ehFiltro ? `<option value="">Todos os técnicos</option>` : `<option value="">Sem técnico definido</option>`;
+
+        funcionariosCache.forEach(f => {
+            const inativo = f.ativo === false;
+            const opt = document.createElement("option");
+            opt.value = f.id;
+            opt.textContent = f.nome + (f.cargo ? " · " + f.cargo : "") + (inativo ? " (inativo)" : "");
+            select.appendChild(opt);
+        });
+
+        if(valorAtual) select.value = valorAtual;
+    });
+}
+
+function renderizarAdminFuncionarios(){
+    const tbody = el("tabelaAdminFuncionarios");
+    if(!tbody) return;
+
+    tbody.innerHTML = "";
+    el("totalAdminFuncionarios").textContent = `${funcionariosCache.length} funcionário(s)`;
+
+    if(funcionariosCache.length === 0){
+        tbody.innerHTML = `<tr><td colspan="5">Nenhum funcionário cadastrado.</td></tr>`;
+        return;
+    }
+
+    funcionariosCache.forEach(item => {
+        const tr = document.createElement("tr");
+        const ativo = item.ativo !== false;
+        tr.innerHTML = `
+            <td><strong>${escapar(item.nome)}</strong><span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span></td>
+            <td>${escapar(item.cargo || "-")}</td>
+            <td>${escapar(item.telefone || "-")}</td>
+            <td><span class="tag ${ativo ? "concluido" : "cancelado"}">${ativo ? "Ativo" : "Inativo"}</span></td>
+            <td>
+                <div class="admin-actions">
+                    <button class="btn-warning" onclick="editarFuncionario('${item.id}')">Editar</button>
+                    <button class="btn-danger" onclick="apagarFuncionario('${item.id}')">Apagar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+async function criarFuncionario(){
+    const nome = el("funcNome").value.trim();
+    const cargo = el("funcCargo").value.trim();
+    const telefone = el("funcTelefone").value.trim();
+
+    if(!nome){
+        mostrarMensagem("Informe o nome do funcionário.");
+        el("funcNome").focus();
+        return;
+    }
+
+    setLoading("btnCriarFuncionario", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("funcionarios")
+            .insert([{ nome, cargo, telefone, ativo:true, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+
+        if(error) throw error;
+
+        el("funcNome").value = "";
+        el("funcCargo").value = "";
+        el("funcTelefone").value = "";
+
+        mostrarMensagem("Funcionário adicionado com sucesso.", "ok");
+        await carregarFuncionarios();
+    }catch(e){
+        mostrarMensagem("Erro ao adicionar funcionário: " + e.message);
+    }finally{
+        setLoading("btnCriarFuncionario", false);
+    }
+}
+
+function editarFuncionario(id){
+    const item = funcionariosCache.find(f => f.id === id);
+    if(!item) return;
+
+    el("editFuncId").value = item.id;
+    el("editFuncNome").value = item.nome || "";
+    el("editFuncCargo").value = item.cargo || "";
+    el("editFuncTelefone").value = item.telefone || "";
+    el("editFuncAtivo").value = item.ativo === false ? "false" : "true";
+    el("modalEditarFuncionario").classList.add("ativo");
+}
+
+function fecharModalEditarFuncionario(){
+    el("modalEditarFuncionario").classList.remove("ativo");
+}
+
+async function salvarEdicaoFuncionario(){
+    const id = el("editFuncId").value;
+    const nome = el("editFuncNome").value.trim();
+    const cargo = el("editFuncCargo").value.trim();
+    const telefone = el("editFuncTelefone").value.trim();
+    const ativo = el("editFuncAtivo").value === "true";
+
+    if(!nome){
+        mostrarMensagem("Informe o nome do funcionário.");
+        return;
+    }
+
+    setLoading("btnSalvarFuncionarioEdicao", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("funcionarios")
+            .update({ nome, cargo, telefone, ativo, atualizado_por: nomeUsuarioAtual() })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        fecharModalEditarFuncionario();
+        mostrarMensagem("Funcionário atualizado com sucesso.", "ok");
+        await carregarFuncionarios();
+        await carregarTarefas();
+    }catch(e){
+        mostrarMensagem("Erro ao editar funcionário: " + e.message);
+    }finally{
+        setLoading("btnSalvarFuncionarioEdicao", false);
+    }
+}
+
+async function apagarFuncionario(id){
+    if(!confirm("Deseja apagar este funcionário? As atividades vinculadas ficarão sem técnico definido.")) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("funcionarios")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Funcionário apagado.", "ok");
+        await carregarFuncionarios();
+        await carregarTarefas();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar funcionário: " + e.message);
+    }
+}
+
+
 /* ===================== CALENDÁRIO / ESCALAS ===================== */
 
 function inicioDaSemana(data){
@@ -3418,7 +3697,7 @@ function renderizarTV(){
             <div class="tv-item">
                 <div>
                     <strong>${escapar(item.titulo)}</strong>
-                    <span class="tv-sub">Prazo: ${formatarData(item.prazo)} · ${STATUS_LABEL[item.status || "todo"]}</span>
+                    <span class="tv-sub">Prazo: ${formatarData(item.prazo)} · ${STATUS_LABEL[item.status || "todo"]} · ${escapar(nomeTecnico(item))}</span>
                 </div>
                 <span class="tag cancelado">Atrasada</span>
             </div>
@@ -3442,6 +3721,9 @@ el("modalEditarEscala").addEventListener("click", function(ev){
 el("modalEditarEquipe").addEventListener("click", function(ev){
     if(ev.target === this) fecharModalEditarEquipe();
 });
+el("modalEditarFuncionario").addEventListener("click", function(ev){
+    if(ev.target === this) fecharModalEditarFuncionario();
+});
 
 document.addEventListener("keydown", function(ev){
     if(ev.key === "Escape"){
@@ -3450,6 +3732,7 @@ document.addEventListener("keydown", function(ev){
         fecharModalEditarCamera();
         fecharModalEditarEscala();
         fecharModalEditarEquipe();
+        fecharModalEditarFuncionario();
     }
 });
 

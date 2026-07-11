@@ -325,6 +325,8 @@ textarea{
 .coluna{
     min-width:0;
     overflow:hidden;
+    display:flex;
+    flex-direction:column;
 }
 
 .coluna-header{
@@ -334,6 +336,7 @@ textarea{
     padding:15px 16px;
     border-bottom:1px solid var(--border);
     font-weight:800;
+    flex:0 0 auto;
 }
 
 .badge{
@@ -351,6 +354,7 @@ textarea{
 .lista{
     padding:14px;
     min-height:430px;
+    flex:1 1 auto;
 }
 
 .lista.drag-over{
@@ -1109,6 +1113,7 @@ body::after{
 .cal-evento.status-concluido{opacity:.6; border-left-color:var(--success);}
 .cal-evento.status-cancelado{opacity:.55; border-left-color:var(--danger); text-decoration:line-through;}
 .cal-evento.status-em_andamento{border-left-color:var(--warning);}
+.cal-evento.tipo-agendamento{border-left-style:dashed;}
 
 .cal-lista-vazia{
     color:var(--muted);
@@ -1302,6 +1307,8 @@ body::after{
                 </div>
             </div>
 
+            <p class="config-hint">Compromissos administrativos — ligações, reuniões, prazos internos — sem vínculo com uma equipe de campo. Também aparecem no Calendário CFTV, marcados como 📌 Compromisso.</p>
+
             <div class="form-grid quick-form" id="formNovoAgendamento" style="display:none">
                 <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
                 <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
@@ -1311,7 +1318,9 @@ body::after{
                     <input type="time" id="agHora" />
                 </div>
 
-                <input type="text" id="agResponsavel" placeholder="Responsável" maxlength="80" />
+                <select id="agResponsavel">
+                    <option value="">Sem responsável definido</option>
+                </select>
 
                 <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
             </div>
@@ -1343,7 +1352,7 @@ body::after{
             <div>
                 <span class="admin-kicker">Cronograma das equipes</span>
                 <h2>Calendário de agendas CFTV</h2>
-                <p>Direcione atividades e O.S. para as equipes de campo por dia e horário.</p>
+                <p>Direcione atividades e O.S. para as equipes de campo por dia e horário. Os compromissos administrativos da aba Agendamentos também aparecem aqui.</p>
             </div>
             <div class="admin-badge">🗓️</div>
         </div>
@@ -1390,6 +1399,9 @@ body::after{
                     <div class="legenda-equipes" id="legendaEquipes">
                         <span class="cal-lista-vazia" style="width:100%">Cadastre equipes em Cadastros.</span>
                     </div>
+                    <span class="equipe-chip" style="margin-top:8px;background:rgba(139,92,246,.16);color:#ddd6fe;border:1.5px dashed var(--purple)">
+                        📌 Compromisso administrativo (Agendamentos)
+                    </span>
                 </section>
             </aside>
 
@@ -1747,7 +1759,9 @@ body::after{
                 <input type="date" id="editAgData" />
                 <input type="time" id="editAgHora" />
             </div>
-            <input type="text" id="editAgResponsavel" placeholder="Responsável" maxlength="80" />
+            <select id="editAgResponsavel">
+                <option value="">Sem responsável definido</option>
+            </select>
             <select id="editAgStatus">
                 <option value="pendente">Pendente</option>
                 <option value="concluido">Concluído</option>
@@ -1901,6 +1915,12 @@ const ESCALA_STATUS_LABEL = {
     em_andamento: "Em andamento",
     concluido: "Concluído",
     cancelado: "Cancelado"
+};
+
+const CORES_AGENDAMENTO = {
+    pendente: "#8b5cf6",
+    concluido: "#22c55e",
+    cancelado: "#ef4444"
 };
 
 const PRIORIDADE_COR = {
@@ -2095,6 +2115,11 @@ async function carregarTudo(){
         // deles para exibir corretamente o nome da equipe/técnico responsável.
         await Promise.all([carregarEquipes(), carregarFuncionarios()]);
         await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEscalas()]);
+
+        // O calendário combina escalas + agendamentos; recalcula aqui pra garantir
+        // que os dois já estejam carregados, independente da ordem interna do Promise.all.
+        renderizarCalendario();
+
         el("statusConexao").textContent = "Online";
         el("ultimaAtualizacao").textContent = "Atualizado: " + hojeBR();
         renderizarTV();
@@ -2156,6 +2181,14 @@ function nomeTecnico(item){
     if(!item.funcionario_id) return "Não atribuído";
     const funcionario = funcionarioPorId(item.funcionario_id);
     return funcionario ? funcionario.nome : "Não atribuído";
+}
+
+function nomeResponsavelAgendamento(item){
+    if(item.funcionario_id){
+        const funcionario = funcionarioPorId(item.funcionario_id);
+        if(funcionario) return funcionario.nome;
+    }
+    return item.responsavel || "Sem responsável";
 }
 
 function renderizarTarefa(item){
@@ -2401,6 +2434,18 @@ document.querySelectorAll(".lista").forEach(lista => {
 
 function allowDrop(ev){
     ev.preventDefault();
+    autoScrollDuranteArraste(ev.clientY);
+}
+
+function autoScrollDuranteArraste(clientY){
+    const margem = 90;
+    const velocidade = 24;
+
+    if(clientY < margem){
+        window.scrollBy(0, -velocidade);
+    }else if(clientY > window.innerHeight - margem){
+        window.scrollBy(0, velocidade);
+    }
 }
 
 function drag(ev){
@@ -2472,7 +2517,7 @@ function renderizarAgendamentos(){
                 <span style="color:var(--muted)">${escapar(item.descricao || "")}</span>
                 <span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${item.atualizado_por ? " · Últ. edição: " + escapar(item.atualizado_por) : ""}</span>
             </td>
-            <td>${escapar(item.responsavel || "-")}</td>
+            <td>${escapar(nomeResponsavelAgendamento(item))}</td>
             <td><span class="tag ${status}">${escapar(status)}</span></td>
             <td>
                 <div class="btn-row">
@@ -2497,7 +2542,7 @@ function editarAgendamento(id){
     el("editAgDescricao").value = item.descricao || "";
     el("editAgData").value = item.data || "";
     el("editAgHora").value = item.hora || "";
-    el("editAgResponsavel").value = item.responsavel || "";
+    el("editAgResponsavel").value = item.funcionario_id || "";
     el("editAgStatus").value = item.status || "pendente";
     el("modalEditarAgendamento").classList.add("ativo");
 }
@@ -2512,7 +2557,7 @@ async function salvarEdicaoAgendamento(){
     const descricao = el("editAgDescricao").value.trim();
     const data = el("editAgData").value;
     const hora = el("editAgHora").value;
-    const responsavel = el("editAgResponsavel").value.trim();
+    const funcionario_id = el("editAgResponsavel").value || null;
     const status = el("editAgStatus").value;
 
     if(!titulo || !data || !hora){
@@ -2525,7 +2570,7 @@ async function salvarEdicaoAgendamento(){
     try{
         const { error } = await supabaseClient
             .from("agendamentos")
-            .update({ titulo, descricao, data, hora, responsavel, status, atualizado_por: nomeUsuarioAtual() })
+            .update({ titulo, descricao, data, hora, funcionario_id, status, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -2533,6 +2578,7 @@ async function salvarEdicaoAgendamento(){
         fecharModalEditarAgendamento();
         mostrarMensagem("Agendamento atualizado com sucesso.", "ok");
         await carregarAgendamentos();
+        renderizarCalendario();
     }catch(e){
         mostrarMensagem("Erro ao editar agendamento: " + e.message);
     }finally{
@@ -2545,7 +2591,7 @@ async function criarAgendamento(){
     const descricao = el("agDescricao").value.trim();
     const data = el("agData").value;
     const hora = el("agHora").value;
-    const responsavel = el("agResponsavel").value.trim();
+    const funcionario_id = el("agResponsavel").value || null;
 
     if(!titulo || !data || !hora){
         mostrarMensagem("Informe título, data e hora do agendamento.");
@@ -2557,7 +2603,7 @@ async function criarAgendamento(){
     try{
         const { error } = await supabaseClient
             .from("agendamentos")
-            .insert([{ titulo, descricao, data, hora, responsavel, status:"pendente", criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+            .insert([{ titulo, descricao, data, hora, funcionario_id, status:"pendente", criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
@@ -2569,6 +2615,7 @@ async function criarAgendamento(){
 
         mostrarMensagem("Agendamento salvo com sucesso.", "ok");
         await carregarAgendamentos();
+        renderizarCalendario();
         el("formNovoAgendamento").style.display = "none";
         el("btnToggleFormAgendamento").textContent = "+ Novo agendamento";
     }catch(e){
@@ -2588,6 +2635,7 @@ async function alterarStatusAgendamento(id, status){
         if(error) throw error;
 
         await carregarAgendamentos();
+        renderizarCalendario();
     }catch(e){
         mostrarMensagem("Erro ao alterar agendamento: " + e.message);
     }
@@ -2606,6 +2654,7 @@ async function apagarAgendamento(id){
 
         mostrarMensagem("Agendamento apagado.", "ok");
         await carregarAgendamentos();
+        renderizarCalendario();
     }catch(e){
         mostrarMensagem("Erro ao apagar agendamento: " + e.message);
     }
@@ -3111,14 +3160,17 @@ async function carregarFuncionarios(){
 }
 
 function renderizarSelectsFuncionarios(){
-    const selects = [el("tarefaTecnico"), el("editTecnico"), el("filtroTecnico")];
+    const selects = [el("tarefaTecnico"), el("editTecnico"), el("filtroTecnico"), el("agResponsavel"), el("editAgResponsavel")];
 
     selects.forEach(select => {
         if(!select) return;
         const valorAtual = select.value;
-        const ehFiltro = select.id === "filtroTecnico";
 
-        select.innerHTML = ehFiltro ? `<option value="">Todos os técnicos</option>` : `<option value="">Sem técnico definido</option>`;
+        let opcaoVazia = `<option value="">Sem técnico definido</option>`;
+        if(select.id === "filtroTecnico") opcaoVazia = `<option value="">Todos os técnicos</option>`;
+        if(select.id === "agResponsavel" || select.id === "editAgResponsavel") opcaoVazia = `<option value="">Sem responsável definido</option>`;
+
+        select.innerHTML = opcaoVazia;
 
         funcionariosCache.forEach(f => {
             const inativo = f.ativo === false;
@@ -3238,6 +3290,8 @@ async function salvarEdicaoFuncionario(){
         mostrarMensagem("Funcionário atualizado com sucesso.", "ok");
         await carregarFuncionarios();
         await carregarTarefas();
+        await carregarAgendamentos();
+        renderizarCalendario();
     }catch(e){
         mostrarMensagem("Erro ao editar funcionário: " + e.message);
     }finally{
@@ -3246,7 +3300,7 @@ async function salvarEdicaoFuncionario(){
 }
 
 async function apagarFuncionario(id){
-    if(!confirm("Deseja apagar este funcionário? As atividades vinculadas ficarão sem técnico definido.")) return;
+    if(!confirm("Deseja apagar este funcionário? As atividades e agendamentos vinculados ficarão sem responsável definido.")) return;
 
     try{
         const { error } = await supabaseClient
@@ -3259,6 +3313,8 @@ async function apagarFuncionario(id){
         mostrarMensagem("Funcionário apagado.", "ok");
         await carregarFuncionarios();
         await carregarTarefas();
+        await carregarAgendamentos();
+        renderizarCalendario();
     }catch(e){
         mostrarMensagem("Erro ao apagar funcionário: " + e.message);
     }
@@ -3315,7 +3371,8 @@ function renderizarCalendario(){
     fimSemana.setDate(fimSemana.getDate() + 6);
     el("calTituloSemana").textContent = `${inicio.toLocaleDateString("pt-BR")} - ${fimSemana.toLocaleDateString("pt-BR")}`;
 
-    let totalSemana = 0;
+    let totalEscalasSemana = 0;
+    let totalCompromissosSemana = 0;
     container.innerHTML = "";
 
     for(let i = 0; i < 7; i++){
@@ -3323,25 +3380,48 @@ function renderizarCalendario(){
         dia.setDate(dia.getDate() + i);
         const diaISO = formatarDataISO(dia);
 
-        const eventosDoDia = escalasCache.filter(esc => esc.data === diaISO && (!filtroEquipe || esc.equipe_id === filtroEquipe));
-        totalSemana += eventosDoDia.length;
+        const escalasDoDia = escalasCache.filter(esc => esc.data === diaISO && (!filtroEquipe || esc.equipe_id === filtroEquipe));
+        // Compromissos não têm equipe, então somem quando um filtro de equipe está ativo.
+        const agendamentosDoDia = filtroEquipe ? [] : agendamentosCache.filter(ag => ag.data === diaISO);
+
+        totalEscalasSemana += escalasDoDia.length;
+        totalCompromissosSemana += agendamentosDoDia.length;
 
         const colDia = document.createElement("div");
         colDia.className = "cal-dia" + (diaISO === hojeISO ? " hoje" : "");
 
+        const eventosDoDia = [
+            ...escalasDoDia.map(esc => ({ tipo:"escala", hora:esc.hora_inicio || "", dado:esc })),
+            ...agendamentosDoDia.map(ag => ({ tipo:"agendamento", hora:ag.hora || "", dado:ag }))
+        ].sort((a, b) => (a.hora || "").localeCompare(b.hora || ""));
+
         let htmlEventos = "";
         if(eventosDoDia.length === 0){
-            htmlEventos = `<div class="cal-lista-vazia">Sem escalas</div>`;
+            htmlEventos = `<div class="cal-lista-vazia">Sem escalas ou compromissos</div>`;
         }else{
-            htmlEventos = eventosDoDia.map(esc => {
-                const equipe = equipePorId(esc.equipe_id);
-                const cor = corEquipe(equipe);
+            htmlEventos = eventosDoDia.map(evento => {
+                if(evento.tipo === "escala"){
+                    const esc = evento.dado;
+                    const equipe = equipePorId(esc.equipe_id);
+                    const cor = corEquipe(equipe);
+                    return `
+                        <div class="cal-evento status-${esc.status || 'agendado'}" style="border-left-color:${cor};background:${cor}22" onclick="editarEscala('${esc.id}')">
+                            ${esc.os_numero ? `<span class="cal-evento-os">O.S. ${escapar(esc.os_numero)}</span>` : ""}
+                            <div class="cal-evento-titulo">${escapar(esc.titulo)}</div>
+                            <div class="cal-evento-hora">${esc.hora_inicio ? esc.hora_inicio.slice(0,5) : "--"}${esc.hora_fim ? " às " + esc.hora_fim.slice(0,5) : ""}</div>
+                            <div class="cal-evento-hora">${equipe ? escapar(equipe.nome) : "Sem equipe"}</div>
+                        </div>
+                    `;
+                }
+
+                const ag = evento.dado;
+                const corAg = CORES_AGENDAMENTO[ag.status || "pendente"] || CORES_AGENDAMENTO.pendente;
                 return `
-                    <div class="cal-evento status-${esc.status || 'agendado'}" style="border-left-color:${cor};background:${cor}22" onclick="editarEscala('${esc.id}')">
-                        ${esc.os_numero ? `<span class="cal-evento-os">O.S. ${escapar(esc.os_numero)}</span>` : ""}
-                        <div class="cal-evento-titulo">${escapar(esc.titulo)}</div>
-                        <div class="cal-evento-hora">${esc.hora_inicio ? esc.hora_inicio.slice(0,5) : "--"}${esc.hora_fim ? " às " + esc.hora_fim.slice(0,5) : ""}</div>
-                        <div class="cal-evento-hora">${equipe ? escapar(equipe.nome) : "Sem equipe"}</div>
+                    <div class="cal-evento tipo-agendamento status-${ag.status || 'pendente'}" style="border-left-color:${corAg};background:${corAg}22" onclick="editarAgendamento('${ag.id}')">
+                        <span class="cal-evento-os">📌 Compromisso</span>
+                        <div class="cal-evento-titulo">${escapar(ag.titulo)}</div>
+                        <div class="cal-evento-hora">${ag.hora ? ag.hora.slice(0,5) : "--"}</div>
+                        <div class="cal-evento-hora">${escapar(nomeResponsavelAgendamento(ag))}</div>
                     </div>
                 `;
             }).join("");
@@ -3358,7 +3438,7 @@ function renderizarCalendario(){
         container.appendChild(colDia);
     }
 
-    el("totalEscalasSemana").textContent = `${totalSemana} escala(s)`;
+    el("totalEscalasSemana").textContent = `${totalEscalasSemana} escala(s) · ${totalCompromissosSemana} compromisso(s)`;
 }
 
 function navegarSemana(direcao){
@@ -3556,17 +3636,117 @@ const CORES_TV = {
     muted:"#475569"
 };
 
+/* Plugin que desenha o total no centro dos donuts (visual "KPI") */
+const pluginTextoCentral = {
+    id: "textoCentralDonut",
+    beforeDraw(chart, args, opcoes){
+        const dataset = chart.data.datasets[0];
+        if(!dataset) return;
+
+        const { ctx, chartArea } = chart;
+        if(!chartArea) return;
+
+        const total = dataset.data.reduce((soma, valor) => soma + (Number(valor) || 0), 0);
+        const centroX = (chartArea.left + chartArea.right) / 2;
+        const centroY = (chartArea.top + chartArea.bottom) / 2;
+
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.font = "800 26px Inter, 'Segoe UI', Arial, sans-serif";
+        ctx.fillStyle = "#f8fafc";
+        ctx.fillText(String(total), centroX, centroY - 9);
+
+        ctx.font = "700 10.5px Inter, 'Segoe UI', Arial, sans-serif";
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillText(((opcoes && opcoes.rotulo) || "total").toUpperCase(), centroX, centroY + 14);
+
+        ctx.restore();
+    }
+};
+
 function opcoesGraficoTV(){
     return {
         responsive:true,
         maintainAspectRatio:false,
+        animation:{ duration:850, easing:"easeOutQuart" },
         plugins:{
-            legend:{ labels:{ color:"#e2e8f0", font:{ size:12 } } }
+            legend:{
+                labels:{
+                    color:"#e2e8f0",
+                    font:{ size:12, weight:"600" },
+                    usePointStyle:true,
+                    pointStyle:"circle",
+                    boxWidth:8,
+                    boxHeight:8,
+                    padding:14
+                }
+            }
         }
     };
 }
 
-function criarOuAtualizarDonut(refAtual, canvasId, labels, data, cores){
+function opcoesTooltipDonut(){
+    return {
+        backgroundColor:"#0f172a",
+        titleColor:"#f8fafc",
+        bodyColor:"#cbd5e1",
+        borderColor:"rgba(148,163,184,.35)",
+        borderWidth:1,
+        padding:10,
+        cornerRadius:10,
+        boxPadding:4,
+        titleFont:{ weight:"700", size:12.5 },
+        bodyFont:{ size:12 },
+        callbacks:{
+            label(context){
+                const valor = context.parsed;
+                const dadosDataset = context.dataset.data || [];
+                const total = dadosDataset.reduce((soma, v) => soma + (Number(v) || 0), 0);
+                const porcentagem = total ? Math.round((valor / total) * 100) : 0;
+                return ` ${context.label}: ${valor} (${porcentagem}%)`;
+            }
+        }
+    };
+}
+
+function opcoesTooltipBarra(){
+    return {
+        backgroundColor:"#0f172a",
+        titleColor:"#f8fafc",
+        bodyColor:"#cbd5e1",
+        borderColor:"rgba(148,163,184,.35)",
+        borderWidth:1,
+        padding:10,
+        cornerRadius:10,
+        displayColors:false,
+        titleFont:{ weight:"700", size:12.5 },
+        bodyFont:{ size:12 },
+        callbacks:{
+            label(context){
+                const valor = context.parsed.y;
+                return ` ${valor} escala${valor === 1 ? "" : "s"} esta semana`;
+            }
+        }
+    };
+}
+
+/* Gradiente vertical a partir da cor-base de cada fatia/equipe.
+   Usa a "chartArea" já calculada pelo Chart.js (opção "scriptable"),
+   por isso funciona certinho mesmo depois de redimensionar a tela. */
+function criarGradienteVertical(context, corBase){
+    const { chart } = context;
+    const { ctx, chartArea } = chart;
+    if(!chartArea) return corBase;
+
+    const gradiente = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+    gradiente.addColorStop(0, corBase + "40");
+    gradiente.addColorStop(1, corBase);
+    return gradiente;
+}
+
+function criarOuAtualizarDonut(refAtual, canvasId, labels, data, cores, rotulo){
     const canvas = el(canvasId);
     if(!canvas) return refAtual;
 
@@ -3574,14 +3754,37 @@ function criarOuAtualizarDonut(refAtual, canvasId, labels, data, cores){
         refAtual.data.labels = labels;
         refAtual.data.datasets[0].data = data;
         refAtual.data.datasets[0].backgroundColor = cores;
+        refAtual.options.plugins.textoCentralDonut.rotulo = rotulo;
         refAtual.update();
         return refAtual;
     }
 
+    const baseOpcoes = opcoesGraficoTV();
+
     return new Chart(canvas, {
         type:"doughnut",
-        data:{ labels, datasets:[{ data, backgroundColor: cores, borderWidth:2, borderColor:"#0f172a" }] },
-        options: opcoesGraficoTV()
+        data:{
+            labels,
+            datasets:[{
+                data,
+                backgroundColor: cores,
+                borderWidth:3,
+                borderColor:"#111c30",
+                borderRadius:10,
+                spacing:3,
+                hoverOffset:14
+            }]
+        },
+        options:{
+            ...baseOpcoes,
+            cutout:"70%",
+            plugins:{
+                ...baseOpcoes.plugins,
+                textoCentralDonut:{ rotulo },
+                tooltip: opcoesTooltipDonut()
+            }
+        },
+        plugins:[pluginTextoCentral]
     });
 }
 
@@ -3589,23 +3792,43 @@ function criarOuAtualizarBarra(refAtual, canvasId, labels, data, cores){
     const canvas = el(canvasId);
     if(!canvas) return refAtual;
 
+    const corDoIndice = (context) => cores[context.dataIndex] || CORES_TV.primary;
+    const gradienteDoIndice = (context) => criarGradienteVertical(context, corDoIndice(context));
+
     if(refAtual){
         refAtual.data.labels = labels;
         refAtual.data.datasets[0].data = data;
-        refAtual.data.datasets[0].backgroundColor = cores;
+        refAtual.data.datasets[0].backgroundColor = gradienteDoIndice;
+        refAtual.data.datasets[0].hoverBackgroundColor = corDoIndice;
         refAtual.update();
         return refAtual;
     }
 
+    const baseOpcoes = opcoesGraficoTV();
+
     return new Chart(canvas, {
         type:"bar",
-        data:{ labels, datasets:[{ data, backgroundColor: cores, borderRadius:8 }] },
+        data:{
+            labels,
+            datasets:[{
+                data,
+                backgroundColor: gradienteDoIndice,
+                hoverBackgroundColor: corDoIndice,
+                borderRadius:10,
+                borderSkipped:"bottom",
+                maxBarThickness:56
+            }]
+        },
         options:{
-            ...opcoesGraficoTV(),
-            plugins:{ legend:{ display:false } },
+            ...baseOpcoes,
+            plugins:{
+                ...baseOpcoes.plugins,
+                legend:{ display:false },
+                tooltip: opcoesTooltipBarra()
+            },
             scales:{
-                x:{ ticks:{ color:"#cbd5e1" }, grid:{ color:"rgba(148,163,184,.12)" } },
-                y:{ ticks:{ color:"#cbd5e1", precision:0 }, grid:{ color:"rgba(148,163,184,.12)" }, beginAtZero:true }
+                x:{ ticks:{ color:"#cbd5e1" }, grid:{ display:false } },
+                y:{ ticks:{ color:"#cbd5e1", precision:0 }, grid:{ color:"rgba(148,163,184,.10)" }, beginAtZero:true }
             }
         }
     });
@@ -3637,7 +3860,7 @@ function renderizarTV(){
     const done = tarefasCache.filter(t => t.status === "done").length;
     graficoAtividades = criarOuAtualizarDonut(graficoAtividades, "chartAtividades",
         ["A Fazer", "Fazendo", "Concluído"], [todo, doing, done],
-        [CORES_TV.primary, CORES_TV.warning, CORES_TV.success]);
+        [CORES_TV.primary, CORES_TV.warning, CORES_TV.success], "atividades");
 
     /* ---- Gráfico: agendamentos por status ---- */
     const agPendente = agendamentosCache.filter(a => (a.status || "pendente") === "pendente").length;
@@ -3645,7 +3868,7 @@ function renderizarTV(){
     const agCancelado = agendamentosCache.filter(a => a.status === "cancelado").length;
     graficoAgendamentos = criarOuAtualizarDonut(graficoAgendamentos, "chartAgendamentos",
         ["Pendente", "Concluído", "Cancelado"], [agPendente, agConcluido, agCancelado],
-        [CORES_TV.warning, CORES_TV.success, CORES_TV.danger]);
+        [CORES_TV.warning, CORES_TV.success, CORES_TV.danger], "agendamentos");
 
     /* ---- Gráfico: escalas da semana atual por equipe ---- */
     const inicioSemanaAtual = inicioDaSemana(new Date());
@@ -3667,7 +3890,7 @@ function renderizarTV(){
     const camPendentes = camerasCache.length - camAdicionadas;
     graficoCameras = criarOuAtualizarDonut(graficoCameras, "chartCameras",
         ["Adicionadas", "Pendentes"], [camAdicionadas, camPendentes],
-        [CORES_TV.success, CORES_TV.danger]);
+        [CORES_TV.success, CORES_TV.danger], "câmeras");
 
     /* ---- Lista: equipes em campo hoje ---- */
     const listaEquipesHoje = el("tvListaEquipesHoje");

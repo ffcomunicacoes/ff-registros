@@ -1153,6 +1153,47 @@ body::after{
     margin-top:6px;
     display:block;
 }
+
+/* ===== ABA REGISTRO ===== */
+.registro-card{
+    background:linear-gradient(180deg,#23304a,#1b263d);
+    border:1px solid rgba(148,163,184,.18);
+    border-left:5px solid var(--primary-2);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+}
+.registro-card h4{
+    margin-bottom:6px;
+    word-break:break-word;
+}
+.registro-card p{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.5;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+.registro-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:10px;
+    margin-top:10px;
+    flex-wrap:wrap;
+}
+.registro-tarefa-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:11.5px;
+    font-weight:700;
+    background:rgba(59,130,246,.16);
+    color:#93c5fd;
+    margin-bottom:6px;
+}
 </style>
 </head>
 
@@ -1207,6 +1248,7 @@ body::after{
 
     <nav class="tabs">
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
+        <button class="tab-btn" id="tabRegistro" onclick="abrirAba('Registro')">📝 Registro</button>
         <button class="tab-btn" id="tabAgendamentos" onclick="abrirAba('Agendamentos')">🗓️ Agendamentos</button>
         <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🚐 Calendário CFTV</button>
         <button class="tab-btn" id="tabTV" onclick="abrirAba('TV')">📺 TV</button>
@@ -1294,6 +1336,37 @@ body::after{
             </section>
         </section>
     </main>
+
+
+    <section class="tela" id="telaRegistro">
+
+        <section class="card panel">
+            <div class="panel-title">
+                <h3>Registro de atendimentos</h3>
+                <div class="btn-row">
+                    <span class="pill" id="totalRegistros">0 registros</span>
+                    <button class="btn-purple" onclick="alternarFormRegistro()" id="btnToggleFormRegistro">+ Novo registro</button>
+                </div>
+            </div>
+
+            <p class="config-hint">Registre aqui os atendimentos e observações do seu dia. Você pode vincular cada registro a uma atividade já cadastrada.</p>
+
+            <div class="form-grid quick-form" id="formNovoRegistro" style="display:none">
+                <input type="text" id="regTitulo" placeholder="Título do registro" maxlength="120" />
+                <textarea id="regDescricao" placeholder="Descreva o atendimento realizado..."></textarea>
+
+                <select id="regTarefa">
+                    <option value="">Sem atividade vinculada</option>
+                </select>
+
+                <button class="btn-purple" id="btnCriarRegistro" onclick="criarRegistro()">Salvar registro</button>
+            </div>
+
+            <input type="search" id="buscaRegistro" placeholder="Pesquisar por título, descrição ou atividade..." oninput="filtrarRegistros()" style="margin-bottom:16px" />
+
+            <div id="listaRegistros"></div>
+        </section>
+    </section>
 
 
     <section class="tela" id="telaAgendamentos">
@@ -1885,6 +1958,24 @@ body::after{
     </div>
 </div>
 
+<div class="modal-bg" id="modalEditarRegistro">
+    <div class="modal">
+        <h3>Editar registro</h3>
+        <div class="form-grid">
+            <input type="hidden" id="editRegId" />
+            <input type="text" id="editRegTitulo" placeholder="Título do registro" maxlength="120" />
+            <textarea id="editRegDescricao" placeholder="Descreva o atendimento realizado..."></textarea>
+            <select id="editRegTarefa">
+                <option value="">Sem atividade vinculada</option>
+            </select>
+            <div class="modal-actions">
+                <button class="btn-ghost" onclick="fecharModalEditarRegistro()">Cancelar</button>
+                <button class="btn-success" id="btnSalvarRegistroEdicao" onclick="salvarEdicaoRegistro()">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <footer>FF Registro © 2026 - Gestão de Atividades</footer>
 </div>
@@ -1900,6 +1991,7 @@ let camerasCache = [];
 let equipesCache = [];
 let escalasCache = [];
 let funcionariosCache = [];
+let registrosCache = [];
 let carregando = false;
 let currentUser = null;
 let semanaOffset = 0;
@@ -2116,6 +2208,9 @@ async function carregarTudo(){
         await Promise.all([carregarEquipes(), carregarFuncionarios()]);
         await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEscalas()]);
 
+        // Registros dependem das tarefas (pra mostrar o título da atividade vinculada).
+        await carregarRegistros();
+
         // O calendário combina escalas + agendamentos; recalcula aqui pra garantir
         // que os dois já estejam carregados, independente da ordem interna do Promise.all.
         renderizarCalendario();
@@ -2143,6 +2238,7 @@ async function carregarTarefas(){
     renderizarTarefas(tarefasCache);
     renderizarAdminAtividades();
     atualizarDashboard();
+    renderizarSelectsTarefasRegistro();
 }
 
 function renderizarTarefas(lista){
@@ -2154,6 +2250,7 @@ function renderizarTarefas(lista){
     const filtroStatus = el("filtroStatus").value;
     const filtroPrioridade = el("filtroPrioridade").value;
     const filtroTecnico = el("filtroTecnico")?.value || "";
+    const algumFiltroAtivo = !!(busca || filtroStatus || filtroPrioridade || filtroTecnico);
 
     const filtradas = lista.filter(item => {
         const texto = `${item.titulo || ""} ${item.descricao || ""}`.toLowerCase();
@@ -2164,13 +2261,37 @@ function renderizarTarefas(lista){
         return statusOk && prioridadeOk && tecnicoOk && buscaOk;
     });
 
-    filtradas.forEach(renderizarTarefa);
+    const abertas = filtradas.filter(item => (item.status || "todo") !== "done");
+    let concluidas = filtradas.filter(item => item.status === "done")
+        .sort((a, b) => new Date(b.concluido_em || b.created_at || 0) - new Date(a.concluido_em || a.created_at || 0));
 
-    ["todo","doing","done"].forEach(status => {
+    const LIMITE_CONCLUIDAS = 5;
+    const totalConcluidas = concluidas.length;
+    const limitadas = !algumFiltroAtivo && totalConcluidas > LIMITE_CONCLUIDAS;
+    if(limitadas){
+        concluidas = concluidas.slice(0, LIMITE_CONCLUIDAS);
+    }
+
+    abertas.forEach(renderizarTarefa);
+    concluidas.forEach(renderizarTarefa);
+
+    ["todo","doing"].forEach(status => {
         if(el(status).children.length === 0){
             el(status).innerHTML = `<div class="empty">Nenhuma atividade</div>`;
         }
     });
+
+    if(el("done").children.length === 0){
+        el("done").innerHTML = `<div class="empty">Nenhuma atividade</div>`;
+    }else if(limitadas){
+        const restantes = totalConcluidas - LIMITE_CONCLUIDAS;
+        const aviso = document.createElement("div");
+        aviso.className = "empty";
+        aviso.style.cursor = "pointer";
+        aviso.innerHTML = `Mostrando as ${LIMITE_CONCLUIDAS} mais recentes · +${restantes} mais antiga${restantes === 1 ? "" : "s"}<br><strong style="color:var(--primary-2)">Pesquisar para ver todas →</strong>`;
+        aviso.onclick = () => el("busca").focus();
+        el("done").appendChild(aviso);
+    }
 }
 
 function funcionarioPorId(id){
@@ -2361,15 +2482,20 @@ async function salvarEdicaoTarefa(){
 
 async function moverTarefa(id, status){
     try{
+        const concluido_em = status === "done" ? new Date().toISOString() : null;
+
         const { error } = await supabaseClient
             .from("tarefas")
-            .update({ status, atualizado_por: nomeUsuarioAtual() })
+            .update({ status, concluido_em, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
 
         const tarefa = tarefasCache.find(t => t.id === id);
-        if(tarefa) tarefa.status = status;
+        if(tarefa){
+            tarefa.status = status;
+            tarefa.concluido_em = concluido_em;
+        }
         renderizarTarefas(tarefasCache);
         atualizarDashboard();
         mostrarMensagem("Status atualizado.", "ok");
@@ -2384,7 +2510,7 @@ async function concluirTarefa(id){
 }
 
 async function apagarTarefa(id){
-    if(!confirm("Deseja apagar esta atividade?")) return;
+    if(!confirm("Deseja apagar esta atividade? Registros vinculados a ela ficarão sem atividade definida.")) return;
 
     try{
         const { error } = await supabaseClient
@@ -2396,6 +2522,7 @@ async function apagarTarefa(id){
 
         mostrarMensagem("Atividade apagada.", "ok");
         await carregarTarefas();
+        await carregarRegistros();
     }catch(e){
         mostrarMensagem("Erro ao apagar tarefa: " + e.message);
     }
@@ -2465,14 +2592,17 @@ async function drop(ev){
     if(!id || !novoStatus || !tarefa || tarefa.status === novoStatus) return;
 
     try{
+        const concluido_em = novoStatus === "done" ? new Date().toISOString() : null;
+
         const { error } = await supabaseClient
             .from("tarefas")
-            .update({ status: novoStatus, atualizado_por: nomeUsuarioAtual() })
+            .update({ status: novoStatus, concluido_em, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
 
         tarefa.status = novoStatus;
+        tarefa.concluido_em = concluido_em;
         renderizarTarefas(tarefasCache);
         atualizarDashboard();
     }catch(e){
@@ -2480,6 +2610,216 @@ async function drop(ev){
         await carregarTarefas();
     }
 }
+
+
+/* ===================== REGISTRO DE ATENDIMENTOS ===================== */
+
+function tarefaPorId(id){
+    return tarefasCache.find(t => t.id === id);
+}
+
+function tituloTarefaVinculada(item){
+    if(!item.tarefa_id) return null;
+    const tarefa = tarefaPorId(item.tarefa_id);
+    return tarefa ? tarefa.titulo : "Atividade removida";
+}
+
+function formatarDataHora(dataISO){
+    if(!dataISO) return "-";
+    return new Date(dataISO).toLocaleString("pt-BR", {
+        day:"2-digit",
+        month:"2-digit",
+        year:"numeric",
+        hour:"2-digit",
+        minute:"2-digit"
+    });
+}
+
+function renderizarSelectsTarefasRegistro(){
+    const selects = [el("regTarefa"), el("editRegTarefa")];
+
+    selects.forEach(select => {
+        if(!select) return;
+        const valorAtual = select.value;
+        select.innerHTML = `<option value="">Sem atividade vinculada</option>`;
+
+        tarefasCache.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t.id;
+            opt.textContent = `${t.titulo} (${STATUS_LABEL[t.status || "todo"]})`;
+            select.appendChild(opt);
+        });
+
+        if(valorAtual) select.value = valorAtual;
+    });
+}
+
+async function carregarRegistros(){
+    const { data, error } = await supabaseClient
+        .from("registros")
+        .select("*")
+        .order("created_at", { ascending:false });
+
+    if(error) throw error;
+
+    registrosCache = data || [];
+    renderizarRegistros();
+}
+
+function renderizarRegistros(){
+    const container = el("listaRegistros");
+    if(!container) return;
+
+    const busca = (el("buscaRegistro")?.value || "").toLowerCase().trim();
+
+    const filtrados = registrosCache.filter(item => {
+        if(!busca) return true;
+        const tarefaTitulo = (tituloTarefaVinculada(item) || "").toLowerCase();
+        const texto = `${item.titulo || ""} ${item.descricao || ""} ${tarefaTitulo}`.toLowerCase();
+        return texto.includes(busca);
+    });
+
+    el("totalRegistros").textContent = `${registrosCache.length} registro(s)`;
+
+    if(filtrados.length === 0){
+        container.innerHTML = `<div class="empty">${registrosCache.length === 0 ? "Nenhum registro ainda. Adicione o primeiro atendimento do dia." : "Nenhum registro encontrado para essa busca."}</div>`;
+        return;
+    }
+
+    container.innerHTML = filtrados.map(item => {
+        const tarefaTitulo = tituloTarefaVinculada(item);
+        const edicaoDiferente = item.atualizado_por && item.atualizado_por !== item.criado_por;
+
+        return `
+            <div class="registro-card">
+                <h4>${escapar(item.titulo)}</h4>
+                <p>${escapar(item.descricao || "Sem descrição")}</p>
+                <div class="registro-meta">
+                    <div>
+                        ${tarefaTitulo ? `<span class="registro-tarefa-chip">🔗 ${escapar(tarefaTitulo)}</span>` : ""}
+                        <span class="auditoria">${formatarDataHora(item.created_at)} · ${escapar(item.criado_por || "-")}${edicaoDiferente ? " · edit.: " + escapar(item.atualizado_por) : ""}</span>
+                    </div>
+                    <div class="acoes" style="margin-top:0">
+                        <button class="btn-warning" onclick="editarRegistro('${item.id}')">Editar</button>
+                        <button class="btn-danger" onclick="apagarRegistro('${item.id}')">Apagar</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function filtrarRegistros(){
+    renderizarRegistros();
+}
+
+async function criarRegistro(){
+    const titulo = el("regTitulo").value.trim();
+    const descricao = el("regDescricao").value.trim();
+    const tarefa_id = el("regTarefa").value || null;
+
+    if(!titulo){
+        mostrarMensagem("Informe o título do registro.");
+        el("regTitulo").focus();
+        return;
+    }
+
+    setLoading("btnCriarRegistro", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("registros")
+            .insert([{ titulo, descricao, tarefa_id, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+
+        if(error) throw error;
+
+        el("regTitulo").value = "";
+        el("regDescricao").value = "";
+        el("regTarefa").value = "";
+
+        mostrarMensagem("Registro salvo com sucesso.", "ok");
+        await carregarRegistros();
+        el("formNovoRegistro").style.display = "none";
+        el("btnToggleFormRegistro").textContent = "+ Novo registro";
+    }catch(e){
+        mostrarMensagem("Erro ao criar registro: " + e.message);
+    }finally{
+        setLoading("btnCriarRegistro", false);
+    }
+}
+
+function editarRegistro(id){
+    const item = registrosCache.find(r => r.id === id);
+    if(!item) return;
+
+    el("editRegId").value = item.id;
+    el("editRegTitulo").value = item.titulo || "";
+    el("editRegDescricao").value = item.descricao || "";
+    el("editRegTarefa").value = item.tarefa_id || "";
+    el("modalEditarRegistro").classList.add("ativo");
+}
+
+function fecharModalEditarRegistro(){
+    el("modalEditarRegistro").classList.remove("ativo");
+}
+
+async function salvarEdicaoRegistro(){
+    const id = el("editRegId").value;
+    const titulo = el("editRegTitulo").value.trim();
+    const descricao = el("editRegDescricao").value.trim();
+    const tarefa_id = el("editRegTarefa").value || null;
+
+    if(!titulo){
+        mostrarMensagem("Informe o título do registro.");
+        return;
+    }
+
+    setLoading("btnSalvarRegistroEdicao", true);
+
+    try{
+        const { error } = await supabaseClient
+            .from("registros")
+            .update({ titulo, descricao, tarefa_id, atualizado_por: nomeUsuarioAtual() })
+            .eq("id", id);
+
+        if(error) throw error;
+
+        fecharModalEditarRegistro();
+        mostrarMensagem("Registro atualizado com sucesso.", "ok");
+        await carregarRegistros();
+    }catch(e){
+        mostrarMensagem("Erro ao editar registro: " + e.message);
+    }finally{
+        setLoading("btnSalvarRegistroEdicao", false);
+    }
+}
+
+async function apagarRegistro(id){
+    if(!confirm("Deseja apagar este registro?")) return;
+
+    try{
+        const { error } = await supabaseClient
+            .from("registros")
+            .delete()
+            .eq("id", id);
+
+        if(error) throw error;
+
+        mostrarMensagem("Registro apagado.", "ok");
+        await carregarRegistros();
+    }catch(e){
+        mostrarMensagem("Erro ao apagar registro: " + e.message);
+    }
+}
+
+function alternarFormRegistro(){
+    const form = el("formNovoRegistro");
+    const visivel = form.style.display !== "none";
+    form.style.display = visivel ? "none" : "grid";
+    el("btnToggleFormRegistro").textContent = visivel ? "+ Novo registro" : "Fechar formulário";
+    if(!visivel) el("regTitulo").focus();
+}
+
 
 async function carregarAgendamentos(){
     const { data, error } = await supabaseClient
@@ -2662,7 +3002,7 @@ async function apagarAgendamento(id){
 
 
 function abrirAba(nome){
-    const abas = ["Atividades", "Agendamentos", "Calendario", "TV", "Configuracoes"];
+    const abas = ["Atividades", "Registro", "Agendamentos", "Calendario", "TV", "Configuracoes"];
 
     abas.forEach(aba => {
         const tela = el("tela" + aba);
@@ -3947,6 +4287,9 @@ el("modalEditarEquipe").addEventListener("click", function(ev){
 el("modalEditarFuncionario").addEventListener("click", function(ev){
     if(ev.target === this) fecharModalEditarFuncionario();
 });
+el("modalEditarRegistro").addEventListener("click", function(ev){
+    if(ev.target === this) fecharModalEditarRegistro();
+});
 
 document.addEventListener("keydown", function(ev){
     if(ev.key === "Escape"){
@@ -3956,6 +4299,7 @@ document.addEventListener("keydown", function(ev){
         fecharModalEditarEscala();
         fecharModalEditarEquipe();
         fecharModalEditarFuncionario();
+        fecharModalEditarRegistro();
     }
 });
 

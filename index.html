@@ -1163,9 +1163,23 @@ body::after{
     padding:14px;
     margin-bottom:12px;
 }
-.registro-card h4{
+.registro-topo{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
     margin-bottom:6px;
+}
+.registro-topo h4{
     word-break:break-word;
+}
+.registro-data-badge{
+    flex:0 0 auto;
+    font-size:11.5px;
+    font-weight:700;
+    color:var(--muted);
+    white-space:nowrap;
+    padding-top:2px;
 }
 .registro-card p{
     color:#cbd5e1;
@@ -1182,7 +1196,8 @@ body::after{
     margin-top:10px;
     flex-wrap:wrap;
 }
-.registro-tarefa-chip{
+.registro-tarefa-chip,
+.registro-equipe-chip{
     display:inline-flex;
     align-items:center;
     gap:6px;
@@ -1190,9 +1205,23 @@ body::after{
     border-radius:999px;
     font-size:11.5px;
     font-weight:700;
+    margin-bottom:6px;
+    margin-right:6px;
+}
+.registro-tarefa-chip{
     background:rgba(59,130,246,.16);
     color:#93c5fd;
-    margin-bottom:6px;
+}
+.campo-data-hoje{
+    display:flex;
+    gap:8px;
+}
+.campo-data-hoje input{
+    flex:1;
+}
+.campo-data-hoje button{
+    flex:0 0 auto;
+    white-space:nowrap;
 }
 </style>
 </head>
@@ -1349,20 +1378,30 @@ body::after{
                 </div>
             </div>
 
-            <p class="config-hint">Registre aqui os atendimentos e observações do seu dia. Você pode vincular cada registro a uma atividade já cadastrada.</p>
+            <p class="config-hint">Registre aqui os atendimentos do dia — informe a equipe responsável e, se quiser, vincule a uma atividade já cadastrada.</p>
 
             <div class="form-grid quick-form" id="formNovoRegistro" style="display:none">
-                <input type="text" id="regTitulo" placeholder="Título do registro" maxlength="120" />
-                <textarea id="regDescricao" placeholder="Descreva o atendimento realizado..."></textarea>
+                <input type="text" id="regTitulo" placeholder="Título do registro. Ex: Liberação de equipamento" maxlength="120" />
+                <textarea id="regDescricao" placeholder="Descreva o que foi feito..."></textarea>
 
-                <select id="regTarefa">
-                    <option value="">Sem atividade vinculada</option>
-                </select>
+                <div class="inline-grid">
+                    <select id="regEquipe">
+                        <option value="">Selecione a equipe...</option>
+                    </select>
+                    <select id="regTarefa">
+                        <option value="">Sem atividade vinculada</option>
+                    </select>
+                </div>
+
+                <div class="campo-data-hoje">
+                    <input type="date" id="regData" />
+                    <button type="button" class="btn-ghost" onclick="preencherDataHoje('regData')">Hoje</button>
+                </div>
 
                 <button class="btn-purple" id="btnCriarRegistro" onclick="criarRegistro()">Salvar registro</button>
             </div>
 
-            <input type="search" id="buscaRegistro" placeholder="Pesquisar por título, descrição ou atividade..." oninput="filtrarRegistros()" style="margin-bottom:16px" />
+            <input type="search" id="buscaRegistro" placeholder="Pesquisar por título, descrição, equipe ou atividade..." oninput="filtrarRegistros()" style="margin-bottom:16px" />
 
             <div id="listaRegistros"></div>
         </section>
@@ -1964,10 +2003,19 @@ body::after{
         <div class="form-grid">
             <input type="hidden" id="editRegId" />
             <input type="text" id="editRegTitulo" placeholder="Título do registro" maxlength="120" />
-            <textarea id="editRegDescricao" placeholder="Descreva o atendimento realizado..."></textarea>
-            <select id="editRegTarefa">
-                <option value="">Sem atividade vinculada</option>
-            </select>
+            <textarea id="editRegDescricao" placeholder="Descreva o que foi feito..."></textarea>
+            <div class="inline-grid">
+                <select id="editRegEquipe">
+                    <option value="">Selecione a equipe...</option>
+                </select>
+                <select id="editRegTarefa">
+                    <option value="">Sem atividade vinculada</option>
+                </select>
+            </div>
+            <div class="campo-data-hoje">
+                <input type="date" id="editRegData" />
+                <button type="button" class="btn-ghost" onclick="preencherDataHoje('editRegData')">Hoje</button>
+            </div>
             <div class="modal-actions">
                 <button class="btn-ghost" onclick="fecharModalEditarRegistro()">Cancelar</button>
                 <button class="btn-success" id="btnSalvarRegistroEdicao" onclick="salvarEdicaoRegistro()">Salvar alterações</button>
@@ -2624,6 +2672,28 @@ function tituloTarefaVinculada(item){
     return tarefa ? tarefa.titulo : "Atividade removida";
 }
 
+function chipEquipeRegistro(item){
+    if(!item.equipe_id){
+        return `<span class="registro-equipe-chip" style="background:rgba(148,163,184,.16);color:#cbd5e1">👥 Sem equipe definida</span>`;
+    }
+    const equipe = equipePorId(item.equipe_id);
+    if(!equipe){
+        return `<span class="registro-equipe-chip" style="background:rgba(239,68,68,.14);color:#fca5a5">👥 Equipe removida</span>`;
+    }
+    const cor = corEquipe(equipe);
+    return `<span class="registro-equipe-chip" style="background:${cor}22;color:${cor}">👥 ${escapar(equipe.nome)}</span>`;
+}
+
+function nomeEquipeRegistroTexto(item){
+    if(!item.equipe_id) return "";
+    const equipe = equipePorId(item.equipe_id);
+    return equipe ? equipe.nome : "";
+}
+
+function preencherDataHoje(inputId){
+    el(inputId).value = formatarDataISO(new Date());
+}
+
 function formatarDataHora(dataISO){
     if(!dataISO) return "-";
     return new Date(dataISO).toLocaleString("pt-BR", {
@@ -2658,6 +2728,7 @@ async function carregarRegistros(){
     const { data, error } = await supabaseClient
         .from("registros")
         .select("*")
+        .order("data", { ascending:false })
         .order("created_at", { ascending:false });
 
     if(error) throw error;
@@ -2675,7 +2746,8 @@ function renderizarRegistros(){
     const filtrados = registrosCache.filter(item => {
         if(!busca) return true;
         const tarefaTitulo = (tituloTarefaVinculada(item) || "").toLowerCase();
-        const texto = `${item.titulo || ""} ${item.descricao || ""} ${tarefaTitulo}`.toLowerCase();
+        const equipeNome = nomeEquipeRegistroTexto(item).toLowerCase();
+        const texto = `${item.titulo || ""} ${item.descricao || ""} ${tarefaTitulo} ${equipeNome}`.toLowerCase();
         return texto.includes(busca);
     });
 
@@ -2692,12 +2764,16 @@ function renderizarRegistros(){
 
         return `
             <div class="registro-card">
-                <h4>${escapar(item.titulo)}</h4>
+                <div class="registro-topo">
+                    <h4>${escapar(item.titulo)}</h4>
+                    <span class="registro-data-badge">📅 ${formatarData(item.data)}</span>
+                </div>
                 <p>${escapar(item.descricao || "Sem descrição")}</p>
                 <div class="registro-meta">
                     <div>
+                        ${chipEquipeRegistro(item)}
                         ${tarefaTitulo ? `<span class="registro-tarefa-chip">🔗 ${escapar(tarefaTitulo)}</span>` : ""}
-                        <span class="auditoria">${formatarDataHora(item.created_at)} · ${escapar(item.criado_por || "-")}${edicaoDiferente ? " · edit.: " + escapar(item.atualizado_por) : ""}</span>
+                        <span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${edicaoDiferente ? " · edit.: " + escapar(item.atualizado_por) : ""}</span>
                     </div>
                     <div class="acoes" style="margin-top:0">
                         <button class="btn-warning" onclick="editarRegistro('${item.id}')">Editar</button>
@@ -2716,11 +2792,13 @@ function filtrarRegistros(){
 async function criarRegistro(){
     const titulo = el("regTitulo").value.trim();
     const descricao = el("regDescricao").value.trim();
+    const equipe_id = el("regEquipe").value || null;
     const tarefa_id = el("regTarefa").value || null;
+    const data = el("regData").value || formatarDataISO(new Date());
 
-    if(!titulo){
-        mostrarMensagem("Informe o título do registro.");
-        el("regTitulo").focus();
+    if(!titulo || !equipe_id){
+        mostrarMensagem("Informe o título e selecione a equipe responsável pelo registro.");
+        if(!titulo) el("regTitulo").focus(); else el("regEquipe").focus();
         return;
     }
 
@@ -2729,13 +2807,15 @@ async function criarRegistro(){
     try{
         const { error } = await supabaseClient
             .from("registros")
-            .insert([{ titulo, descricao, tarefa_id, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+            .insert([{ titulo, descricao, data, equipe_id, tarefa_id, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
         el("regTitulo").value = "";
         el("regDescricao").value = "";
+        el("regEquipe").value = "";
         el("regTarefa").value = "";
+        el("regData").value = formatarDataISO(new Date());
 
         mostrarMensagem("Registro salvo com sucesso.", "ok");
         await carregarRegistros();
@@ -2755,7 +2835,9 @@ function editarRegistro(id){
     el("editRegId").value = item.id;
     el("editRegTitulo").value = item.titulo || "";
     el("editRegDescricao").value = item.descricao || "";
+    el("editRegEquipe").value = item.equipe_id || "";
     el("editRegTarefa").value = item.tarefa_id || "";
+    el("editRegData").value = item.data || formatarDataISO(new Date());
     el("modalEditarRegistro").classList.add("ativo");
 }
 
@@ -2767,10 +2849,12 @@ async function salvarEdicaoRegistro(){
     const id = el("editRegId").value;
     const titulo = el("editRegTitulo").value.trim();
     const descricao = el("editRegDescricao").value.trim();
+    const equipe_id = el("editRegEquipe").value || null;
     const tarefa_id = el("editRegTarefa").value || null;
+    const data = el("editRegData").value || formatarDataISO(new Date());
 
-    if(!titulo){
-        mostrarMensagem("Informe o título do registro.");
+    if(!titulo || !equipe_id){
+        mostrarMensagem("Informe o título e selecione a equipe responsável pelo registro.");
         return;
     }
 
@@ -2779,7 +2863,7 @@ async function salvarEdicaoRegistro(){
     try{
         const { error } = await supabaseClient
             .from("registros")
-            .update({ titulo, descricao, tarefa_id, atualizado_por: nomeUsuarioAtual() })
+            .update({ titulo, descricao, data, equipe_id, tarefa_id, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -2817,7 +2901,10 @@ function alternarFormRegistro(){
     const visivel = form.style.display !== "none";
     form.style.display = visivel ? "none" : "grid";
     el("btnToggleFormRegistro").textContent = visivel ? "+ Novo registro" : "Fechar formulário";
-    if(!visivel) el("regTitulo").focus();
+    if(!visivel){
+        if(!el("regData").value) el("regData").value = formatarDataISO(new Date());
+        el("regTitulo").focus();
+    }
 }
 
 
@@ -3298,17 +3385,20 @@ function corEquipe(item){
 }
 
 function renderizarSelectsEquipes(){
-    const selects = [el("escEquipe"), el("editEscEquipe"), el("filtroEscalaEquipe")];
+    const selects = [el("escEquipe"), el("editEscEquipe"), el("filtroEscalaEquipe"), el("regEquipe"), el("editRegEquipe")];
     const ativas = equipesCache.filter(e => e.ativo !== false);
 
     selects.forEach(select => {
         if(!select) return;
         const valorAtual = select.value;
-        const ehFiltro = select.id === "filtroEscalaEquipe";
 
-        select.innerHTML = ehFiltro ? `<option value="">Todas as equipes</option>` : "";
+        let opcaoVazia = "";
+        if(select.id === "filtroEscalaEquipe") opcaoVazia = `<option value="">Todas as equipes</option>`;
+        if(select.id === "regEquipe" || select.id === "editRegEquipe") opcaoVazia = `<option value="">Selecione a equipe...</option>`;
 
-        if(!ehFiltro && ativas.length === 0){
+        select.innerHTML = opcaoVazia;
+
+        if(!opcaoVazia && ativas.length === 0){
             select.innerHTML = `<option value="">Cadastre uma equipe primeiro</option>`;
         }
 
@@ -3457,6 +3547,7 @@ async function salvarEdicaoEquipe(){
         mostrarMensagem("Equipe atualizada com sucesso.", "ok");
         await carregarEquipes();
         renderizarCalendario();
+        renderizarRegistros();
     }catch(e){
         mostrarMensagem("Erro ao editar equipe: " + e.message);
     }finally{
@@ -3465,7 +3556,7 @@ async function salvarEdicaoEquipe(){
 }
 
 async function apagarEquipe(id){
-    if(!confirm("Deseja apagar esta equipe? As escalas vinculadas ficarão sem equipe definida.")) return;
+    if(!confirm("Deseja apagar esta equipe? As escalas e registros vinculados ficarão sem equipe definida.")) return;
 
     try{
         const { error } = await supabaseClient
@@ -3478,6 +3569,7 @@ async function apagarEquipe(id){
         mostrarMensagem("Equipe apagada.", "ok");
         await carregarEquipes();
         await carregarEscalas();
+        await carregarRegistros();
     }catch(e){
         mostrarMensagem("Erro ao apagar equipe: " + e.message);
     }

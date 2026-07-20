@@ -1246,6 +1246,26 @@ body::after{
 .reg-camera-item:last-child{border-bottom:0}
 @media(max-width:700px){.reg-camera-row{grid-template-columns:1fr}.reg-camera-row button{width:100%}}
 
+
+
+/* ===== MAPA DE GRAVADORES ===== */
+.mapa-layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+.mapa-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.mapa-toolbar select{max-width:420px}
+.canais-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.canal-card{background:linear-gradient(180deg,#23304a,#1b263d);border:1px solid rgba(148,163,184,.2);border-left:5px solid var(--primary-2);border-radius:16px;padding:14px}
+.canal-numero{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.canal-numero strong{font-size:16px}
+.canal-atual{padding:9px 10px;border-radius:10px;background:rgba(15,23,42,.58);margin-bottom:10px;color:#cbd5e1;font-size:13px}
+.canal-atual b{color:var(--text)}
+.canal-edicao{display:grid;gap:8px}
+.historico-canal{margin-top:10px;border-top:1px dashed var(--border);padding-top:9px}
+.historico-canal summary{cursor:pointer;color:#93c5fd;font-size:12px;font-weight:700}
+.historico-item{padding:8px 0;border-bottom:1px solid rgba(148,163,184,.12);font-size:12px;color:#cbd5e1;line-height:1.45}
+.historico-item:last-child{border-bottom:0}
+.gravador-resumo{padding:14px;border-radius:14px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16);margin-bottom:12px}
+@media(max-width:1050px){.mapa-layout{grid-template-columns:1fr}}
+
 </style>
 </head>
 
@@ -1300,6 +1320,7 @@ body::after{
 
     <nav class="tabs">
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
+        <button class="tab-btn" id="tabMapaGravadores" onclick="abrirAba('MapaGravadores')">🎛️ Mapa de Gravadores</button>
         <button class="tab-btn" id="tabRegistro" onclick="abrirAba('Registro')">📝 Registro</button>
         <button class="tab-btn" id="tabAgendamentos" onclick="abrirAba('Agendamentos')">🗓️ Agendamentos</button>
         <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🚐 Calendário CFTV</button>
@@ -1389,6 +1410,56 @@ body::after{
         </section>
     </main>
 
+
+
+    <section class="tela" id="telaMapaGravadores">
+        <div class="admin-header card">
+            <div>
+                <span class="admin-kicker">Histórico por canal</span>
+                <h2>Mapa de Gravadores</h2>
+                <p>Cadastre cada gravador e acompanhe, canal por canal, qual câmera está conectada e todas as substituições realizadas.</p>
+            </div>
+            <div class="admin-badge">🎛️</div>
+        </div>
+
+        <div class="mapa-layout">
+            <aside class="side">
+                <section class="card panel">
+                    <div class="panel-title"><h3>Novo gravador</h3><span class="badge">+</span></div>
+                    <div class="form-grid">
+                        <input type="text" id="mapaGravNome" placeholder="Identificação. Ex: NVR Portaria" maxlength="100" />
+                        <input type="text" id="mapaGravLocal" placeholder="Local do gravador" maxlength="140" />
+                        <select id="mapaGravCanais">
+                            <option value="16">16 canais</option>
+                            <option value="32">32 canais</option>
+                        </select>
+                        <textarea id="mapaGravObs" placeholder="Observações do gravador"></textarea>
+                        <button class="btn-purple" id="btnCriarMapaGravador" onclick="criarMapaGravador()">Criar mapa do gravador</button>
+                    </div>
+                </section>
+
+                <section class="card panel">
+                    <div class="panel-title"><h3>Gravadores cadastrados</h3><span class="badge" id="totalMapaGravadores">0</span></div>
+                    <div id="listaMapaGravadores"><div class="empty">Nenhum gravador cadastrado.</div></div>
+                </section>
+            </aside>
+
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Mapa dos canais</h3>
+                    <span class="pill" id="mapaGravadorStatus">Selecione um gravador</span>
+                </div>
+                <div class="mapa-toolbar">
+                    <select id="mapaGravadorSelecionado" onchange="selecionarMapaGravador(this.value)">
+                        <option value="">Selecione um gravador...</option>
+                    </select>
+                    <input type="search" id="buscaCanalMapa" placeholder="Pesquisar por canal ou câmera..." oninput="renderizarCanaisMapa()" />
+                </div>
+                <div id="mapaGravadorDetalhes"></div>
+                <div id="gradeCanaisMapa" class="canais-grid"><div class="empty" style="grid-column:1/-1">Selecione um gravador para abrir o mapa.</div></div>
+            </section>
+        </div>
+    </section>
 
     <section class="tela" id="telaRegistro">
 
@@ -2092,6 +2163,9 @@ let equipesCache = [];
 let escalasCache = [];
 let funcionariosCache = [];
 let registrosCache = [];
+let mapaGravadoresCache = [];
+let mapaCanaisCache = [];
+let mapaGravadorAtualId = "";
 let carregando = false;
 let currentUser = null;
 let semanaOffset = 0;
@@ -2310,6 +2384,7 @@ async function carregarTudo(){
 
         // Registros dependem das tarefas (pra mostrar o título da atividade vinculada).
         await carregarRegistros();
+        await carregarMapaGravadores();
 
         // O calendário combina escalas + agendamentos; recalcula aqui pra garantir
         // que os dois já estejam carregados, independente da ordem interna do Promise.all.
@@ -3027,6 +3102,146 @@ function alternarFormRegistro(){
 }
 
 
+
+/* ===== MAPA DE GRAVADORES ===== */
+function historicoCanalNormalizado(valor){
+    if(Array.isArray(valor)) return valor;
+    if(typeof valor === "string"){
+        try{ const parsed = JSON.parse(valor); return Array.isArray(parsed) ? parsed : []; }catch(_){ return []; }
+    }
+    return [];
+}
+
+async function carregarMapaGravadores(){
+    const { data, error } = await supabaseClient.from("mapa_gravadores").select("*").order("nome", {ascending:true});
+    if(error) throw error;
+    mapaGravadoresCache = data || [];
+    renderizarMapaGravadores();
+    if(mapaGravadorAtualId && mapaGravadoresCache.some(g => g.id === mapaGravadorAtualId)){
+        await carregarCanaisMapa(mapaGravadorAtualId);
+    }
+}
+
+function renderizarMapaGravadores(){
+    const select = el("mapaGravadorSelecionado");
+    const lista = el("listaMapaGravadores");
+    if(!select || !lista) return;
+    const atual = mapaGravadorAtualId || select.value;
+    select.innerHTML = '<option value="">Selecione um gravador...</option>' + mapaGravadoresCache.map(g =>
+        `<option value="${g.id}">${escapar(g.nome)} · ${g.canais} canais${g.local ? " · " + escapar(g.local) : ""}</option>`
+    ).join("");
+    if(atual && mapaGravadoresCache.some(g => g.id === atual)) select.value = atual;
+    el("totalMapaGravadores").textContent = mapaGravadoresCache.length;
+    lista.innerHTML = mapaGravadoresCache.length ? mapaGravadoresCache.map(g => `
+        <div class="gravador-resumo">
+            <strong>${escapar(g.nome)}</strong>
+            <div class="camera-info">${escapar(g.local || "Local não informado")} · ${g.canais} canais</div>
+            <div class="copy-row">
+                <button onclick="selecionarMapaGravador('${g.id}')">Abrir mapa</button>
+                <button class="btn-danger" onclick="apagarMapaGravador('${g.id}')">Apagar</button>
+            </div>
+        </div>`).join("") : '<div class="empty">Nenhum gravador cadastrado.</div>';
+}
+
+async function criarMapaGravador(){
+    const nome = el("mapaGravNome").value.trim();
+    const local = el("mapaGravLocal").value.trim();
+    const canais = Number(el("mapaGravCanais").value);
+    const observacao = el("mapaGravObs").value.trim();
+    if(!nome){ mostrarMensagem("Informe a identificação do gravador."); el("mapaGravNome").focus(); return; }
+    setLoading("btnCriarMapaGravador", true);
+    try{
+        const { data, error } = await supabaseClient.from("mapa_gravadores")
+            .insert([{nome, local, canais, observacao, criado_por:nomeUsuarioAtual(), atualizado_por:nomeUsuarioAtual()}])
+            .select().single();
+        if(error) throw error;
+        const canaisRows = Array.from({length:canais}, (_,i) => ({gravador_id:data.id, canal:i+1, camera_atual:null, historico:[]}));
+        const { error:errorCanais } = await supabaseClient.from("mapa_gravador_canais").insert(canaisRows);
+        if(errorCanais) throw errorCanais;
+        el("mapaGravNome").value=""; el("mapaGravLocal").value=""; el("mapaGravObs").value="";
+        mapaGravadorAtualId = data.id;
+        mostrarMensagem("Mapa do gravador criado com sucesso.", "ok");
+        await carregarMapaGravadores();
+        await selecionarMapaGravador(data.id);
+    }catch(e){ mostrarMensagem("Erro ao criar mapa: " + e.message); }
+    finally{ setLoading("btnCriarMapaGravador", false); }
+}
+
+async function selecionarMapaGravador(id){
+    mapaGravadorAtualId = id || "";
+    if(el("mapaGravadorSelecionado")) el("mapaGravadorSelecionado").value = mapaGravadorAtualId;
+    if(!mapaGravadorAtualId){ mapaCanaisCache=[]; renderizarCanaisMapa(); return; }
+    await carregarCanaisMapa(mapaGravadorAtualId);
+}
+
+async function carregarCanaisMapa(gravadorId){
+    const { data, error } = await supabaseClient.from("mapa_gravador_canais").select("*").eq("gravador_id", gravadorId).order("canal", {ascending:true});
+    if(error){ mostrarMensagem("Erro ao carregar canais: " + error.message); return; }
+    mapaCanaisCache = data || [];
+    renderizarCanaisMapa();
+}
+
+function renderizarCanaisMapa(){
+    const grade = el("gradeCanaisMapa");
+    const detalhes = el("mapaGravadorDetalhes");
+    if(!grade || !detalhes) return;
+    const gravador = mapaGravadoresCache.find(g => g.id === mapaGravadorAtualId);
+    if(!gravador){
+        detalhes.innerHTML="";
+        el("mapaGravadorStatus").textContent="Selecione um gravador";
+        grade.innerHTML='<div class="empty" style="grid-column:1/-1">Selecione um gravador para abrir o mapa.</div>';
+        return;
+    }
+    el("mapaGravadorStatus").textContent = `${gravador.canais} canais`;
+    detalhes.innerHTML = `<div class="gravador-resumo"><strong>${escapar(gravador.nome)}</strong><div class="camera-info">${escapar(gravador.local || "Local não informado")}${gravador.observacao ? " · " + escapar(gravador.observacao) : ""}</div></div>`;
+    const busca=(el("buscaCanalMapa")?.value||"").toLowerCase().trim();
+    const canais=mapaCanaisCache.filter(c => !busca || String(c.canal).includes(busca) || (c.camera_atual||"").toLowerCase().includes(busca) || historicoCanalNormalizado(c.historico).some(h => `${h.anterior||""} ${h.nova||""}`.toLowerCase().includes(busca)));
+    grade.innerHTML = canais.length ? canais.map(c => {
+        const hist=historicoCanalNormalizado(c.historico).slice().reverse();
+        return `<div class="canal-card">
+            <div class="canal-numero"><strong>Canal ${String(c.canal).padStart(2,"0")}</strong><span class="tag ${c.camera_atual?'adicionada':'nao-adicionada'}">${c.camera_atual?'Ocupado':'Livre'}</span></div>
+            <div class="canal-atual">Câmera atual: <b>${escapar(c.camera_atual || "Nenhuma câmera")}</b></div>
+            <div class="canal-edicao">
+                <input type="text" id="novaCameraCanal_${c.id}" placeholder="Nova câmera / identificação" maxlength="160" />
+                <input type="text" id="obsCameraCanal_${c.id}" placeholder="Motivo ou observação da troca" maxlength="220" />
+                <button class="btn-success" onclick="alterarCameraCanal('${c.id}')">Registrar alteração</button>
+            </div>
+            <details class="historico-canal"><summary>Histórico (${hist.length})</summary>
+                ${hist.length ? hist.map(h => `<div class="historico-item"><b>${escapar(h.anterior || "Sem câmera")}</b> → <b>${escapar(h.nova || "Canal liberado")}</b><br>${escapar(h.data || "")} · ${escapar(h.usuario || "-")}${h.observacao ? "<br>"+escapar(h.observacao) : ""}</div>`).join("") : '<div class="historico-item">Nenhuma alteração registrada.</div>'}
+            </details>
+        </div>`;
+    }).join("") : '<div class="empty" style="grid-column:1/-1">Nenhum canal encontrado.</div>';
+}
+
+async function alterarCameraCanal(id){
+    const canal = mapaCanaisCache.find(c => c.id === id);
+    if(!canal) return;
+    const nova = el(`novaCameraCanal_${id}`).value.trim();
+    const observacao = el(`obsCameraCanal_${id}`).value.trim();
+    if(!nova && !canal.camera_atual){ mostrarMensagem("Informe a nova câmera para este canal."); return; }
+    const anterior = canal.camera_atual || "";
+    const historico = historicoCanalNormalizado(canal.historico);
+    historico.push({anterior, nova, observacao, data:new Date().toLocaleString("pt-BR"), usuario:nomeUsuarioAtual()});
+    try{
+        const { error } = await supabaseClient.from("mapa_gravador_canais").update({camera_atual:nova || null, historico, atualizado_por:nomeUsuarioAtual()}).eq("id", id);
+        if(error) throw error;
+        mostrarMensagem(`Canal ${canal.canal} atualizado: ${anterior || "sem câmera"} → ${nova || "livre"}.`, "ok");
+        await carregarCanaisMapa(mapaGravadorAtualId);
+    }catch(e){ mostrarMensagem("Erro ao atualizar canal: " + e.message); }
+}
+
+async function apagarMapaGravador(id){
+    const gravador=mapaGravadoresCache.find(g=>g.id===id);
+    if(!confirm(`Apagar o mapa de ${gravador?.nome || "este gravador"} e todo o histórico dos canais?`)) return;
+    try{
+        const {error}=await supabaseClient.from("mapa_gravadores").delete().eq("id",id);
+        if(error) throw error;
+        if(mapaGravadorAtualId===id){mapaGravadorAtualId="";mapaCanaisCache=[];}
+        mostrarMensagem("Mapa do gravador apagado.","ok");
+        await carregarMapaGravadores();
+    }catch(e){mostrarMensagem("Erro ao apagar mapa: "+e.message);}
+}
+
 async function carregarAgendamentos(){
     const { data, error } = await supabaseClient
         .from("agendamentos")
@@ -3208,7 +3423,7 @@ async function apagarAgendamento(id){
 
 
 function abrirAba(nome){
-    const abas = ["Atividades", "Registro", "Agendamentos", "Calendario", "TV", "Configuracoes"];
+    const abas = ["Atividades", "MapaGravadores", "Registro", "Agendamentos", "Calendario", "TV", "Configuracoes"];
 
     abas.forEach(aba => {
         const tela = el("tela" + aba);
@@ -3217,6 +3432,7 @@ function abrirAba(nome){
         if(tab) tab.classList.toggle("ativo", aba === nome);
     });
 
+    if(nome === "MapaGravadores") renderizarMapaGravadores();
     if(nome === "Calendario") renderizarCalendario();
     if(nome === "TV") renderizarTV();
 }

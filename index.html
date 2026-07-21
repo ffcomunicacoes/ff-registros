@@ -7,6 +7,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 
 <style>
 :root{
@@ -1297,6 +1300,22 @@ body::after{
   .canal-edicao{grid-template-columns:1fr}
 }
 
+
+
+/* ===== RELATÓRIOS E TESTE DE CONEXÃO ===== */
+.relatorio-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
+.relatorio-opcoes{display:grid;gap:10px;margin-top:12px}
+.relatorio-opcao{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#0f172a;cursor:pointer}
+.relatorio-opcao input{width:18px;height:18px;accent-color:var(--primary)}
+.relatorio-acoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.relatorio-acoes button:first-child{grid-column:1/-1}
+.relatorio-preview{min-height:520px;background:#fff;color:#172033;border-radius:16px;padding:30px;overflow:auto}
+.relatorio-preview h1{font-size:26px;margin-bottom:4px;color:#0f172a}.relatorio-preview h2{font-size:18px;color:#1d4ed8;margin:26px 0 10px;border-bottom:2px solid #dbeafe;padding-bottom:6px}
+.relatorio-preview h3{font-size:15px;margin:15px 0 7px}.relatorio-preview p{line-height:1.55}.relatorio-preview table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 16px}.relatorio-preview th,.relatorio-preview td{border:1px solid #dbe2ea;padding:7px;text-align:left;vertical-align:top}.relatorio-preview th{background:#eff6ff;color:#1e3a8a}.relatorio-preview .muted{color:#64748b}.relatorio-preview .resumo-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.relatorio-preview .resumo-card{background:#eff6ff;border-radius:10px;padding:12px}.relatorio-preview .resumo-card b{font-size:22px;display:block;color:#1d4ed8}
+.ping-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.ping-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.ping-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}.ping-aguardando{color:#64748b;background:#e2e8f0}.ping-testando{color:#b45309;background:#fef3c7}.ping-online{color:#15803d;background:#dcfce7}.ping-offline{color:#b91c1c;background:#fee2e2}.ping-bloqueado{color:#6d28d9;background:#ede9fe}.ping-sem-endereco{color:#64748b;background:#e2e8f0}
+@media(max-width:900px){.relatorio-layout{grid-template-columns:1fr}.relatorio-preview .resumo-cards{grid-template-columns:1fr 1fr}}
+@media print{body>*{display:none!important}#telaRelatorio,#telaRelatorio *{display:block!important}#telaRelatorio{position:absolute;inset:0;background:#fff}.relatorio-layout>aside,.admin-header,.tabs{display:none!important}.relatorio-preview{padding:0;box-shadow:none}}
+
 </style>
 </head>
 
@@ -1352,6 +1371,7 @@ body::after{
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
         <button class="tab-btn" id="tabMapaGravadores" onclick="abrirAba('MapaGravadores')">🎛️ Mapa de Gravadores</button>
         <button class="tab-btn" id="tabRegistro" onclick="abrirAba('Registro')">📝 Registro</button>
+        <button class="tab-btn" id="tabRelatorio" onclick="abrirAba('Relatorio')">📊 Relatório</button>
         <button class="tab-btn" id="tabAgendamentos" onclick="abrirAba('Agendamentos')">🗓️ Agendamentos</button>
         <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🚐 Calendário CFTV</button>
         <button class="tab-btn" id="tabTV" onclick="abrirAba('TV')">📺 TV</button>
@@ -1483,10 +1503,47 @@ body::after{
                         <option value="">Selecione um gravador...</option>
                     </select>
                     <input type="search" id="buscaCanalMapa" placeholder="Pesquisar por canal ou câmera..." oninput="renderizarCanaisMapa()" />
+                    <button type="button" class="btn-ghost" id="btnTestarCameras" onclick="testarCamerasDoMapa()" disabled>◉ Testar câmeras</button>
                 </div>
+                <div id="resumoPingMapa" class="ping-toolbar"></div>
                 <div id="mapaGravadorDetalhes"></div>
                 <div id="gradeCanaisMapa" class="canais-grid"><div class="empty" style="grid-column:1/-1">Selecione um gravador para abrir o mapa.</div></div>
             </section>
+        </div>
+    </section>
+
+    <section class="tela" id="telaRelatorio">
+        <div class="admin-header card">
+            <div><span class="admin-kicker">Exportação personalizada</span><h2>Relatórios</h2><p>Monte um relatório completo ou desmarque as seções que não deseja incluir.</p></div>
+            <div class="admin-badge">📊</div>
+        </div>
+        <div class="relatorio-layout">
+            <aside class="card panel">
+                <div class="panel-title"><h3>Configurar relatório</h3><span class="badge">PDF / Excel</span></div>
+                <div class="form-grid">
+                    <input type="text" id="relTitulo" value="Relatório técnico de CFTV" placeholder="Título do relatório" />
+                    <input type="date" id="relDataInicio" title="Data inicial" />
+                    <input type="date" id="relDataFim" title="Data final" />
+                    <select id="relGravador"><option value="">Todos os gravadores</option></select>
+                </div>
+                <div class="copy-row" style="margin-top:12px"><button class="btn-ghost" onclick="marcarOpcoesRelatorio(true)">Marcar tudo</button><button class="btn-ghost" onclick="marcarOpcoesRelatorio(false)">Desmarcar tudo</button></div>
+                <div class="relatorio-opcoes">
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="resumo" checked>Resumo geral</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="gravadores" checked>Gravadores e canais atuais</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="historico" checked>Histórico dos canais</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="registros" checked>Registros de atendimento</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="atividades" checked>Atividades</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="agendamentos" checked>Agendamentos</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="equipes" checked>Equipes e funcionários</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="cameras" checked>Cadastro de câmeras</label>
+                </div>
+                <div class="relatorio-acoes">
+                    <button id="btnGerarRelatorio" onclick="gerarPreviewRelatorio()">Atualizar visualização</button>
+                    <button class="btn-success" onclick="exportarRelatorioExcel()">Excel</button>
+                    <button class="btn-purple" onclick="exportarRelatorioPDF()">PDF</button>
+                </div>
+            </aside>
+            <section class="card panel"><div id="relatorioPreview" class="relatorio-preview"><div class="empty" style="color:#64748b">Clique em “Atualizar visualização” para montar o relatório.</div></div></section>
         </div>
     </section>
 
@@ -2195,6 +2252,9 @@ let funcionariosCache = [];
 let registrosCache = [];
 let mapaGravadoresCache = [];
 let mapaCanaisCache = [];
+let relatorioCanaisCache = [];
+let estadoPingCameras = {};
+let testePingEmAndamento = false;
 let mapaGravadorAtualId = "";
 let limiteRegistrosVisiveis = 20;
 let tvRefreshTimer = null;
@@ -3216,13 +3276,16 @@ async function selecionarMapaGravador(id){
     if(el("mapaGravadorSelecionado")) el("mapaGravadorSelecionado").value = mapaGravadorAtualId;
     if(!mapaGravadorAtualId){ mapaCanaisCache=[]; renderizarCanaisMapa(); return; }
     await carregarCanaisMapa(mapaGravadorAtualId);
+    await testarCamerasDoMapa();
 }
 
 async function carregarCanaisMapa(gravadorId){
     const { data, error } = await supabaseClient.from("mapa_gravador_canais").select("*").eq("gravador_id", gravadorId).order("canal", {ascending:true});
     if(error){ mostrarMensagem("Erro ao carregar canais: " + error.message); return; }
     mapaCanaisCache = data || [];
+    if(el("btnTestarCameras")) el("btnTestarCameras").disabled = false;
     renderizarCanaisMapa();
+    atualizarResumoPing();
 }
 
 function renderizarCanaisMapa(){
@@ -3247,6 +3310,7 @@ function renderizarCanaisMapa(){
                 <div class="canal-numero"><strong>Canal ${String(c.canal).padStart(2,"0")}</strong></div>
                 <div class="canal-atual" title="${escapar(c.camera_atual || "Nenhuma câmera")}"><b>${escapar(c.camera_atual || "Nenhuma câmera")}</b></div>
                 <span class="tag ${c.camera_atual?'adicionada':'nao-adicionada'}">${c.camera_atual?'Ocupado':'Livre'}</span>
+                ${htmlStatusPing(c)}
                 <div class="canal-acoes"><span class="camera-info">${hist.length} alteração(ões)</span></div>
             </div>
             <details class="canal-editor"><summary>Alterar câmera e consultar histórico</summary>
@@ -3290,6 +3354,120 @@ async function apagarMapaGravador(id){
         mostrarMensagem("Mapa do gravador apagado.","ok");
         await carregarMapaGravadores();
     }catch(e){mostrarMensagem("Erro ao apagar mapa: "+e.message);}
+}
+
+
+function extrairEnderecoCamera(valor){
+    const texto=(valor||"").trim();
+    if(!texto) return "";
+    const url=texto.match(/https?:\/\/[^\s]+/i);
+    if(url) return url[0].replace(/\/$/,"");
+    const ip=texto.match(/\b(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?\b/);
+    return ip ? `http://${ip[0]}` : "";
+}
+function htmlStatusPing(canal){
+    if(!canal.camera_atual) return '<span class="ping-status ping-sem-endereco">sem câmera</span>';
+    const st=estadoPingCameras[canal.id] || {estado:"aguardando",texto:"aguardando"};
+    return `<span class="ping-status ping-${st.estado}" title="${escapar(st.detalhe||"")}">${escapar(st.texto)}</span>`;
+}
+async function testarEndpointCamera(canal){
+    const endereco=extrairEnderecoCamera(canal.camera_atual);
+    if(!endereco) return {estado:"sem-endereco",texto:"sem endereço",detalhe:"Informe um IP ou URL na identificação da câmera."};
+    if(location.protocol === "https:" && endereco.startsWith("http://")) return {estado:"bloqueado",texto:"bloqueado",detalhe:"O navegador bloqueou HTTP dentro de uma página HTTPS."};
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),4000);
+    const inicio=performance.now();
+    try{
+        await fetch(endereco + (endereco.includes("?")?"&":"?") + "ff_ping="+Date.now(), {mode:"no-cors",cache:"no-store",signal:controller.signal});
+        return {estado:"online",texto:`online ${Math.round(performance.now()-inicio)} ms`,detalhe:endereco};
+    }catch(e){
+        return {estado:"offline",texto:"sem resposta",detalhe:`${endereco} · ${e.name === "AbortError" ? "tempo esgotado" : "falha de conexão"}`};
+    }finally{clearTimeout(timer);}
+}
+async function testarCamerasDoMapa(){
+    if(testePingEmAndamento || !mapaGravadorAtualId) return;
+    const canais=mapaCanaisCache.filter(c=>c.camera_atual);
+    el("btnTestarCameras").disabled=true;
+    testePingEmAndamento=true;
+    canais.forEach(c=>estadoPingCameras[c.id]={estado:"testando",texto:"testando...",detalhe:""});
+    renderizarCanaisMapa();
+    const fila=[...canais];
+    async function worker(){while(fila.length){const c=fila.shift();estadoPingCameras[c.id]=await testarEndpointCamera(c);renderizarCanaisMapa();}}
+    await Promise.all(Array.from({length:Math.min(5,fila.length||1)},worker));
+    testePingEmAndamento=false;
+    el("btnTestarCameras").disabled=false;
+    atualizarResumoPing();
+}
+function atualizarResumoPing(){
+    const box=el("resumoPingMapa"); if(!box) return;
+    const ids=mapaCanaisCache.filter(c=>c.camera_atual).map(c=>c.id);
+    const vals=ids.map(id=>estadoPingCameras[id]).filter(Boolean);
+    const on=vals.filter(x=>x.estado==="online").length, off=vals.filter(x=>x.estado==="offline").length, bloq=vals.filter(x=>x.estado==="bloqueado").length;
+    box.innerHTML=`<span class="ping-status ping-online">${on} online</span><span class="ping-status ping-offline">${off} sem resposta</span>${bloq?`<span class="ping-status ping-bloqueado">${bloq} bloqueado(s)</span>`:""}<span class="camera-info">Teste HTTP; não substitui ping ICMP.</span>`;
+}
+
+function opcoesRelatorio(){return new Set([...document.querySelectorAll('[data-rel]:checked')].map(x=>x.dataset.rel));}
+function marcarOpcoesRelatorio(valor){document.querySelectorAll('[data-rel]').forEach(x=>x.checked=valor);gerarPreviewRelatorio();}
+function dentroPeriodo(data){
+    if(!data) return true; const d=String(data).slice(0,10), ini=el("relDataInicio").value, fim=el("relDataFim").value;
+    return (!ini||d>=ini)&&(!fim||d<=fim);
+}
+async function prepararDadosRelatorio(){
+    const {data,error}=await supabaseClient.from("mapa_gravador_canais").select("*").order("canal",{ascending:true});
+    if(error) throw error; relatorioCanaisCache=data||[];
+    const sel=el("relGravador"), atual=sel.value;
+    sel.innerHTML='<option value="">Todos os gravadores</option>'+mapaGravadoresCache.map(g=>`<option value="${g.id}">${escapar(g.nome)}</option>`).join(""); sel.value=atual;
+}
+function dadosRelatorio(){
+    const gid=el("relGravador").value;
+    const gravadores=mapaGravadoresCache.filter(g=>!gid||g.id===gid);
+    const ids=new Set(gravadores.map(g=>g.id));
+    const canais=relatorioCanaisCache.filter(c=>ids.has(c.gravador_id));
+    return {gravadores,canais,registros:registrosCache.filter(r=>dentroPeriodo(r.data||r.created_at)),atividades:tarefasCache.filter(t=>dentroPeriodo(t.prazo||t.created_at)),agendamentos:agendamentosCache.filter(a=>dentroPeriodo(a.data||a.created_at)),equipes:equipesCache,funcionarios:funcionariosCache,cameras:camerasCache};
+}
+function tabelaHTML(headers,rows){return `<table><thead><tr>${headers.map(h=>`<th>${escapar(h)}</th>`).join("")}</tr></thead><tbody>${rows.length?rows.map(r=>`<tr>${r.map(v=>`<td>${escapar(v==null?"":String(v))}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="${headers.length}" class="muted">Nenhum dado encontrado.</td></tr>`}</tbody></table>`;}
+async function gerarPreviewRelatorio(){
+    setLoading("btnGerarRelatorio",true,"Gerando...");
+    try{await prepararDadosRelatorio();const d=dadosRelatorio(),op=opcoesRelatorio();let html=`<h1>${escapar(el("relTitulo").value||"Relatório técnico de CFTV")}</h1><p class="muted">Emitido em ${hojeBR()} · ${escapar(nomeUsuarioAtual())}</p>`;
+    if(op.has("resumo")) html+=`<h2>Resumo geral</h2><div class="resumo-cards"><div class="resumo-card"><b>${d.gravadores.length}</b>gravadores</div><div class="resumo-card"><b>${d.canais.filter(c=>c.camera_atual).length}</b>canais ocupados</div><div class="resumo-card"><b>${d.registros.length}</b>registros</div><div class="resumo-card"><b>${d.atividades.length}</b>atividades</div></div>`;
+    if(op.has("gravadores")){html+='<h2>Gravadores e canais atuais</h2>';d.gravadores.forEach(g=>{const cs=d.canais.filter(c=>c.gravador_id===g.id);html+=`<h3>${escapar(g.nome)} · ${g.canais} canais</h3><p class="muted">${escapar(g.local||"Local não informado")}</p>`+tabelaHTML(["Canal","Câmera atual","Última atualização"],cs.map(c=>[String(c.canal).padStart(2,"0"),c.camera_atual||"Livre",c.atualizado_por||"-"]));});}
+    if(op.has("historico")){const rows=[];d.canais.forEach(c=>{const g=d.gravadores.find(x=>x.id===c.gravador_id);historicoCanalNormalizado(c.historico).filter(h=>dentroPeriodo((h.data||"").split(" ")[0]?.split("/").reverse().join("-"))).forEach(h=>rows.push([g?.nome||"-",c.canal,h.data||"",h.anterior||"Sem câmera",h.nova||"Livre",h.usuario||"-",h.observacao||""]));});html+='<h2>Histórico dos canais</h2>'+tabelaHTML(["Gravador","Canal","Data","Anterior","Nova","Usuário","Observação"],rows);}
+    if(op.has("registros")) html+='<h2>Registros de atendimento</h2>'+tabelaHTML(["Data","Título","Descrição","Responsável"],d.registros.map(r=>[formatarData(r.data),r.titulo||"",r.descricao||r.observacao||"",r.criado_por||r.responsavel||""]));
+    if(op.has("atividades")) html+='<h2>Atividades</h2>'+tabelaHTML(["Título","Status","Prazo","Descrição"],d.atividades.map(t=>[t.titulo||"",STATUS_LABEL[t.status]||t.status||"",formatarData(t.prazo),t.descricao||""]));
+    if(op.has("agendamentos")) html+='<h2>Agendamentos</h2>'+tabelaHTML(["Data","Hora","Título","Status"],d.agendamentos.map(a=>[formatarData(a.data),a.hora||"",a.titulo||"",a.status||""]));
+    if(op.has("equipes")) html+='<h2>Equipes e funcionários</h2>'+tabelaHTML(["Tipo","Nome","Situação"],[...d.equipes.map(e=>["Equipe",e.nome||"",e.ativo===false?"Inativa":"Ativa"]),...d.funcionarios.map(f=>["Funcionário",f.nome||f.email||"",f.ativo===false?"Inativo":"Ativo"])]);
+    if(op.has("cameras")) html+='<h2>Cadastro de câmeras</h2>'+tabelaHTML(["Identificação","IP / endereço","Local","Status"],d.cameras.map(c=>[c.nome||c.identificacao||"",c.ip||c.endereco||"",c.local||"",c.status_camera||""]));
+    el("relatorioPreview").innerHTML=html;}catch(e){mostrarMensagem("Erro ao gerar relatório: "+e.message);}finally{setLoading("btnGerarRelatorio",false);}
+}
+function nomeArquivoRelatorio(ext){return `relatorio_cftv_${new Date().toISOString().slice(0,10)}.${ext}`;}
+async function exportarRelatorioExcel(){
+    await prepararDadosRelatorio();const d=dadosRelatorio(),op=opcoesRelatorio(),wb=XLSX.utils.book_new();
+    const add=(nome,headers,rows)=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([headers,...rows]),nome.slice(0,31));
+    if(op.has("resumo")) add("Resumo",["Indicador","Quantidade"],[["Gravadores",d.gravadores.length],["Canais ocupados",d.canais.filter(c=>c.camera_atual).length],["Registros",d.registros.length],["Atividades",d.atividades.length]]);
+    if(op.has("gravadores")) add("Mapa de gravadores",["Gravador","Local","Canal","Câmera atual","Atualizado por"],d.canais.map(c=>{const g=d.gravadores.find(x=>x.id===c.gravador_id);return[g?.nome||"",g?.local||"",c.canal,c.camera_atual||"Livre",c.atualizado_por||""]}));
+    if(op.has("historico")){const rows=[];d.canais.forEach(c=>historicoCanalNormalizado(c.historico).forEach(h=>{const g=d.gravadores.find(x=>x.id===c.gravador_id);rows.push([g?.nome||"",c.canal,h.data||"",h.anterior||"",h.nova||"",h.usuario||"",h.observacao||""])}));add("Histórico",["Gravador","Canal","Data","Anterior","Nova","Usuário","Observação"],rows);}
+    if(op.has("registros")) add("Registros",["Data","Título","Descrição","Responsável"],d.registros.map(r=>[r.data||"",r.titulo||"",r.descricao||r.observacao||"",r.criado_por||r.responsavel||""]));
+    if(op.has("atividades")) add("Atividades",["Título","Status","Prazo","Descrição"],d.atividades.map(t=>[t.titulo||"",STATUS_LABEL[t.status]||t.status||"",t.prazo||"",t.descricao||""]));
+    if(op.has("agendamentos")) add("Agendamentos",["Data","Hora","Título","Status"],d.agendamentos.map(a=>[a.data||"",a.hora||"",a.titulo||"",a.status||""]));
+    if(op.has("equipes")) add("Pessoas",["Tipo","Nome","Situação"],[...d.equipes.map(e=>["Equipe",e.nome||"",e.ativo===false?"Inativa":"Ativa"]),...d.funcionarios.map(f=>["Funcionário",f.nome||f.email||"",f.ativo===false?"Inativo":"Ativo"])]);
+    if(op.has("cameras")) add("Câmeras",["Identificação","IP / endereço","Local","Status"],d.cameras.map(c=>[c.nome||c.identificacao||"",c.ip||c.endereco||"",c.local||"",c.status_camera||""]));
+    XLSX.writeFile(wb,nomeArquivoRelatorio("xlsx"));
+}
+async function exportarRelatorioPDF(){
+    await gerarPreviewRelatorio();const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"});const d=dadosRelatorio(),op=opcoesRelatorio();let y=20;
+    const titulo=el("relTitulo").value||"Relatório técnico de CFTV";doc.setFillColor(30,64,175);doc.rect(0,0,210,34,"F");doc.setTextColor(255,255,255);doc.setFontSize(20);doc.text(titulo,14,18);doc.setFontSize(9);doc.text(`Emitido em ${hojeBR()} · ${nomeUsuarioAtual()}`,14,27);doc.setTextColor(25,35,50);y=44;
+    const sec=(t)=>{if(y>270){doc.addPage();y=18}doc.setFontSize(14);doc.setTextColor(30,64,175);doc.text(t,14,y);y+=5;doc.setTextColor(25,35,50)};
+    const tab=(heads,body)=>{doc.autoTable({startY:y,head:[heads],body,theme:"grid",styles:{fontSize:7,cellPadding:2},headStyles:{fillColor:[37,99,235]},margin:{left:14,right:14}});y=doc.lastAutoTable.finalY+9};
+    if(op.has("resumo")){sec("Resumo geral");tab(["Gravadores","Canais ocupados","Registros","Atividades"],[[d.gravadores.length,d.canais.filter(c=>c.camera_atual).length,d.registros.length,d.atividades.length]]);}
+    if(op.has("gravadores")){sec("Gravadores e canais atuais");tab(["Gravador","Local","Canal","Câmera atual"],d.canais.map(c=>{const g=d.gravadores.find(x=>x.id===c.gravador_id);return[g?.nome||"",g?.local||"",c.canal,c.camera_atual||"Livre"]}));}
+    if(op.has("historico")){const rows=[];d.canais.forEach(c=>historicoCanalNormalizado(c.historico).forEach(h=>{const g=d.gravadores.find(x=>x.id===c.gravador_id);rows.push([g?.nome||"",c.canal,h.data||"",h.anterior||"",h.nova||"",h.usuario||""])}));sec("Histórico dos canais");tab(["Gravador","Canal","Data","Anterior","Nova","Usuário"],rows);}
+    if(op.has("registros")){sec("Registros de atendimento");tab(["Data","Título","Descrição"],d.registros.map(r=>[r.data||"",r.titulo||"",r.descricao||r.observacao||""]));}
+    if(op.has("atividades")){sec("Atividades");tab(["Título","Status","Prazo","Descrição"],d.atividades.map(t=>[t.titulo||"",STATUS_LABEL[t.status]||t.status||"",t.prazo||"",t.descricao||""]));}
+    if(op.has("agendamentos")){sec("Agendamentos");tab(["Data","Hora","Título","Status"],d.agendamentos.map(a=>[a.data||"",a.hora||"",a.titulo||"",a.status||""]));}
+    if(op.has("equipes")){sec("Equipes e funcionários");tab(["Tipo","Nome","Situação"],[...d.equipes.map(e=>["Equipe",e.nome||"",e.ativo===false?"Inativa":"Ativa"]),...d.funcionarios.map(f=>["Funcionário",f.nome||f.email||"",f.ativo===false?"Inativo":"Ativo"])]);}
+    if(op.has("cameras")){sec("Cadastro de câmeras");tab(["Identificação","IP / endereço","Local","Status"],d.cameras.map(c=>[c.nome||c.identificacao||"",c.ip||c.endereco||"",c.local||"",c.status_camera||""]));}
+    const total=doc.getNumberOfPages();for(let i=1;i<=total;i++){doc.setPage(i);doc.setFontSize(8);doc.setTextColor(100);doc.text(`FF Registro · Página ${i} de ${total}`,14,292);}
+    doc.save(nomeArquivoRelatorio("pdf"));
 }
 
 async function carregarAgendamentos(){
@@ -3491,7 +3669,7 @@ function pararAtualizacaoTV(){
 }
 
 function abrirAba(nome){
-    const abas = ["Atividades", "MapaGravadores", "Registro", "Agendamentos", "Calendario", "TV", "Configuracoes"];
+    const abas = ["Atividades", "MapaGravadores", "Registro", "Relatorio", "Agendamentos", "Calendario", "TV", "Configuracoes"];
 
     abas.forEach(aba => {
         const tela = el("tela" + aba);
@@ -3501,6 +3679,7 @@ function abrirAba(nome){
     });
 
     if(nome === "MapaGravadores") renderizarMapaGravadores();
+    if(nome === "Relatorio") gerarPreviewRelatorio();
     if(nome === "Calendario") renderizarCalendario();
     if(nome === "TV") iniciarAtualizacaoTV();
     else pararAtualizacaoTV();

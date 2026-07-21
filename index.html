@@ -1269,6 +1269,22 @@ body::after{
 .gravador-resumo{padding:14px;border-radius:14px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16);margin-bottom:12px}
 @media(max-width:1050px){.mapa-layout{grid-template-columns:1fr}}
 
+
+/* ===== PRINT DA CÂMERA ===== */
+.camera-print-box{margin-top:10px;padding:12px;border:1px solid rgba(148,163,184,.18);border-radius:14px;background:rgba(15,23,42,.42)}
+.camera-print-titulo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:12px;font-weight:800;color:#cbd5e1}
+.camera-print-preview{width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(148,163,184,.18);background:#0f172a;cursor:zoom-in;display:block}
+.camera-print-vazio{min-height:92px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed rgba(148,163,184,.28);border-radius:12px;color:#94a3b8;font-size:12px;padding:12px}
+.camera-print-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.camera-print-acoes label,.camera-print-acoes button{font-size:12px;padding:9px 11px}
+.camera-print-acoes input[type=file]{display:none}
+.camera-print-info{font-size:11px;color:#94a3b8;margin-top:7px;line-height:1.4}
+.camera-print-loading{opacity:.6;pointer-events:none}
+#modalImagemCamera{position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,.92);display:none;align-items:center;justify-content:center;padding:24px}
+#modalImagemCamera.aberto{display:flex}
+#modalImagemCamera img{max-width:min(1200px,96vw);max-height:90vh;object-fit:contain;border-radius:14px;box-shadow:0 25px 80px rgba(0,0,0,.55)}
+#modalImagemCamera button{position:absolute;top:18px;right:18px;border-radius:999px;width:44px;height:44px;padding:0;font-size:22px}
+
 /* ===== Refinamento de desempenho e leitura ===== */
 .mais-registros{display:flex;justify-content:center;padding-top:6px}
 .registro-resumo{margin:8px 0 0}
@@ -1312,7 +1328,7 @@ body::after{
 .relatorio-preview{min-height:520px;background:#fff;color:#172033;border-radius:16px;padding:30px;overflow:auto}
 .relatorio-preview h1{font-size:26px;margin-bottom:4px;color:#0f172a}.relatorio-preview h2{font-size:18px;color:#1d4ed8;margin:26px 0 10px;border-bottom:2px solid #dbeafe;padding-bottom:6px}
 .relatorio-preview h3{font-size:15px;margin:15px 0 7px}.relatorio-preview p{line-height:1.55}.relatorio-preview table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 16px}.relatorio-preview th,.relatorio-preview td{border:1px solid #dbe2ea;padding:7px;text-align:left;vertical-align:top}.relatorio-preview th{background:#eff6ff;color:#1e3a8a}.relatorio-preview .muted{color:#64748b}.relatorio-preview .resumo-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.relatorio-preview .resumo-card{background:#eff6ff;border-radius:10px;padding:12px}.relatorio-preview .resumo-card b{font-size:22px;display:block;color:#1d4ed8}
-.ping-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.ping-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.ping-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}.ping-aguardando{color:#64748b;background:#e2e8f0}.ping-testando{color:#b45309;background:#fef3c7}.ping-online{color:#15803d;background:#dcfce7}.ping-offline{color:#b91c1c;background:#fee2e2}.ping-bloqueado{color:#6d28d9;background:#ede9fe}.ping-sem-endereco{color:#64748b;background:#e2e8f0}
+.ping-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.ping-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.ping-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}.ping-aguardando{color:#64748b;background:#e2e8f0}.ping-testando{color:#b45309;background:#fef3c7}.ping-online{color:#15803d;background:#dcfce7}.ping-offline{color:#b91c1c;background:#fee2e2}.ping-bloqueado{color:#6d28d9;background:#ede9fe}.ping-indisponivel{color:#475569;background:#e2e8f0}.ping-sem-endereco{color:#64748b;background:#e2e8f0}
 @media(max-width:900px){.relatorio-layout{grid-template-columns:1fr}.relatorio-preview .resumo-cards{grid-template-columns:1fr 1fr}}
 @media print{body>*{display:none!important}#telaRelatorio,#telaRelatorio *{display:block!important}#telaRelatorio{position:absolute;inset:0;background:#fff}.relatorio-layout>aside,.admin-header,.tabs{display:none!important}.relatorio-preview{padding:0;box-shadow:none}}
 
@@ -3319,12 +3335,110 @@ function renderizarCanaisMapa(){
                     <input type="text" id="obsCameraCanal_${c.id}" placeholder="Motivo ou observação" maxlength="220" />
                     <button class="btn-success" onclick="alterarCameraCanal('${c.id}')">Salvar alteração</button>
                 </div>
+                <div class="camera-print-box" id="cameraPrintBox_${c.id}">
+                    <div class="camera-print-titulo"><span>📷 Print da imagem da câmera</span>${c.imagem_atualizada_em ? `<span>${escapar(new Date(c.imagem_atualizada_em).toLocaleString("pt-BR"))}</span>` : ""}</div>
+                    ${c.imagem_url ? `<img class="camera-print-preview" src="${escapar(c.imagem_url)}" alt="Print do canal ${c.canal}" loading="lazy" onclick="abrirImagemCamera('${escapar(c.imagem_url)}')" onerror="this.outerHTML='<div class=&quot;camera-print-vazio&quot;>Não foi possível carregar a imagem.</div>'">` : `<div class="camera-print-vazio">Nenhum print adicionado a este canal.</div>`}
+                    <div class="camera-print-acoes">
+                        <label class="btn-ghost" for="printCameraCanal_${c.id}">${c.imagem_url ? "Substituir print" : "Adicionar print"}</label>
+                        <input type="file" id="printCameraCanal_${c.id}" accept="image/png,image/jpeg,image/webp" onchange="enviarPrintCamera('${c.id}', this)" />
+                        ${c.imagem_url ? `<button type="button" class="btn-danger" onclick="removerPrintCamera('${c.id}')">Remover</button>` : ""}
+                    </div>
+                    <div class="camera-print-info">PNG, JPEG ou WebP. A imagem é reduzida automaticamente para deixar o sistema leve.</div>
+                </div>
                 <details class="historico-canal"><summary>Histórico (${hist.length})</summary>
                     ${hist.length ? hist.map(h => `<div class="historico-item"><b>${escapar(h.anterior || "Sem câmera")}</b> → <b>${escapar(h.nova || "Canal liberado")}</b><br>${escapar(h.data || "")} · ${escapar(h.usuario || "-")}${h.observacao ? "<br>"+escapar(h.observacao) : ""}</div>`).join("") : '<div class="historico-item">Nenhuma alteração registrada.</div>'}
                 </details>
             </details>
         </div>`;
     }).join("") : '<div class="empty" style="grid-column:1/-1">Nenhum canal encontrado.</div>';
+}
+
+
+const CAMERA_PRINT_BUCKET = "camera-prints";
+
+function abrirImagemCamera(url){
+    const modal=el("modalImagemCamera"), img=el("modalImagemCameraImg");
+    if(!modal||!img||!url) return;
+    img.src=url;
+    modal.classList.add("aberto");
+    document.body.style.overflow="hidden";
+}
+
+function fecharImagemCamera(event){
+    if(event && event.target && event.target.id!=="modalImagemCamera") return;
+    const modal=el("modalImagemCamera"), img=el("modalImagemCameraImg");
+    if(modal) modal.classList.remove("aberto");
+    if(img) img.removeAttribute("src");
+    document.body.style.overflow="";
+}
+
+document.addEventListener("keydown",e=>{if(e.key==="Escape") fecharImagemCamera();});
+
+function caminhoStorageDaUrl(url){
+    if(!url) return "";
+    const trecho=`/storage/v1/object/public/${CAMERA_PRINT_BUCKET}/`;
+    const pos=url.indexOf(trecho);
+    return pos>=0 ? decodeURIComponent(url.slice(pos+trecho.length).split("?")[0]) : "";
+}
+
+function carregarImagemArquivo(file){
+    return new Promise((resolve,reject)=>{
+        const url=URL.createObjectURL(file), img=new Image();
+        img.onload=()=>{URL.revokeObjectURL(url);resolve(img)};
+        img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Não foi possível ler a imagem."))};
+        img.src=url;
+    });
+}
+
+async function comprimirPrintCamera(file){
+    const img=await carregarImagemArquivo(file);
+    const limite=1280;
+    const escala=Math.min(1,limite/Math.max(img.naturalWidth,img.naturalHeight));
+    const canvas=document.createElement("canvas");
+    canvas.width=Math.max(1,Math.round(img.naturalWidth*escala));
+    canvas.height=Math.max(1,Math.round(img.naturalHeight*escala));
+    const ctx=canvas.getContext("2d",{alpha:false});
+    ctx.fillStyle="#000";ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    return await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Falha ao preparar a imagem.")),"image/jpeg",.8));
+}
+
+async function enviarPrintCamera(id,input){
+    const canal=mapaCanaisCache.find(c=>c.id===id), file=input?.files?.[0];
+    if(!canal||!file) return;
+    if(!/^image\/(png|jpeg|webp)$/i.test(file.type)){mostrarMensagem("Escolha uma imagem PNG, JPEG ou WebP.");input.value="";return;}
+    if(file.size>20*1024*1024){mostrarMensagem("A imagem deve ter no máximo 20 MB.");input.value="";return;}
+    const box=el(`cameraPrintBox_${id}`); if(box) box.classList.add("camera-print-loading");
+    try{
+        const blob=await comprimirPrintCamera(file);
+        const nome=`${canal.gravador_id}/${canal.id}/${Date.now()}.jpg`;
+        const {error:uploadError}=await supabaseClient.storage.from(CAMERA_PRINT_BUCKET).upload(nome,blob,{contentType:"image/jpeg",upsert:false,cacheControl:"3600"});
+        if(uploadError) throw new Error(uploadError.message+". Confirme se a migração do Storage foi executada.");
+        const {data:urlData}=supabaseClient.storage.from(CAMERA_PRINT_BUCKET).getPublicUrl(nome);
+        const url=urlData?.publicUrl;
+        const {error:updateError}=await supabaseClient.from("mapa_gravador_canais").update({imagem_url:url,imagem_atualizada_em:new Date().toISOString(),atualizado_por:nomeUsuarioAtual()}).eq("id",id);
+        if(updateError){await supabaseClient.storage.from(CAMERA_PRINT_BUCKET).remove([nome]);throw new Error(updateError.message+". Execute a migração SQL da imagem dos canais.");}
+        const antigo=caminhoStorageDaUrl(canal.imagem_url);
+        if(antigo) await supabaseClient.storage.from(CAMERA_PRINT_BUCKET).remove([antigo]);
+        mostrarMensagem(`Print do canal ${canal.canal} salvo.`,"ok");
+        await carregarCanaisMapa(mapaGravadorAtualId);
+    }catch(e){mostrarMensagem("Erro ao salvar o print: "+e.message);}
+    finally{if(box) box.classList.remove("camera-print-loading");if(input) input.value="";}
+}
+
+async function removerPrintCamera(id){
+    const canal=mapaCanaisCache.find(c=>c.id===id);
+    if(!canal?.imagem_url||!confirm(`Remover o print do canal ${canal.canal}?`)) return;
+    const box=el(`cameraPrintBox_${id}`); if(box) box.classList.add("camera-print-loading");
+    try{
+        const {error}=await supabaseClient.from("mapa_gravador_canais").update({imagem_url:null,imagem_atualizada_em:null,atualizado_por:nomeUsuarioAtual()}).eq("id",id);
+        if(error) throw error;
+        const caminho=caminhoStorageDaUrl(canal.imagem_url);
+        if(caminho) await supabaseClient.storage.from(CAMERA_PRINT_BUCKET).remove([caminho]);
+        mostrarMensagem(`Print do canal ${canal.canal} removido.`,"ok");
+        await carregarCanaisMapa(mapaGravadorAtualId);
+    }catch(e){mostrarMensagem("Erro ao remover o print: "+e.message);}
+    finally{if(box) box.classList.remove("camera-print-loading");}
 }
 
 async function alterarCameraCanal(id){
@@ -3370,18 +3484,33 @@ function htmlStatusPing(canal){
     const st=estadoPingCameras[canal.id] || {estado:"aguardando",texto:"aguardando"};
     return `<span class="ping-status ping-${st.estado}" title="${escapar(st.detalhe||"")}">${escapar(st.texto)}</span>`;
 }
+function extrairHostCamera(valor){
+    const endereco=extrairEnderecoCamera(valor);
+    if(!endereco) return "";
+    try{return new URL(endereco).hostname;}catch(e){return "";}
+}
 async function testarEndpointCamera(canal){
-    const endereco=extrairEnderecoCamera(canal.camera_atual);
-    if(!endereco) return {estado:"sem-endereco",texto:"sem endereço",detalhe:"Informe um IP ou URL na identificação da câmera."};
-    if(location.protocol === "https:" && endereco.startsWith("http://")) return {estado:"bloqueado",texto:"bloqueado",detalhe:"O navegador bloqueou HTTP dentro de uma página HTTPS."};
+    const host=extrairHostCamera(canal.camera_atual);
+    if(!host) return {estado:"sem-endereco",texto:"sem endereço",detalhe:"Informe um IP ou URL na identificação da câmera."};
     const controller=new AbortController();
-    const timer=setTimeout(()=>controller.abort(),4000);
-    const inicio=performance.now();
+    const timer=setTimeout(()=>controller.abort(),7000);
     try{
-        await fetch(endereco + (endereco.includes("?")?"&":"?") + "ff_ping="+Date.now(), {mode:"no-cors",cache:"no-store",signal:controller.signal});
-        return {estado:"online",texto:`online ${Math.round(performance.now()-inicio)} ms`,detalhe:endereco};
+        const resposta=await fetch(`http://127.0.0.1:8765/ping?host=${encodeURIComponent(host)}&_=${Date.now()}`, {
+            method:"GET", cache:"no-store", signal:controller.signal
+        });
+        if(!resposta.ok) throw new Error(`HTTP ${resposta.status}`);
+        const dados=await resposta.json();
+        if(dados.online){
+            const tempo=Number.isFinite(Number(dados.ms)) ? ` ${Math.round(Number(dados.ms))} ms` : "";
+            return {estado:"online",texto:`online${tempo}`,detalhe:`Ping local para ${host}`};
+        }
+        return {estado:"offline",texto:"sem resposta",detalhe:`${host} não respondeu ao ping local.`};
     }catch(e){
-        return {estado:"offline",texto:"sem resposta",detalhe:`${endereco} · ${e.name === "AbortError" ? "tempo esgotado" : "falha de conexão"}`};
+        return {
+            estado:"indisponivel",
+            texto:"verificador local inativo",
+            detalhe:"Abra o arquivo iniciar_verificador_ping.bat neste computador. A câmera não foi classificada como offline."
+        };
     }finally{clearTimeout(timer);}
 }
 async function testarCamerasDoMapa(){
@@ -3402,8 +3531,8 @@ function atualizarResumoPing(){
     const box=el("resumoPingMapa"); if(!box) return;
     const ids=mapaCanaisCache.filter(c=>c.camera_atual).map(c=>c.id);
     const vals=ids.map(id=>estadoPingCameras[id]).filter(Boolean);
-    const on=vals.filter(x=>x.estado==="online").length, off=vals.filter(x=>x.estado==="offline").length, bloq=vals.filter(x=>x.estado==="bloqueado").length;
-    box.innerHTML=`<span class="ping-status ping-online">${on} online</span><span class="ping-status ping-offline">${off} sem resposta</span>${bloq?`<span class="ping-status ping-bloqueado">${bloq} bloqueado(s)</span>`:""}<span class="camera-info">Teste HTTP; não substitui ping ICMP.</span>`;
+    const on=vals.filter(x=>x.estado==="online").length, off=vals.filter(x=>x.estado==="offline").length, indisponiveis=vals.filter(x=>x.estado==="indisponivel").length;
+    box.innerHTML=`<span class="ping-status ping-online">${on} online</span><span class="ping-status ping-offline">${off} sem resposta</span>${indisponiveis?`<span class="ping-status ping-indisponivel">${indisponiveis} não verificado(s)</span>`:""}<span class="camera-info">Ping ICMP executado localmente.</span>`;
 }
 
 function opcoesRelatorio(){return new Set([...document.querySelectorAll('[data-rel]:checked')].map(x=>x.dataset.rel));}
@@ -4982,5 +5111,11 @@ preencherListaCameras("regCamerasLista", []);
 initAuth();
 
 </script>
+
+    <div id="modalImagemCamera" onclick="fecharImagemCamera(event)">
+        <button type="button" class="btn-ghost" onclick="fecharImagemCamera()" aria-label="Fechar imagem">×</button>
+        <img id="modalImagemCameraImg" alt="Print ampliado da câmera" />
+    </div>
+
 </body>
 </html>

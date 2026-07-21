@@ -1266,6 +1266,37 @@ body::after{
 .gravador-resumo{padding:14px;border-radius:14px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16);margin-bottom:12px}
 @media(max-width:1050px){.mapa-layout{grid-template-columns:1fr}}
 
+/* ===== Refinamento de desempenho e leitura ===== */
+.mais-registros{display:flex;justify-content:center;padding-top:6px}
+.registro-resumo{margin:8px 0 0}
+.registro-resumo summary{cursor:pointer;color:#93c5fd;font-size:12px;font-weight:700;list-style:none}
+.registro-resumo summary::-webkit-details-marker{display:none}
+.registro-resumo summary::before{content:"＋ ";font-weight:900}
+.registro-resumo[open] summary::before{content:"− "}
+.registro-descricao-curta{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.registro-resumo[open] .registro-descricao-curta{display:none}
+.registro-descricao-completa{margin-top:8px;padding:12px;border-radius:12px;background:rgba(15,23,42,.45)}
+.registro-meta .auditoria{opacity:.72}
+
+/* Canais em lista: mais leve, escaneável e adequado para 16/32 canais */
+.canais-grid{display:flex;flex-direction:column;gap:8px}
+.canal-card{padding:0;border-left:4px solid var(--primary-2);overflow:hidden}
+.canal-linha{display:grid;grid-template-columns:100px minmax(180px,1fr) auto auto;gap:12px;align-items:center;padding:12px 14px}
+.canal-linha .canal-numero{margin:0}
+.canal-linha .canal-atual{margin:0;background:transparent;padding:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.canal-acoes{display:flex;gap:8px;align-items:center}
+.canal-editor{border-top:1px solid rgba(148,163,184,.14);padding:12px 14px;background:rgba(2,6,23,.22)}
+.canal-editor summary{cursor:pointer;color:#93c5fd;font-size:12px;font-weight:700}
+.canal-editor[open] summary{margin-bottom:10px}
+.canal-edicao{grid-template-columns:minmax(180px,1fr) minmax(220px,1.4fr) auto;align-items:center}
+.historico-canal{margin-top:10px}
+@media(max-width:760px){
+  .canal-linha{grid-template-columns:82px 1fr;gap:8px}
+  .canal-linha .tag{justify-self:start}
+  .canal-acoes{grid-column:1/-1}
+  .canal-edicao{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 
@@ -1300,13 +1331,12 @@ body::after{
             <div class="logo-icon">📋</div>
             <div class="logo">
                 <h1>FF Registro</h1>
-                <span>Painel de atividades em tempo real</span>
+                <span>Gestão de atividades e CFTV</span>
             </div>
         </div>
 
         <div class="status-area">
             <div class="pill" id="statusConexao">Conectando...</div>
-            <button class="btn-ghost" onclick="carregarTudo()">Atualizar</button>
             <div class="user-pill" id="userPill" style="display:none">
                 <span class="user-avatar" id="userAvatar">?</span>
                 <span id="userNomeLabel">-</span>
@@ -1334,7 +1364,6 @@ body::after{
                 <div class="panel-title">
                     <h3>Quadro de atividades</h3>
                     <div class="btn-row">
-                        <span id="ultimaAtualizacao" class="pill">--</span>
                         <button onclick="alternarFormAtividade()" id="btnToggleFormAtividade">+ Nova atividade</button>
                     </div>
                 </div>
@@ -1472,7 +1501,7 @@ body::after{
                 </div>
             </div>
 
-            <p class="config-hint">Registre aqui os atendimentos do dia — informe a equipe responsável e, se quiser, vincule a uma atividade já cadastrada.</p>
+            <p class="config-hint">Registre o atendimento e vincule a equipe ou atividade quando necessário.</p>
 
             <div class="form-grid quick-form" id="formNovoRegistro" style="display:none">
                 <input type="text" id="regTitulo" placeholder="Título do registro. Ex: Liberação de equipamento" maxlength="120" />
@@ -1513,6 +1542,7 @@ body::after{
             <input type="search" id="buscaRegistro" placeholder="Pesquisar por título, descrição, equipe ou atividade..." oninput="filtrarRegistros()" style="margin-bottom:16px" />
 
             <div id="listaRegistros"></div>
+            <div id="maisRegistros" class="mais-registros"></div>
         </section>
     </section>
 
@@ -2166,6 +2196,8 @@ let registrosCache = [];
 let mapaGravadoresCache = [];
 let mapaCanaisCache = [];
 let mapaGravadorAtualId = "";
+let limiteRegistrosVisiveis = 20;
+let tvRefreshTimer = null;
 let carregando = false;
 let currentUser = null;
 let semanaOffset = 0;
@@ -2391,7 +2423,6 @@ async function carregarTudo(){
         renderizarCalendario();
 
         el("statusConexao").textContent = "Online";
-        el("ultimaAtualizacao").textContent = "Atualizado: " + hojeBR();
         renderizarTV();
     }catch(e){
         el("statusConexao").textContent = "Erro de conexão";
@@ -2922,55 +2953,68 @@ async function carregarRegistros(){
 
 function renderizarRegistros(){
     const container = el("listaRegistros");
+    const mais = el("maisRegistros");
     if(!container) return;
 
     const busca = (el("buscaRegistro")?.value || "").toLowerCase().trim();
-
     const filtrados = registrosCache.filter(item => {
         if(!busca) return true;
         const tarefaTitulo = (tituloTarefaVinculada(item) || "").toLowerCase();
         const equipeNome = nomeEquipeRegistroTexto(item).toLowerCase();
         const camerasTexto = normalizarCamerasAlteradas(item.cameras_alteradas).map(c => `${c.anterior || ""} ${c.nova || ""}`).join(" ");
-        const texto = `${item.titulo || ""} ${item.descricao || ""} ${tarefaTitulo} ${equipeNome} ${item.gravador_tipo || ""} ${camerasTexto}`.toLowerCase();
-        return texto.includes(busca);
+        return `${item.titulo || ""} ${item.descricao || ""} ${tarefaTitulo} ${equipeNome} ${item.gravador_tipo || ""} ${camerasTexto}`.toLowerCase().includes(busca);
     });
 
-    el("totalRegistros").textContent = `${registrosCache.length} registro(s)`;
-
+    el("totalRegistros").textContent = `${filtrados.length} registro(s)`;
     if(filtrados.length === 0){
-        container.innerHTML = `<div class="empty">${registrosCache.length === 0 ? "Nenhum registro ainda. Adicione o primeiro atendimento do dia." : "Nenhum registro encontrado para essa busca."}</div>`;
+        container.innerHTML = `<div class="empty">${registrosCache.length === 0 ? "Nenhum registro cadastrado." : "Nenhum registro encontrado."}</div>`;
+        if(mais) mais.innerHTML = "";
         return;
     }
 
-    container.innerHTML = filtrados.map(item => {
+    const visiveis = filtrados.slice(0, limiteRegistrosVisiveis);
+    container.innerHTML = visiveis.map(item => {
         const tarefaTitulo = tituloTarefaVinculada(item);
         const edicaoDiferente = item.atualizado_por && item.atualizado_por !== item.criado_por;
-
+        const descricao = escapar(item.descricao || "Sem descrição");
         return `
-            <div class="registro-card">
+            <article class="registro-card">
                 <div class="registro-topo">
                     <h4>${escapar(item.titulo)}</h4>
-                    <span class="registro-data-badge">📅 ${formatarData(item.data)}</span>
+                    <span class="registro-data-badge">${formatarData(item.data)}</span>
                 </div>
-                <p>${escapar(item.descricao || "Sem descrição")}</p>
-                ${htmlDetalhesEquipamentos(item)}
+                <details class="registro-resumo">
+                    <summary>Ver detalhes</summary>
+                    <p class="registro-descricao-completa">${descricao}</p>
+                    ${htmlDetalhesEquipamentos(item)}
+                </details>
+                <p class="registro-descricao-curta">${descricao}</p>
                 <div class="registro-meta">
                     <div>
                         ${chipEquipeRegistro(item)}
                         ${tarefaTitulo ? `<span class="registro-tarefa-chip">🔗 ${escapar(tarefaTitulo)}</span>` : ""}
-                        <span class="auditoria">Criado por: ${escapar(item.criado_por || "-")}${edicaoDiferente ? " · edit.: " + escapar(item.atualizado_por) : ""}</span>
+                        <span class="auditoria">${escapar(item.criado_por || "-")}${edicaoDiferente ? " · editado por " + escapar(item.atualizado_por) : ""}</span>
                     </div>
                     <div class="acoes" style="margin-top:0">
                         <button class="btn-warning" onclick="editarRegistro('${item.id}')">Editar</button>
                         <button class="btn-danger" onclick="apagarRegistro('${item.id}')">Apagar</button>
                     </div>
                 </div>
-            </div>
-        `;
+            </article>`;
     }).join("");
+
+    if(mais){
+        mais.innerHTML = filtrados.length > limiteRegistrosVisiveis
+            ? `<button class="btn-ghost" onclick="mostrarMaisRegistros()">Mostrar mais (${filtrados.length - limiteRegistrosVisiveis})</button>`
+            : (filtrados.length > 20 ? `<button class="btn-ghost" onclick="recolherRegistros()">Mostrar menos</button>` : "");
+    }
 }
 
+function mostrarMaisRegistros(){ limiteRegistrosVisiveis += 20; renderizarRegistros(); }
+function recolherRegistros(){ limiteRegistrosVisiveis = 20; renderizarRegistros(); el("telaRegistro")?.scrollIntoView({behavior:"smooth", block:"start"}); }
+
 function filtrarRegistros(){
+    limiteRegistrosVisiveis = 20;
     renderizarRegistros();
 }
 
@@ -3199,15 +3243,21 @@ function renderizarCanaisMapa(){
     grade.innerHTML = canais.length ? canais.map(c => {
         const hist=historicoCanalNormalizado(c.historico).slice().reverse();
         return `<div class="canal-card">
-            <div class="canal-numero"><strong>Canal ${String(c.canal).padStart(2,"0")}</strong><span class="tag ${c.camera_atual?'adicionada':'nao-adicionada'}">${c.camera_atual?'Ocupado':'Livre'}</span></div>
-            <div class="canal-atual">Câmera atual: <b>${escapar(c.camera_atual || "Nenhuma câmera")}</b></div>
-            <div class="canal-edicao">
-                <input type="text" id="novaCameraCanal_${c.id}" placeholder="Nova câmera / identificação" maxlength="160" />
-                <input type="text" id="obsCameraCanal_${c.id}" placeholder="Motivo ou observação da troca" maxlength="220" />
-                <button class="btn-success" onclick="alterarCameraCanal('${c.id}')">Registrar alteração</button>
+            <div class="canal-linha">
+                <div class="canal-numero"><strong>Canal ${String(c.canal).padStart(2,"0")}</strong></div>
+                <div class="canal-atual" title="${escapar(c.camera_atual || "Nenhuma câmera")}"><b>${escapar(c.camera_atual || "Nenhuma câmera")}</b></div>
+                <span class="tag ${c.camera_atual?'adicionada':'nao-adicionada'}">${c.camera_atual?'Ocupado':'Livre'}</span>
+                <div class="canal-acoes"><span class="camera-info">${hist.length} alteração(ões)</span></div>
             </div>
-            <details class="historico-canal"><summary>Histórico (${hist.length})</summary>
-                ${hist.length ? hist.map(h => `<div class="historico-item"><b>${escapar(h.anterior || "Sem câmera")}</b> → <b>${escapar(h.nova || "Canal liberado")}</b><br>${escapar(h.data || "")} · ${escapar(h.usuario || "-")}${h.observacao ? "<br>"+escapar(h.observacao) : ""}</div>`).join("") : '<div class="historico-item">Nenhuma alteração registrada.</div>'}
+            <details class="canal-editor"><summary>Alterar câmera e consultar histórico</summary>
+                <div class="canal-edicao">
+                    <input type="text" id="novaCameraCanal_${c.id}" placeholder="Nova câmera / identificação" maxlength="160" />
+                    <input type="text" id="obsCameraCanal_${c.id}" placeholder="Motivo ou observação" maxlength="220" />
+                    <button class="btn-success" onclick="alterarCameraCanal('${c.id}')">Salvar alteração</button>
+                </div>
+                <details class="historico-canal"><summary>Histórico (${hist.length})</summary>
+                    ${hist.length ? hist.map(h => `<div class="historico-item"><b>${escapar(h.anterior || "Sem câmera")}</b> → <b>${escapar(h.nova || "Canal liberado")}</b><br>${escapar(h.data || "")} · ${escapar(h.usuario || "-")}${h.observacao ? "<br>"+escapar(h.observacao) : ""}</div>`).join("") : '<div class="historico-item">Nenhuma alteração registrada.</div>'}
+                </details>
             </details>
         </div>`;
     }).join("") : '<div class="empty" style="grid-column:1/-1">Nenhum canal encontrado.</div>';
@@ -3422,6 +3472,24 @@ async function apagarAgendamento(id){
 }
 
 
+
+async function atualizarSomenteTV(){
+    if(!currentUser || !el("telaTV")?.classList.contains("ativa")) return;
+    try{
+        await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEscalas(), carregarEquipes()]);
+        renderizarTV();
+    }catch(e){ console.warn("Falha ao atualizar painel TV:", e.message); }
+}
+function iniciarAtualizacaoTV(){
+    pararAtualizacaoTV();
+    renderizarTV();
+    atualizarSomenteTV();
+    tvRefreshTimer = setInterval(atualizarSomenteTV, 30000);
+}
+function pararAtualizacaoTV(){
+    if(tvRefreshTimer){ clearInterval(tvRefreshTimer); tvRefreshTimer = null; }
+}
+
 function abrirAba(nome){
     const abas = ["Atividades", "MapaGravadores", "Registro", "Agendamentos", "Calendario", "TV", "Configuracoes"];
 
@@ -3434,7 +3502,8 @@ function abrirAba(nome){
 
     if(nome === "MapaGravadores") renderizarMapaGravadores();
     if(nome === "Calendario") renderizarCalendario();
-    if(nome === "TV") renderizarTV();
+    if(nome === "TV") iniciarAtualizacaoTV();
+    else pararAtualizacaoTV();
 }
 
 function abrirConfigAba(nome){
@@ -4733,9 +4802,6 @@ document.addEventListener("keydown", function(ev){
 preencherListaCameras("regCamerasLista", []);
 initAuth();
 
-setInterval(() => {
-    if(currentUser) carregarTudo();
-}, 15000);
 </script>
 </body>
 </html>

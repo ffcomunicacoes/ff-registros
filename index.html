@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>FF Registro | Gestão de Atividades e CFTV</title>
+<title>FF Registro | Gestão de Atividades</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
@@ -83,12 +83,6 @@ input,textarea,select{
     outline:none;
 }
 
-input[type="file"] {
-    background: #0f172a;
-    color: var(--muted);
-    font-size: 13px;
-}
-
 input:focus,textarea:focus,select:focus{
     border-color:var(--primary-2);
     box-shadow:0 0 0 3px rgba(59,130,246,.18);
@@ -154,11 +148,105 @@ textarea{
     border-radius:999px;
 }
 
+.grid-dashboard{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
+    gap:14px;
+    margin-bottom:20px;
+}
+
+.resumo-atividades{
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:10px 22px;
+    padding:12px 16px;
+    margin-bottom:14px;
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:14px;
+}
+.resumo-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--muted);
+    white-space:nowrap;
+}
+.resumo-item strong{
+    font-size:18px;
+    color:var(--text);
+}
+.resumo-progresso{
+    flex:1;
+    min-width:160px;
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+}
+.resumo-progresso .progress{margin-top:0; height:7px;}
+
 .card{
     background:linear-gradient(180deg, rgba(22,32,51,.96), rgba(15,23,42,.96));
     border:1px solid var(--border);
     border-radius:var(--radius);
     box-shadow:var(--shadow);
+}
+
+.metric{
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+}
+
+.metric::after{
+    content:"";
+    position:absolute;
+    right:-30px;
+    top:-30px;
+    width:90px;
+    height:90px;
+    background:rgba(59,130,246,.12);
+    border-radius:50%;
+}
+
+.metric span{
+    color:var(--muted);
+    font-size:13px;
+}
+
+.metric h2{
+    font-size:32px;
+    margin-top:8px;
+}
+
+.progress{
+    margin-top:12px;
+    height:10px;
+    background:#0f172a;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,var(--primary),var(--success));
+    transition:.35s;
+}
+
+.layout{
+    display:grid;
+    grid-template-columns:380px 1fr;
+    gap:20px;
+    align-items:start;
+}
+
+.side{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
 }
 
 .panel{
@@ -272,6 +360,12 @@ textarea{
     flex:1 1 auto;
 }
 
+.lista.drag-over{
+    outline:2px dashed var(--primary-2);
+    outline-offset:-10px;
+    background:rgba(59,130,246,.08);
+}
+
 .tarefa{
     background:linear-gradient(180deg,#23304a,#1b263d);
     border:1px solid rgba(148,163,184,.18);
@@ -283,8 +377,21 @@ textarea{
     transition:.2s;
 }
 
+.tarefa:hover{
+    transform:translateY(-2px);
+    border-color:rgba(148,163,184,.38);
+}
+
 .tarefa h4{
     margin-bottom:8px;
+    word-break:break-word;
+}
+
+.tarefa p{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.45;
+    white-space:pre-wrap;
     word-break:break-word;
 }
 
@@ -292,7 +399,7 @@ textarea{
     display:flex;
     justify-content:space-between;
     gap:8px;
-    margin-top:8px;
+    margin-top:12px;
     color:var(--muted);
     font-size:12px;
 }
@@ -340,6 +447,20 @@ td{
     color:#e5e7eb;
 }
 
+.tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    border-radius:999px;
+    padding:5px 9px;
+    font-size:12px;
+    font-weight:800;
+}
+
+.tag.pendente{background:rgba(245,158,11,.14);color:#fbbf24}
+.tag.concluido{background:rgba(34,197,94,.14);color:#86efac}
+.tag.cancelado{background:rgba(239,68,68,.14);color:#fca5a5}
+
 .empty{
     color:var(--muted);
     text-align:center;
@@ -354,6 +475,148 @@ footer{
     color:var(--muted);
     font-size:13px;
 }
+
+
+/* Efeitos visuais e movimento */
+body::before,
+body::after{
+    content:"";
+    position:fixed;
+    inset:auto;
+    width:360px;
+    height:360px;
+    border-radius:50%;
+    filter:blur(55px);
+    opacity:.28;
+    pointer-events:none;
+    z-index:-1;
+    animation:flutuarLuz 12s ease-in-out infinite alternate;
+}
+
+body::before{
+    left:-90px;
+    bottom:12%;
+    background:var(--primary-2);
+}
+
+body::after{
+    right:-110px;
+    top:20%;
+    background:var(--purple);
+    animation-delay:2s;
+}
+
+@keyframes flutuarLuz{
+    from{transform:translate3d(0,0,0) scale(1)}
+    to{transform:translate3d(45px,-35px,0) scale(1.12)}
+}
+
+.card{
+    backdrop-filter:blur(14px);
+    animation:entradaSuave .45s ease both;
+}
+
+@keyframes entradaSuave{
+    from{opacity:0; transform:translateY(14px)}
+    to{opacity:1; transform:translateY(0)}
+}
+
+.metric:hover,
+.coluna:hover,
+.panel:hover{
+    box-shadow:0 22px 55px rgba(37,99,235,.18), var(--shadow);
+}
+
+.tarefa{
+    position:relative;
+    overflow:hidden;
+    animation:cardEntrando .35s ease both;
+}
+
+.tarefa::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg, transparent, rgba(255,255,255,.08), transparent);
+    transform:translateX(-120%);
+    transition:.6s;
+}
+
+.tarefa:hover::before{
+    transform:translateX(120%);
+}
+
+@keyframes cardEntrando{
+    from{opacity:0; transform:scale(.97) translateY(10px)}
+    to{opacity:1; transform:scale(1) translateY(0)}
+}
+
+.tarefa.done{
+    opacity:.88;
+    border-left-color:var(--success)!important;
+}
+
+.tarefa.atrasada{
+    background:linear-gradient(180deg,#3a2230,#241522);
+    box-shadow:0 0 0 1px rgba(239,68,68,.35) inset;
+}
+
+.tarefa.done h4,
+.tarefa.done p{
+    text-decoration:none;
+}
+
+.btn-concluir{
+    background:linear-gradient(135deg,var(--success),#16a34a);
+}
+
+.modal-bg{
+    position:fixed;
+    inset:0;
+    background:rgba(2,6,23,.72);
+    backdrop-filter:blur(8px);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:999;
+}
+
+.modal-bg.ativo{
+    display:flex;
+}
+
+.modal{
+    width:min(620px,100%);
+    background:linear-gradient(180deg,#17233a,#0f172a);
+    border:1px solid rgba(148,163,184,.3);
+    border-radius:22px;
+    box-shadow:0 25px 80px rgba(0,0,0,.5);
+    padding:22px;
+    animation:modalZoom .25s ease both;
+}
+
+@keyframes modalZoom{
+    from{opacity:0; transform:scale(.94) translateY(18px)}
+    to{opacity:1; transform:scale(1) translateY(0)}
+}
+
+.modal h3{
+    margin-bottom:14px;
+}
+
+.modal textarea{
+    min-height:180px;
+}
+
+.modal-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:14px;
+    flex-wrap:wrap;
+}
+
 
 .tabs{
     display:flex;
@@ -410,6 +673,90 @@ footer{
     margin-bottom:14px;
 }
 
+/* ===== ABA TV — precisa caber inteira na tela, sem rolagem ===== */
+#telaTV.tela.ativa{
+    display:flex;
+    flex-direction:column;
+    height:calc(100vh - 210px);
+    min-height:420px;
+    overflow:auto;
+}
+#telaTV .admin-header{
+    flex:0 0 auto;
+    padding:12px 20px;
+    margin-bottom:10px;
+}
+#telaTV .admin-header h2{font-size:19px; line-height:1.2;}
+#telaTV .admin-header p{font-size:12px; margin-top:3px;}
+#telaTV .admin-kicker{font-size:10.5px; margin-bottom:4px;}
+#telaTV .admin-badge{width:42px; height:42px; font-size:20px; border-radius:16px;}
+
+.tv-kpis{
+    flex:0 0 auto;
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    gap:10px;
+    margin-bottom:10px;
+}
+.tv-metric{padding:10px 14px;}
+.tv-metric span{font-size:11.5px;}
+.tv-metric h2{font-size:26px; margin-top:4px;}
+
+.tv-charts{
+    flex:1 1 auto;
+    min-height:0;
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    grid-template-rows:repeat(2, 1fr);
+    gap:10px;
+    margin-bottom:10px;
+}
+.tv-charts .panel{
+    height:100%;
+    min-height:0;
+    padding:10px 14px;
+    display:flex;
+    flex-direction:column;
+}
+.tv-charts .panel-title{margin-bottom:4px;}
+.tv-charts .panel-title h3{font-size:12.5px;}
+.tv-charts canvas{flex:1; min-height:0; max-width:100%;}
+
+.tv-listas{
+    flex:0 0 auto;
+    max-height:150px;
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
+}
+.tv-listas .panel{
+    padding:10px 14px;
+    overflow:auto;
+    max-height:150px;
+}
+.tv-listas .panel-title{margin-bottom:6px;}
+.tv-listas .panel-title h3{font-size:12.5px;}
+.tv-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    border-radius:10px;
+    background:rgba(15,23,42,.55);
+    border:1px solid rgba(148,163,184,.16);
+    margin-bottom:6px;
+    font-size:12px;
+}
+.tv-item:last-child{margin-bottom:0;}
+.tv-item strong{display:block; font-size:12.5px;}
+.tv-item span.tv-sub{color:var(--muted); font-size:11px;}
+@media(max-width:1000px){
+    #telaTV.tela.ativa{height:auto; overflow:visible;}
+    .tv-charts, .tv-listas{grid-template-columns:1fr; grid-template-rows:none;}
+    .tv-charts .panel{height:220px;}
+}
+
 .camera-grid{
     display:grid;
     grid-template-columns:380px 1fr;
@@ -417,6 +764,65 @@ footer{
     align-items:start;
 }
 
+.camera-card{
+    background:linear-gradient(180deg,#23304a,#1b263d);
+    border:1px solid rgba(148,163,184,.18);
+    border-left:5px solid var(--purple);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+}
+
+.camera-card h4{
+    margin-bottom:6px;
+}
+
+.camera-info{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.5;
+    word-break:break-word;
+}
+
+.copy-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:12px;
+}
+
+.copy-row button{
+    padding:8px 10px;
+    border-radius:10px;
+    font-size:12px;
+}
+
+.tag.adicionada,
+.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
+
+.tag.nao-adicionada,
+.tag.nao-adicionado{background:rgba(239,68,68,.14);color:#fca5a5}
+
+@media(max-width:1150px){
+    .camera-grid{grid-template-columns:1fr}
+}
+
+
+@media(max-width:1150px){
+    .layout{grid-template-columns:1fr}
+}
+
+@media(max-width:800px){
+    body{padding:14px}
+    .topbar{flex-direction:column;align-items:flex-start}
+    .kanban{grid-template-columns:1fr}
+    .filters{grid-template-columns:1fr}
+    .inline-grid{grid-template-columns:1fr}
+}
+
+
+
+/* ===== Segunda aba: área de cadastros bonita ===== */
 .admin-header{
     margin-bottom:18px;
     padding:24px 28px;
@@ -458,7 +864,66 @@ footer{
     background:linear-gradient(135deg,#06b6d4,#2563eb,#8b5cf6);
     box-shadow:0 18px 42px rgba(37,99,235,.35);
 }
+#telaConfiguracoes .camera-grid input,
+#telaConfiguracoes .camera-grid textarea,
+#telaConfiguracoes .camera-grid select{
+    background:rgba(2,6,23,.58);
+    border-color:rgba(148,163,184,.24);
+    border-radius:16px;
+}
+#telaConfiguracoes .camera-grid button{
+    height:48px;
+    border-radius:16px;
+    box-shadow:0 12px 28px rgba(37,99,235,.22);
+}
+#telaConfiguracoes .camera-grid{
+    display:grid;
+    grid-template-columns:420px 1fr;
+    gap:18px;
+}
+@media(max-width:1050px){
+    #telaConfiguracoes .camera-grid{grid-template-columns:1fr;}
+}
 
+/* ===== Gerenciamento nas abas de configurações ===== */
+.admin-table{
+    width:100%;
+    min-width:680px;
+}
+.admin-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.admin-actions button{
+    padding:8px 10px;
+    font-size:12px;
+    border-radius:10px;
+}
+.admin-section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+}
+.admin-section-title h3{font-size:18px}
+.camera-card{
+    border:1px solid rgba(148,163,184,.22);
+    background:linear-gradient(180deg, rgba(30,41,59,.94), rgba(15,23,42,.94));
+    border-radius:18px;
+    padding:15px;
+    margin-bottom:12px;
+}
+.camera-card h4{margin-bottom:8px;font-size:17px}
+.camera-info{color:#cbd5e1;line-height:1.7;font-size:14px}
+.copy-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.copy-row button{padding:8px 10px;font-size:12px}
+.tag.nao-adicionada,.tag.nao-adicionado{background:rgba(239,68,68,.14);color:#fca5a5}
+.tag.adicionada,.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
+
+
+/* ===== TELA DE LOGIN ===== */
 .login-bg{
     position:fixed;
     inset:0;
@@ -480,8 +945,46 @@ footer{
     border-radius:24px;
     box-shadow:0 30px 90px rgba(0,0,0,.55);
     padding:32px 28px;
+    animation:modalZoom .3s ease both;
+}
+.login-box .logo-area{
+    justify-content:center;
+    margin-bottom:10px;
+}
+.login-box h2{
+    text-align:center;
+    font-size:22px;
+    margin:14px 0 4px;
+}
+.login-box p.sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:22px;
+}
+.login-box .form-grid{margin-bottom:6px;}
+.login-box button{width:100%;margin-top:6px;}
+.login-erro{
+    display:none;
+    background:rgba(127,29,29,.8);
+    border:1px solid rgba(239,68,68,.75);
+    padding:11px 13px;
+    border-radius:12px;
+    font-size:13px;
+    margin-bottom:14px;
+}
+.login-erro.ativo{display:block;}
+.login-dica{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px dashed var(--border);
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.6;
+    text-align:center;
 }
 
+/* Usuário logado na topbar */
 .user-pill{
     display:flex;
     align-items:center;
@@ -505,6 +1008,156 @@ footer{
     color:#fca5a5;
 }
 
+/* ===== ABA CALENDÁRIO ===== */
+#telaCalendario{padding-bottom:18px;}
+
+.cal-layout{
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:20px;
+    align-items:start;
+}
+@media(max-width:1150px){.cal-layout{grid-template-columns:1fr}}
+
+.cal-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+}
+.cal-nav{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.cal-nav button{
+    padding:9px 14px;
+    background:rgba(22,32,51,.85);
+    border:1px solid var(--border);
+    color:var(--text);
+}
+.cal-nav .cal-titulo{
+    font-weight:800;
+    font-size:16px;
+    min-width:190px;
+    text-align:center;
+}
+.cal-filtro-equipe{max-width:240px;}
+
+.cal-semana{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:10px;
+}
+.cal-dia{
+    background:linear-gradient(180deg, rgba(22,32,51,.85), rgba(15,23,42,.9));
+    border:1px solid var(--border);
+    border-radius:16px;
+    min-height:200px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.cal-dia.hoje{
+    border-color:var(--primary-2);
+    box-shadow:0 0 0 2px rgba(59,130,246,.25) inset;
+}
+.cal-dia-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size:12px;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    padding-bottom:6px;
+    border-bottom:1px solid rgba(148,163,184,.16);
+}
+.cal-dia-header strong{
+    font-size:15px;
+    color:var(--text);
+    text-transform:none;
+    letter-spacing:0;
+}
+.cal-evento{
+    border-radius:12px;
+    padding:9px 10px;
+    font-size:12.5px;
+    line-height:1.4;
+    color:#f8fafc;
+    border-left:4px solid var(--primary);
+    background:rgba(59,130,246,.14);
+    cursor:pointer;
+    transition:.15s;
+}
+.cal-evento:hover{
+    transform:translateY(-1px);
+    background:rgba(59,130,246,.22);
+}
+.cal-evento .cal-evento-os{
+    display:inline-block;
+    font-weight:800;
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:2px;
+}
+.cal-evento .cal-evento-titulo{
+    font-weight:700;
+    margin-bottom:2px;
+    word-break:break-word;
+}
+.cal-evento .cal-evento-hora{
+    color:var(--muted);
+    font-size:11px;
+}
+.cal-evento.status-concluido{opacity:.6; border-left-color:var(--success);}
+.cal-evento.status-cancelado{opacity:.55; border-left-color:var(--danger); text-decoration:line-through;}
+.cal-evento.status-em_andamento{border-left-color:var(--warning);}
+.cal-evento.tipo-agendamento{border-left-style:dashed;}
+
+.cal-lista-vazia{
+    color:var(--muted);
+    font-size:12px;
+    text-align:center;
+    padding:10px 4px;
+    border:1px dashed rgba(148,163,184,.25);
+    border-radius:10px;
+}
+
+.equipe-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:4px 10px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.equipe-cor-swatch{
+    width:14px;height:14px;border-radius:50%;
+    display:inline-block;
+    border:1px solid rgba(255,255,255,.4);
+}
+
+.legenda-equipes{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:16px;
+}
+
+.auditoria{
+    color:var(--muted);
+    font-size:11px;
+    margin-top:6px;
+    display:block;
+}
+
+/* ===== ABA REGISTRO ===== */
 .registro-card{
     background:linear-gradient(180deg,#23304a,#1b263d);
     border:1px solid rgba(148,163,184,.18);
@@ -520,10 +1173,23 @@ footer{
     gap:10px;
     margin-bottom:6px;
 }
+.registro-topo h4{
+    word-break:break-word;
+}
 .registro-data-badge{
+    flex:0 0 auto;
     font-size:11.5px;
     font-weight:700;
     color:var(--muted);
+    white-space:nowrap;
+    padding-top:2px;
+}
+.registro-card p{
+    color:#cbd5e1;
+    font-size:14px;
+    line-height:1.5;
+    white-space:pre-wrap;
+    word-break:break-word;
 }
 .registro-meta{
     display:flex;
@@ -533,7 +1199,8 @@ footer{
     margin-top:10px;
     flex-wrap:wrap;
 }
-.registro-chip{
+.registro-tarefa-chip,
+.registro-equipe-chip{
     display:inline-flex;
     align-items:center;
     gap:6px;
@@ -544,53 +1211,162 @@ footer{
     margin-bottom:6px;
     margin-right:6px;
 }
-
-.registro-img{
-    max-width:100%;
-    max-height:220px;
-    border-radius:12px;
-    object-fit:cover;
-    margin-top:10px;
-    border:1px solid rgba(148,163,184,.2);
-    cursor:pointer;
+.registro-tarefa-chip{
+    background:rgba(59,130,246,.16);
+    color:#93c5fd;
+}
+.campo-data-hoje{
+    display:flex;
+    gap:8px;
+}
+.campo-data-hoje input{
+    flex:1;
+}
+.campo-data-hoje button{
+    flex:0 0 auto;
+    white-space:nowrap;
 }
 
+
+/* ===== Câmeras alteradas dentro do Registro ===== */
+.reg-cameras-box{
+    border:1px solid rgba(148,163,184,.22);
+    background:rgba(2,6,23,.35);
+    border-radius:16px;
+    padding:14px;
+}
+.reg-cameras-head{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;
+}
+.reg-camera-row{
+    display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:center;margin-bottom:10px;
+}
+.reg-camera-row:last-child{margin-bottom:0}
+.reg-camera-row button{padding:10px 12px}
+.reg-detalhes{margin-top:10px;padding:10px 12px;border-radius:12px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16)}
+.reg-detalhes strong{display:block;margin-bottom:6px}
+.reg-camera-item{font-size:13px;color:#cbd5e1;line-height:1.5;padding:5px 0;border-bottom:1px dashed rgba(148,163,184,.15)}
+.reg-camera-item:last-child{border-bottom:0}
+@media(max-width:700px){.reg-camera-row{grid-template-columns:1fr}.reg-camera-row button{width:100%}}
+
+
+
+/* ===== MAPA DE GRAVADORES ===== */
+.mapa-layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start}
+.mapa-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.mapa-toolbar select{max-width:420px}
+.canais-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.canal-card{background:linear-gradient(180deg,#23304a,#1b263d);border:1px solid rgba(148,163,184,.2);border-left:5px solid var(--primary-2);border-radius:16px;padding:14px}
+.canal-numero{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.canal-numero strong{font-size:16px}
+.canal-atual{padding:9px 10px;border-radius:10px;background:rgba(15,23,42,.58);margin-bottom:10px;color:#cbd5e1;font-size:13px}
+.canal-atual b{color:var(--text)}
+.canal-edicao{display:grid;gap:8px}
+.historico-canal{margin-top:10px;border-top:1px dashed var(--border);padding-top:9px}
+.historico-canal summary{cursor:pointer;color:#93c5fd;font-size:12px;font-weight:700}
+.historico-item{padding:8px 0;border-bottom:1px solid rgba(148,163,184,.12);font-size:12px;color:#cbd5e1;line-height:1.45}
+.historico-item:last-child{border-bottom:0}
+.gravador-resumo{padding:14px;border-radius:14px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.16);margin-bottom:12px}
+@media(max-width:1050px){.mapa-layout{grid-template-columns:1fr}}
+
+
+/* ===== PRINT DA CÂMERA ===== */
+.camera-print-box{margin-top:10px;padding:12px;border:1px solid rgba(148,163,184,.18);border-radius:14px;background:rgba(15,23,42,.42)}
+.camera-print-titulo{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;font-size:12px;font-weight:800;color:#cbd5e1}
+.camera-print-preview{width:100%;max-height:220px;object-fit:cover;border-radius:12px;border:1px solid rgba(148,163,184,.18);background:#0f172a;cursor:zoom-in;display:block}
+.camera-print-vazio{min-height:92px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed rgba(148,163,184,.28);border-radius:12px;color:#94a3b8;font-size:12px;padding:12px}
+.camera-print-acoes{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
+.camera-print-acoes label,.camera-print-acoes button{font-size:12px;padding:9px 11px}
+.camera-print-acoes input[type=file]{display:none}
+.camera-print-info{font-size:11px;color:#94a3b8;margin-top:7px;line-height:1.4}
+.camera-print-loading{opacity:.6;pointer-events:none}
 #modalImagemCamera{position:fixed;inset:0;z-index:9999;background:rgba(2,6,23,.92);display:none;align-items:center;justify-content:center;padding:24px}
 #modalImagemCamera.aberto{display:flex}
-#modalImagemCamera img{max-width:min(1200px,96vw);max-height:90vh;object-fit:contain;border-radius:14px;}
+#modalImagemCamera img{max-width:min(1200px,96vw);max-height:90vh;object-fit:contain;border-radius:14px;box-shadow:0 25px 80px rgba(0,0,0,.55)}
 #modalImagemCamera button{position:absolute;top:18px;right:18px;border-radius:999px;width:44px;height:44px;padding:0;font-size:22px}
+
+/* ===== Refinamento de desempenho e leitura ===== */
+.mais-registros{display:flex;justify-content:center;padding-top:6px}
+.registro-resumo{margin:8px 0 0}
+.registro-resumo summary{cursor:pointer;color:#93c5fd;font-size:12px;font-weight:700;list-style:none}
+.registro-resumo summary::-webkit-details-marker{display:none}
+.registro-resumo summary::before{content:"＋ ";font-weight:900}
+.registro-resumo[open] summary::before{content:"− "}
+.registro-descricao-curta{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin:0}
+.registro-resumo[open] .registro-descricao-curta{display:none}
+.registro-descricao-completa{margin-top:8px;padding:12px;border-radius:12px;background:rgba(15,23,42,.45)}
+.registro-meta .auditoria{opacity:.72}
+
+/* Canais em lista: mais leve, escaneável e adequado para 16/32 canais */
+.canais-grid{display:flex;flex-direction:column;gap:8px}
+.canal-card{padding:0;border-left:4px solid var(--primary-2);overflow:hidden}
+.canal-linha{display:grid;grid-template-columns:100px minmax(180px,1fr) auto auto;gap:12px;align-items:center;padding:12px 14px}
+.canal-linha .canal-numero{margin:0}
+.canal-linha .canal-atual{margin:0;background:transparent;padding:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.canal-acoes{display:flex;gap:8px;align-items:center}
+.canal-editor{border-top:1px solid rgba(148,163,184,.14);padding:12px 14px;background:rgba(2,6,23,.22)}
+.canal-editor summary{cursor:pointer;color:#93c5fd;font-size:12px;font-weight:700}
+.canal-editor[open] summary{margin-bottom:10px}
+.canal-edicao{grid-template-columns:minmax(180px,1fr) minmax(220px,1.4fr) auto;align-items:center}
+.historico-canal{margin-top:10px}
+@media(max-width:760px){
+  .canal-linha{grid-template-columns:82px 1fr;gap:8px}
+  .canal-linha .tag{justify-self:start}
+  .canal-acoes{grid-column:1/-1}
+  .canal-edicao{grid-template-columns:1fr}
+}
+
+
+
+/* ===== RELATÓRIOS E TESTE DE CONEXÃO ===== */
+.relatorio-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
+.relatorio-opcoes{display:grid;gap:10px;margin-top:12px}
+.relatorio-opcao{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:#0f172a;cursor:pointer}
+.relatorio-opcao input{width:18px;height:18px;accent-color:var(--primary)}
+.relatorio-acoes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.relatorio-acoes button:first-child{grid-column:1/-1}
+.relatorio-preview{min-height:520px;background:#fff;color:#172033;border-radius:16px;padding:30px;overflow:auto}
+.relatorio-preview h1{font-size:26px;margin-bottom:4px;color:#0f172a}.relatorio-preview h2{font-size:18px;color:#1d4ed8;margin:26px 0 10px;border-bottom:2px solid #dbeafe;padding-bottom:6px}
+.relatorio-preview h3{font-size:15px;margin:15px 0 7px}.relatorio-preview p{line-height:1.55}.relatorio-preview table{width:100%;border-collapse:collapse;font-size:12px;margin:8px 0 16px}.relatorio-preview th,.relatorio-preview td{border:1px solid #dbe2ea;padding:7px;text-align:left;vertical-align:top}.relatorio-preview th{background:#eff6ff;color:#1e3a8a}.relatorio-preview .muted{color:#64748b}.relatorio-preview .resumo-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.relatorio-preview .resumo-card{background:#eff6ff;border-radius:10px;padding:12px}.relatorio-preview .resumo-card b{font-size:22px;display:block;color:#1d4ed8}
+.ping-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0}.ping-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:11px;font-weight:800;white-space:nowrap}.ping-status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}.ping-aguardando{color:#64748b;background:#e2e8f0}.ping-testando{color:#b45309;background:#fef3c7}.ping-online{color:#15803d;background:#dcfce7}.ping-offline{color:#b91c1c;background:#fee2e2}.ping-bloqueado{color:#6d28d9;background:#ede9fe}.ping-indisponivel{color:#475569;background:#e2e8f0}.ping-sem-endereco{color:#64748b;background:#e2e8f0}
+@media(max-width:900px){.relatorio-layout{grid-template-columns:1fr}.relatorio-preview .resumo-cards{grid-template-columns:1fr 1fr}}
+@media print{body>*{display:none!important}#telaRelatorio,#telaRelatorio *{display:block!important}#telaRelatorio{position:absolute;inset:0;background:#fff}.relatorio-layout>aside,.admin-header,.tabs{display:none!important}.relatorio-preview{padding:0;box-shadow:none}}
+
 </style>
 </head>
 
 <body>
 
-<!-- TELA DE LOGIN -->
 <div class="login-bg" id="telaLogin">
     <div class="login-box">
-        <div class="logo-area" style="justify-content:center;margin-bottom:10px;">
+        <div class="logo-area">
             <div class="logo-icon">📋</div>
         </div>
-        <h2 style="text-align:center;font-size:22px;">FF Registro</h2>
-        <p style="text-align:center;color:var(--muted);font-size:14px;margin-bottom:22px;">Acesse o painel com sua conta</p>
+        <h2>FF Registro</h2>
+        <p class="sub">Entre com sua conta para acessar o painel</p>
 
-        <div class="msg erro" id="loginErro"></div>
+        <div class="login-erro" id="loginErro"></div>
 
         <div class="form-grid">
             <input type="email" id="loginEmail" placeholder="E-mail" autocomplete="username" />
             <input type="password" id="loginSenha" placeholder="Senha" autocomplete="current-password" />
             <button id="btnLogin" onclick="fazerLogin()">Entrar</button>
         </div>
+
+        <div class="login-dica">
+            Acesso restrito à equipe. Todas as ações ficam registradas com o usuário que realizou a edição.<br>
+            Esqueceu a senha ou precisa de um acesso novo? Fale com o administrador do sistema.
+        </div>
     </div>
 </div>
 
-<!-- APLICAÇÃO PRINCIPAL -->
 <div class="app" id="appPrincipal" style="display:none">
     <header class="topbar">
         <div class="logo-area">
             <div class="logo-icon">📋</div>
             <div class="logo">
                 <h1>FF Registro</h1>
-                <span>Gestão de Orgens de Serviço e CFTV</span>
+                <span>Gestão de atividades e CFTV</span>
             </div>
         </div>
 
@@ -606,739 +1382,590 @@ footer{
 
     <div id="mensagem" class="msg"></div>
 
+
     <nav class="tabs">
-        <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Ordens / Tarefas</button>
-        <button class="tab-btn" id="tabRegistro" onclick="abrirAba('Registro')">📝 Atendimentos</button>
+        <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
+        <button class="tab-btn" id="tabMapaGravadores" onclick="abrirAba('MapaGravadores')">🎛️ Mapa de Gravadores</button>
+        <button class="tab-btn" id="tabRegistro" onclick="abrirAba('Registro')">📝 Registro</button>
+        <button class="tab-btn" id="tabRelatorio" onclick="abrirAba('Relatorio')">📊 Relatório</button>
+        <button class="tab-btn" id="tabAgendamentos" onclick="abrirAba('Agendamentos')">🗓️ Agendamentos</button>
+        <button class="tab-btn" id="tabCalendario" onclick="abrirAba('Calendario')">🚐 Calendário CFTV</button>
+        <button class="tab-btn" id="tabTV" onclick="abrirAba('TV')">📺 TV</button>
         <button class="tab-btn" id="tabConfiguracoes" onclick="abrirAba('Configuracoes')">⚙️ Configurações</button>
     </nav>
 
-    <!-- 1. ABA ATIVIDADES / ORDENS DE SERVIÇO -->
     <main class="layout tela ativa" id="telaAtividades">
-        <section class="card panel">
-            <div class="panel-title">
-                <h3>Quadro de Ordens de Serviço e Atividades</h3>
-                <button onclick="alternarFormAtividade()" id="btnToggleFormAtividade">+ Nova Ordem/Atividade</button>
-            </div>
-
-            <!-- FORMULÁRIO DE ATIVIDADES COM CAMPO DE DIA E TÉCNICO (COM OPÇÃO DE "SEM TÉCNICO") -->
-            <div class="form-grid quick-form" id="formNovaAtividade" style="display:none">
-                <input type="text" id="titulo" placeholder="Título da O.S. ou atividade" maxlength="90" />
-                <textarea id="descricao" placeholder="Descrição detalhada do serviço..."></textarea>
-                
-                <div class="inline-grid">
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Dia de Direcionamento da O.S.:</label>
-                        <input type="date" id="dataDirecionamento" />
+        <section>
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Quadro de atividades</h3>
+                    <div class="btn-row">
+                        <button onclick="alternarFormAtividade()" id="btnToggleFormAtividade">+ Nova atividade</button>
                     </div>
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Data Limite / Prazo:</label>
+                </div>
+
+                <div class="resumo-atividades">
+                    <div class="resumo-item"><span>Total</span><strong id="total">0</strong></div>
+                    <div class="resumo-item"><span>A Fazer</span><strong id="todoCount">0</strong></div>
+                    <div class="resumo-item"><span>Fazendo</span><strong id="doingCount">0</strong></div>
+                    <div class="resumo-item"><span>Concluído</span><strong id="doneCount">0</strong></div>
+                    <div class="resumo-item resumo-progresso">
+                        <span>Progresso <strong id="progressText">0%</strong></span>
+                        <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+                    </div>
+                </div>
+
+                <div class="form-grid quick-form" id="formNovaAtividade" style="display:none">
+                    <input type="text" id="titulo" placeholder="Título da atividade" maxlength="90" />
+                    <textarea id="descricao" placeholder="Descrição da atividade"></textarea>
+
+                    <div class="inline-grid">
+                        <select id="prioridade">
+                            <option value="normal">Prioridade normal</option>
+                            <option value="alta">Alta prioridade</option>
+                            <option value="baixa">Baixa prioridade</option>
+                        </select>
+
                         <input type="date" id="prazo" />
                     </div>
+
+                    <select id="tarefaTecnico">
+                        <option value="">Sem técnico definido</option>
+                    </select>
+
+                    <button id="btnCriarTarefa" onclick="criarTarefa()">Adicionar atividade</button>
                 </div>
 
-                <div class="inline-grid">
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Prioridade:</label>
-                        <select id="prioridade">
-                            <option value="normal">Prioridade Normal</option>
-                            <option value="alta">Alta Prioridade</option>
-                            <option value="baixa">Baixa Prioridade</option>
-                        </select>
+                <div class="filters">
+                    <input type="search" id="busca" placeholder="Pesquisar atividade..." oninput="filtrarTarefas()" />
+                    <select id="filtroStatus" onchange="filtrarTarefas()">
+                        <option value="">Todos os status</option>
+                        <option value="todo">A fazer</option>
+                        <option value="doing">Fazendo</option>
+                        <option value="done">Concluído</option>
+                    </select>
+                    <select id="filtroPrioridade" onchange="filtrarTarefas()">
+                        <option value="">Todas as prioridades</option>
+                        <option value="alta">Alta</option>
+                        <option value="normal">Normal</option>
+                        <option value="baixa">Baixa</option>
+                    </select>
+                    <select id="filtroTecnico" onchange="filtrarTarefas()">
+                        <option value="">Todos os técnicos</option>
+                    </select>
+                </div>
+
+                <div class="kanban">
+                    <div class="card coluna">
+                        <div class="coluna-header">📋 A Fazer <span class="badge" id="badgeTodo">0</span></div>
+                        <div class="lista" id="todo" data-status="todo"></div>
                     </div>
-                    <div>
-                        <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Técnico Responsável:</label>
-                        <select id="tarefaTecnico">
-                            <option value="">Sem técnico atribuído (Não direcionado)</option>
-                        </select>
+
+                    <div class="card coluna">
+                        <div class="coluna-header">⚙️ Fazendo <span class="badge" id="badgeDoing">0</span></div>
+                        <div class="lista" id="doing" data-status="doing"></div>
+                    </div>
+
+                    <div class="card coluna">
+                        <div class="coluna-header">✅ Concluído <span class="badge" id="badgeDone">0</span></div>
+                        <div class="lista" id="done" data-status="done"></div>
                     </div>
                 </div>
-
-                <button id="btnCriarTarefa" onclick="criarTarefa()">Salvar Ordem de Serviço</button>
-            </div>
-
-            <!-- FILTROS -->
-            <div class="filters">
-                <input type="search" id="busca" placeholder="Pesquisar..." oninput="filtrarTarefas()" />
-                <select id="filtroStatus" onchange="filtrarTarefas()">
-                    <option value="">Todos os status</option>
-                    <option value="todo">A fazer</option>
-                    <option value="doing">Fazendo</option>
-                    <option value="done">Concluído</option>
-                </select>
-                <select id="filtroPrioridade" onchange="filtrarTarefas()">
-                    <option value="">Todas as prioridades</option>
-                    <option value="alta">Alta</option>
-                    <option value="normal">Normal</option>
-                    <option value="baixa">Baixa</option>
-                </select>
-                <select id="filtroTecnico" onchange="filtrarTarefas()">
-                    <option value="">Todos os técnicos</option>
-                    <option value="sem_tecnico">Sem técnico atribuído</option>
-                </select>
-            </div>
-
-            <!-- KANBAN -->
-            <div class="kanban">
-                <div class="card coluna">
-                    <div class="coluna-header">📋 A Fazer <span class="badge" id="badgeTodo">0</span></div>
-                    <div class="lista" id="todo" data-status="todo"></div>
-                </div>
-                <div class="card coluna">
-                    <div class="coluna-header">⚙️ Fazendo <span class="badge" id="badgeDoing">0</span></div>
-                    <div class="lista" id="doing" data-status="doing"></div>
-                </div>
-                <div class="card coluna">
-                    <div class="coluna-header">✅ Concluído <span class="badge" id="badgeDone">0</span></div>
-                    <div class="lista" id="done" data-status="done"></div>
-                </div>
-            </div>
+            </section>
         </section>
     </main>
 
-    <!-- 2. ABA REGISTRO DE ATENDIMENTOS -->
+
+
+    <section class="tela" id="telaMapaGravadores">
+        <div class="admin-header card">
+            <div>
+                <span class="admin-kicker">Histórico por canal</span>
+                <h2>Mapa de Gravadores</h2>
+                <p>Cadastre cada gravador e acompanhe, canal por canal, qual câmera está conectada e todas as substituições realizadas.</p>
+            </div>
+            <div class="admin-badge">🎛️</div>
+        </div>
+
+        <div class="mapa-layout">
+            <aside class="side">
+                <section class="card panel">
+                    <div class="panel-title"><h3>Novo gravador</h3><span class="badge">+</span></div>
+                    <div class="form-grid">
+                        <input type="text" id="mapaGravNome" placeholder="Identificação. Ex: NVR Portaria" maxlength="100" />
+                        <input type="text" id="mapaGravLocal" placeholder="Local do gravador" maxlength="140" />
+                        <select id="mapaGravCanais">
+                            <option value="16">16 canais</option>
+                            <option value="32">32 canais</option>
+                        </select>
+                        <textarea id="mapaGravObs" placeholder="Observações do gravador"></textarea>
+                        <button class="btn-purple" id="btnCriarMapaGravador" onclick="criarMapaGravador()">Criar mapa do gravador</button>
+                    </div>
+                </section>
+
+                <section class="card panel">
+                    <div class="panel-title"><h3>Gravadores cadastrados</h3><span class="badge" id="totalMapaGravadores">0</span></div>
+                    <div id="listaMapaGravadores"><div class="empty">Nenhum gravador cadastrado.</div></div>
+                </section>
+            </aside>
+
+            <section class="card panel">
+                <div class="panel-title">
+                    <h3>Mapa dos canais</h3>
+                    <span class="pill" id="mapaGravadorStatus">Selecione um gravador</span>
+                </div>
+                <div class="mapa-toolbar">
+                    <select id="mapaGravadorSelecionado" onchange="selecionarMapaGravador(this.value)">
+                        <option value="">Selecione um gravador...</option>
+                    </select>
+                    <input type="search" id="buscaCanalMapa" placeholder="Pesquisar por canal ou câmera..." oninput="renderizarCanaisMapa()" />
+                    <button type="button" class="btn-ghost" id="btnTestarCameras" onclick="testarCamerasDoMapa()" disabled>◉ Testar câmeras</button>
+                </div>
+                <div id="resumoPingMapa" class="ping-toolbar"></div>
+                <div id="mapaGravadorDetalhes"></div>
+                <div id="gradeCanaisMapa" class="canais-grid"><div class="empty" style="grid-column:1/-1">Selecione um gravador para abrir o mapa.</div></div>
+            </section>
+        </div>
+    </section>
+
+    <section class="tela" id="telaRelatorio">
+        <div class="admin-header card">
+            <div><span class="admin-kicker">Exportação personalizada</span><h2>Relatórios</h2><p>Monte um relatório completo ou desmarque as seções que não deseja incluir.</p></div>
+            <div class="admin-badge">📊</div>
+        </div>
+        <div class="relatorio-layout">
+            <aside class="card panel">
+                <div class="panel-title"><h3>Configurar relatório</h3><span class="badge">PDF / Excel</span></div>
+                <div class="form-grid">
+                    <input type="text" id="relTitulo" value="Relatório técnico de CFTV" placeholder="Título do relatório" />
+                    <input type="date" id="relDataInicio" title="Data inicial" />
+                    <input type="date" id="relDataFim" title="Data final" />
+                    <select id="relGravador"><option value="">Todos os gravadores</option></select>
+                </div>
+                <div class="copy-row" style="margin-top:12px"><button class="btn-ghost" onclick="marcarOpcoesRelatorio(true)">Marcar tudo</button><button class="btn-ghost" onclick="marcarOpcoesRelatorio(false)">Desmarcar tudo</button></div>
+                <div class="relatorio-opcoes">
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="resumo" checked>Resumo geral</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="gravadores" checked>Gravadores e canais atuais</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="historico" checked>Histórico dos canais</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="registros" checked>Registros de atendimento</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="atividades" checked>Atividades</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="agendamentos" checked>Agendamentos</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="equipes" checked>Equipes e funcionários</label>
+                    <label class="relatorio-opcao"><input type="checkbox" data-rel="cameras" checked>Cadastro de câmeras</label>
+                </div>
+                <div class="relatorio-acoes">
+                    <button id="btnGerarRelatorio" onclick="gerarPreviewRelatorio()">Atualizar visualização</button>
+                    <button class="btn-success" onclick="exportarRelatorioExcel()">Excel</button>
+                    <button class="btn-purple" onclick="exportarRelatorioPDF()">PDF</button>
+                </div>
+            </aside>
+            <section class="card panel"><div id="relatorioPreview" class="relatorio-preview"><div class="empty" style="color:#64748b">Clique em “Atualizar visualização” para montar o relatório.</div></div></section>
+        </div>
+    </section>
+
     <section class="tela" id="telaRegistro">
+
         <section class="card panel">
             <div class="panel-title">
-                <h3>Registro de Atendimentos Técnicos</h3>
+                <h3>Registro de atendimentos</h3>
                 <div class="btn-row">
                     <span class="pill" id="totalRegistros">0 registros</span>
-                    <button class="btn-purple" onclick="alternarFormRegistro()" id="btnToggleFormRegistro">+ Novo Atendimento</button>
+                    <button class="btn-purple" onclick="alternarFormRegistro()" id="btnToggleFormRegistro">+ Novo registro</button>
                 </div>
             </div>
 
+            <p class="config-hint">Registre o atendimento e vincule a equipe ou atividade quando necessário.</p>
+
             <div class="form-grid quick-form" id="formNovoRegistro" style="display:none">
+                <input type="text" id="regTitulo" placeholder="Título do registro. Ex: Liberação de equipamento" maxlength="120" />
+                <textarea id="regDescricao" placeholder="Descreva o que foi feito..."></textarea>
+
                 <div class="inline-grid">
-                    <select id="regCondominio" required>
-                        <option value="">Selecione o condomínio/local...</option>
-                    </select>
                     <select id="regEquipe">
-                        <option value="">Selecione o técnico/equipe...</option>
+                        <option value="">Selecione a equipe...</option>
+                    </select>
+                    <select id="regTarefa">
+                        <option value="">Sem atividade vinculada</option>
                     </select>
                 </div>
 
-                <input type="text" id="regTitulo" placeholder="Título do atendimento. Ex: Manutenção no Portão" maxlength="120" />
-                <textarea id="regDescricao" placeholder="Descreva o serviço executado..."></textarea>
-
                 <div class="inline-grid">
-                    <select id="regTarefa">
-                        <option value="">Sem O.S. vinculada</option>
+                    <select id="regGravador">
+                        <option value="">Sem gravador informado</option>
+                        <option value="16">Gravador de 16 canais</option>
+                        <option value="32">Gravador de 32 canais</option>
                     </select>
-                    <div style="display:flex;gap:8px;">
+                    <div class="campo-data-hoje">
                         <input type="date" id="regData" />
                         <button type="button" class="btn-ghost" onclick="preencherDataHoje('regData')">Hoje</button>
                     </div>
                 </div>
 
-                <div>
-                    <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px;">Foto do Serviço:</label>
-                    <input type="file" id="regFoto" accept="image/*" />
+                <div class="reg-cameras-box">
+                    <div class="reg-cameras-head">
+                        <strong>Câmeras alteradas</strong>
+                        <button type="button" class="btn-ghost" onclick="adicionarLinhaCamera('regCamerasLista')">+ Adicionar câmera</button>
+                    </div>
+                    <div id="regCamerasLista"></div>
                 </div>
 
-                <button class="btn-purple" id="btnCriarRegistro" onclick="criarRegistro()">Salvar Atendimento</button>
+                <button class="btn-purple" id="btnCriarRegistro" onclick="criarRegistro()">Salvar registro</button>
             </div>
 
-            <!-- FILTROS DE REGISTRO -->
-            <div class="filters" style="grid-template-columns:1fr 1fr 1fr;">
-                <input type="search" id="buscaRegistro" placeholder="Pesquisar histórico..." oninput="filtrarRegistros()" />
-                <select id="filtroRegistroCondominio" onchange="filtrarRegistros()">
-                    <option value="">Todos os condomínios</option>
-                </select>
-                <input type="date" id="filtroRegistroData" onchange="filtrarRegistros()" />
-            </div>
+            <input type="search" id="buscaRegistro" placeholder="Pesquisar por título, descrição, equipe ou atividade..." oninput="filtrarRegistros()" style="margin-bottom:16px" />
 
             <div id="listaRegistros"></div>
+            <div id="maisRegistros" class="mais-registros"></div>
         </section>
     </section>
 
-    <!-- 3. CONFIGURAÇÕES -->
-    <section class="tela" id="telaConfiguracoes">
+
+    <section class="tela" id="telaAgendamentos">
+
+        <section class="card panel">
+            <div class="panel-title">
+                <h3>Agendamentos</h3>
+                <div class="btn-row">
+                    <span class="pill" id="totalAgendamentos">0 agendamentos</span>
+                    <button class="btn-purple" onclick="alternarFormAgendamento()" id="btnToggleFormAgendamento">+ Novo agendamento</button>
+                </div>
+            </div>
+
+            <p class="config-hint">Compromissos administrativos — ligações, reuniões, prazos internos — sem vínculo com uma equipe de campo. Também aparecem no Calendário CFTV, marcados como 📌 Compromisso.</p>
+
+            <div class="form-grid quick-form" id="formNovoAgendamento" style="display:none">
+                <input type="text" id="agTitulo" placeholder="Título do agendamento" maxlength="90" />
+                <textarea id="agDescricao" placeholder="Observação / descrição"></textarea>
+
+                <div class="inline-grid">
+                    <input type="date" id="agData" />
+                    <input type="time" id="agHora" />
+                </div>
+
+                <select id="agResponsavel">
+                    <option value="">Sem responsável definido</option>
+                </select>
+
+                <button class="btn-purple" id="btnCriarAgendamento" onclick="criarAgendamento()">Salvar agendamento</button>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Hora</th>
+                            <th>Título</th>
+                            <th>Responsável</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaAgendamentos">
+                        <tr><td colspan="6">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </section>
+
+
+    <section class="tela" id="telaCalendario">
+
         <div class="admin-header card">
             <div>
-                <span class="admin-kicker">Área Administrativa</span>
-                <h2>Configurações do Sistema</h2>
-                <p>Gerencie Condomínios e Técnicos cadastrados.</p>
+                <span class="admin-kicker">Cronograma das equipes</span>
+                <h2>Calendário de agendas CFTV</h2>
+                <p>Direcione atividades e O.S. para as equipes de campo por dia e horário. Os compromissos administrativos da aba Agendamentos também aparecem aqui.</p>
+            </div>
+            <div class="admin-badge">🗓️</div>
+        </div>
+
+        <div class="cal-layout">
+            <aside class="side">
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Nova escala</h3>
+                        <span class="badge">+</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <select id="escEquipe"></select>
+                        <input type="text" id="escOs" placeholder="Nº da O.S." maxlength="60" />
+                        <input type="text" id="escTitulo" placeholder="Título / serviço" maxlength="120" />
+                        <textarea id="escDescricao" placeholder="Descrição / observações"></textarea>
+                        <input type="text" id="escLocal" placeholder="Local. Ex: Totem Guarajuba" maxlength="140" />
+
+                        <div class="inline-grid">
+                            <input type="date" id="escData" />
+                            <input type="time" id="escHoraInicio" />
+                        </div>
+
+                        <div class="inline-grid">
+                            <input type="time" id="escHoraFim" />
+                            <select id="escStatus">
+                                <option value="agendado">Agendado</option>
+                                <option value="em_andamento">Em andamento</option>
+                                <option value="concluido">Concluído</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-purple" id="btnCriarEscala" onclick="criarEscala()">Agendar equipe</button>
+                    </div>
+                </section>
+
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Legenda de equipes</h3>
+                        <span class="badge" id="totalEquipesLegenda">0</span>
+                    </div>
+                    <div class="legenda-equipes" id="legendaEquipes">
+                        <span class="cal-lista-vazia" style="width:100%">Cadastre equipes em Cadastros.</span>
+                    </div>
+                    <span class="equipe-chip" style="margin-top:8px;background:rgba(139,92,246,.16);color:#ddd6fe;border:1.5px dashed var(--purple)">
+                        📌 Compromisso administrativo (Agendamentos)
+                    </span>
+                </section>
+            </aside>
+
+            <section>
+                <section class="card panel">
+                    <div class="panel-title">
+                        <h3>Semana de agendamentos</h3>
+                        <span class="pill" id="totalEscalasSemana">0 escala(s)</span>
+                    </div>
+
+                    <div class="cal-toolbar">
+                        <div class="cal-nav">
+                            <button class="btn-ghost" onclick="navegarSemana(-1)">← Semana anterior</button>
+                            <span class="cal-titulo" id="calTituloSemana">--</span>
+                            <button class="btn-ghost" onclick="navegarSemana(1)">Próxima semana →</button>
+                            <button class="btn-ghost" onclick="irParaHoje()">Hoje</button>
+                        </div>
+                        <select id="filtroEscalaEquipe" class="cal-filtro-equipe" onchange="renderizarCalendario()">
+                            <option value="">Todas as equipes</option>
+                        </select>
+                    </div>
+
+                    <div class="cal-semana" id="calSemana"></div>
+                </section>
+
+                <section class="card panel" style="margin-top:20px">
+                    <div class="admin-section-title">
+                        <h3>Gerenciar escalas</h3>
+                        <span class="pill" id="totalAdminEscalas">0 escala(s)</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Equipe</th>
+                                    <th>O.S. / Título</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaAdminEscalas">
+                                <tr><td colspan="5">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </section>
+
+
+    <section class="tela" id="telaTV">
+
+        <div class="admin-header card">
+            <div>
+                <span class="admin-kicker">Painel para TV / parede</span>
+                <h2>Visão geral do FF Registro</h2>
+                <p>Atualiza sozinho a cada 15 segundos. Ideal para deixar fixo numa tela da equipe.</p>
+            </div>
+            <div class="admin-badge">📺</div>
+        </div>
+
+        <div class="tv-kpis">
+            <div class="card metric tv-metric"><span>Atividades em aberto</span><h2 id="tvAtividadesAbertas">0</h2></div>
+            <div class="card metric tv-metric"><span>Atividades atrasadas</span><h2 id="tvAtividadesAtrasadas" style="color:var(--danger)">0</h2></div>
+            <div class="card metric tv-metric"><span>Agendamentos pendentes</span><h2 id="tvAgendamentosPendentes">0</h2></div>
+            <div class="card metric tv-metric"><span>Equipes em campo hoje</span><h2 id="tvEquipesHoje">0</h2></div>
+            <div class="card metric tv-metric"><span>Câmeras pendentes</span><h2 id="tvCamerasPendentes">0</h2></div>
+        </div>
+
+        <div class="tv-charts">
+            <div class="card panel">
+                <div class="panel-title"><h3>Atividades por status</h3></div>
+                <canvas id="chartAtividades"></canvas>
+            </div>
+            <div class="card panel">
+                <div class="panel-title"><h3>Agendamentos por status</h3></div>
+                <canvas id="chartAgendamentos"></canvas>
+            </div>
+            <div class="card panel">
+                <div class="panel-title"><h3>Escalas da semana por equipe</h3></div>
+                <canvas id="chartEscalasEquipe"></canvas>
+            </div>
+            <div class="card panel">
+                <div class="panel-title"><h3>Câmeras: adicionadas x pendentes</h3></div>
+                <canvas id="chartCameras"></canvas>
+            </div>
+        </div>
+
+        <div class="tv-listas">
+            <div class="card panel">
+                <div class="panel-title"><h3>Equipes em campo hoje</h3></div>
+                <div id="tvListaEquipesHoje"><div class="empty">Sem escalas para hoje.</div></div>
+            </div>
+            <div class="card panel">
+                <div class="panel-title"><h3>Atividades atrasadas</h3></div>
+                <div id="tvListaAtrasadas"><div class="empty">Nenhuma atividade atrasada. 🎉</div></div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="tela" id="telaConfiguracoes">
+
+        <div class="admin-header card">
+            <div>
+                <span class="admin-kicker">Área administrativa</span>
+                <h2>Configurações</h2>
+                <p>Equipes, câmeras e a lista completa de atividades, organizadas cada uma na sua aba.</p>
             </div>
             <div class="admin-badge">⚙️</div>
         </div>
 
         <nav class="tabs subtabs">
-            <button class="tab-btn ativo" id="subtabCondominios" onclick="abrirConfigAba('Condominios')">🏢 Condomínios</button>
-            <button class="tab-btn" id="subtabFuncionarios" onclick="abrirConfigAba('Funcionarios')">🧑‍🔧 Técnicos</button>
+            <button class="tab-btn ativo" id="subtabEquipes" onclick="abrirConfigAba('Equipes')">👥 Equipes</button>
+            <button class="tab-btn" id="subtabCameras" onclick="abrirConfigAba('Cameras')">📷 Câmeras</button>
+            <button class="tab-btn" id="subtabAtividades" onclick="abrirConfigAba('Atividades')">📋 Atividades</button>
+            <button class="tab-btn" id="subtabFuncionarios" onclick="abrirConfigAba('Funcionarios')">🧑‍🔧 Funcionários</button>
         </nav>
 
-        <!-- PAINEL CONDOMÍNIOS -->
-        <div class="config-tela ativa" id="configCondominios">
+        <div class="config-tela ativa" id="configEquipes">
             <div class="camera-grid">
-                <aside>
+                <aside class="side">
                     <section class="card panel">
                         <div class="panel-title">
-                            <h3>Cadastrar Condomínio</h3>
+                            <h3>Nova equipe CFTV</h3>
+                            <span class="badge">👥</span>
                         </div>
+
                         <div class="form-grid">
-                            <input type="text" id="condoNome" placeholder="Nome do Condomínio / Local" maxlength="100" />
-                            <input type="text" id="condoEndereco" placeholder="Endereço" maxlength="150" />
-                            <button class="btn-purple" onclick="criarCondominio()">Salvar Condomínio</button>
+                            <input type="text" id="eqNome" placeholder="Nome da equipe. Ex: Equipe Instalação 1" maxlength="90" />
+
+                            <div class="inline-grid">
+                                <input type="text" id="eqEspecialidade" placeholder="Especialidade. Ex: Instalação, Manutenção" maxlength="80" />
+                                <input type="text" id="eqResponsavel" placeholder="Responsável / líder" maxlength="80" />
+                            </div>
+
+                            <div class="inline-grid">
+                                <input type="text" id="eqTelefone" placeholder="Telefone de contato" maxlength="40" />
+                                <input type="color" id="eqCor" value="#2563eb" title="Cor da equipe no calendário" />
+                            </div>
+
+                            <button class="btn-purple" id="btnCriarEquipe" onclick="criarEquipe()">Adicionar equipe</button>
                         </div>
                     </section>
                 </aside>
 
-                <section class="card panel">
-                    <div class="panel-title">
-                        <h3>Condomínios Cadastrados</h3>
-                        <span class="pill" id="totalAdminCondominios">0 local(is)</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Endereço</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaAdminCondominios">
-                                <tr><td colspan="3">Carregando...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <section>
+                    <section class="card panel">
+                        <div class="admin-section-title">
+                            <h3>Equipes cadastradas</h3>
+                            <span class="pill" id="totalAdminEquipes">0 equipe(s)</span>
+                        </div>
+                        <div class="table-wrap">
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Equipe</th>
+                                        <th>Especialidade</th>
+                                        <th>Responsável</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabelaAdminEquipes">
+                                    <tr><td colspan="5">Carregando...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
                 </section>
             </div>
         </div>
 
-        <!-- PAINEL TÉCNICOS -->
-        <div class="config-tela" id="configFuncionarios">
+        <div class="config-tela" id="configCameras">
             <div class="camera-grid">
-                <aside>
+                <aside class="side">
                     <section class="card panel">
                         <div class="panel-title">
-                            <h3>Cadastrar Técnico</h3>
+                            <h3>Nova câmera</h3>
+                            <span class="badge">📷</span>
                         </div>
+
                         <div class="form-grid">
-                            <input type="text" id="funcNome" placeholder="Nome do Técnico" maxlength="90" />
-                            <input type="text" id="funcCargo" placeholder="Cargo / Função" maxlength="80" />
-                            <input type="text" id="funcTelefone" placeholder="Telefone" maxlength="40" />
-                            <button class="btn-purple" onclick="criarFuncionario()">Salvar Técnico</button>
+                            <input type="text" id="camLocal" placeholder="Nome do local. Ex: Totem Guarajuba" maxlength="120" />
+
+                            <div class="inline-grid">
+                                <input type="text" id="camTipo" placeholder="Tipo. Ex: Facial, LPR, CFTV" maxlength="80" />
+                                <input type="text" id="camNome" placeholder="Nome da câmera. Ex: Câmera 01" maxlength="100" />
+                            </div>
+
+                            <input type="text" id="camIp" placeholder="IP da câmera. Ex: 192.168.1.20" maxlength="80" />
+
+                            <textarea id="camDescricao" placeholder="Descrição. Ex: Câmera frontal apontada para entrada"></textarea>
+
+                            <input type="text" id="camLocalizacao" placeholder="Coordenadas. Ex: -1323131 -2321313" maxlength="120" />
+
+                            <div class="inline-grid">
+                                <select id="camStatus">
+                                    <option value="adicionada">Câmera adicionada</option>
+                                    <option value="nao-adicionada">Câmera não adicionada</option>
+                                </select>
+
+                                <select id="camGravador">
+                                    <option value="adicionado">Gravador adicionado</option>
+                                    <option value="nao-adicionado">Gravador não adicionado</option>
+                                </select>
+                            </div>
+
+                            <button class="btn-purple" id="btnCriarCamera" onclick="criarCamera()">Adicionar câmera</button>
                         </div>
                     </section>
                 </aside>
 
-                <section class="card panel">
-                    <div class="panel-title">
-                        <h3>Técnicos Cadastrados</h3>
-                        <span class="pill" id="totalAdminFuncionarios">0 técnico(s)</span>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Nome</th>
-                                    <th>Cargo</th>
-                                    <th>Telefone</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabelaAdminFuncionarios">
-                                <tr><td colspan="4">Carregando...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <section>
+                    <section class="card panel">
+                        <div class="panel-title">
+                            <h3>Lista de câmeras por local</h3>
+                            <span class="pill" id="totalCameras">0 câmera(s)</span>
+                        </div>
+
+                        <div class="filters">
+                            <input type="search" id="buscaCamera" placeholder="Pesquisar por local, tipo, nome ou IP..." oninput="filtrarCameras()" />
+                            <select id="filtroCameraStatus" onchange="filtrarCameras()">
+                                <option value="">Todos os status</option>
+                                <option value="adicionada">Adicionada</option>
+                                <option value="nao-adicionada">Não adicionada</option>
+                            </select>
+                            <select id="filtroCameraGravador" onchange="filtrarCameras()">
+                                <option value="">Todos os gravadores</option>
+                                <option value="adicionado">Gravador adicionado</option>
+                                <option value="nao-adicionado">Gravador não adicionado</option>
+                            </select>
+                        </div>
+
+                        <div id="listaCameras"></div>
+                    </section>
                 </section>
             </div>
         </div>
-    </section>
 
-    <footer>FF Registro © 2026 - Gestão de Atividades Técnicas</footer>
-</div>
-
-<!-- MODAL DE EXIBIÇÃO DE FOTO -->
-<div id="modalImagemCamera" onclick="fecharImagemCamera(event)">
-    <button type="button" class="btn-ghost" onclick="fecharImagemCamera()">×</button>
-    <img id="modalImagemCameraImg" alt="Foto Ampliada" />
-</div>
-
-<script>
-const SUPABASE_URL = "https://dkjojycfqzkfrnyphtta.supabase.co";
-const SUPABASE_KEY = "sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let condominiosCache = [];
-let registrosCache = [];
-let tarefasCache = [];
-let funcionariosCache = [];
-let currentUser = null;
-
-function el(id){ return document.getElementById(id); }
-
-function mostrarMensagem(texto, tipo = "erro"){
-    const msg = el("mensagem");
-    msg.className = "msg " + tipo;
-    msg.textContent = texto;
-    if(tipo === "ok") setTimeout(() => { msg.className = "msg"; }, 3500);
-}
-
-function formatarData(dataISO){
-    if(!dataISO) return "-";
-    const data = new Date(dataISO + "T00:00:00");
-    return data.toLocaleDateString("pt-BR");
-}
-
-function preencherDataHoje(id){ el(id).value = new Date().toISOString().split('T')[0]; }
-
-/* ===================== AUTENTICAÇÃO ===================== */
-async function fazerLogin(){
-    const email = el("loginEmail").value.trim();
-    const senha = el("loginSenha").value;
-    if(!email || !senha) return mostrarMensagem("Informe e-mail e senha.");
-    const { error } = await supabaseClient.auth.signInWithPassword({ email, password: senha });
-    if(error) mostrarMensagem("Falha no login: credenciais incorretas.");
-}
-
-async function fazerLogout(){ await supabaseClient.auth.signOut(); }
-
-async function tratarSessao(session){
-    if(!session){
-        el("telaLogin").classList.remove("oculto");
-        el("appPrincipal").style.display = "none";
-        return;
-    }
-    currentUser = session.user;
-    el("userNomeLabel").textContent = session.user.email;
-    el("userPill").style.display = "flex";
-    el("telaLogin").classList.add("oculto");
-    el("appPrincipal").style.display = "";
-    carregarTudo();
-}
-
-/* ===================== CONDOMÍNIOS ===================== */
-async function carregarCondominios(){
-    let { data, error } = await supabaseClient.from("condominios").select("*").order("nome");
-    if(error) {
-        condominiosCache = JSON.parse(localStorage.getItem('lucas_condominios')) || [];
-    } else {
-        condominiosCache = data || [];
-    }
-    renderizarSelectsCondominios();
-    renderizarTabelaCondominios();
-}
-
-function renderizarSelectsCondominios(){
-    const selects = [el("regCondominio"), el("filtroRegistroCondominio")];
-    selects.forEach(select => {
-        if(!select) return;
-        const val = select.value;
-        select.innerHTML = select.id === "filtroRegistroCondominio" 
-            ? '<option value="">Todos os condomínios</option>' 
-            : '<option value="">Selecione o condomínio...</option>';
-
-        condominiosCache.forEach(c => {
-            const nome = typeof c === 'string' ? c : c.nome;
-            const opt = document.createElement("option");
-            opt.value = nome;
-            opt.textContent = nome;
-            select.appendChild(opt);
-        });
-        if(val) select.value = val;
-    });
-}
-
-async function criarCondominio(){
-    const nome = el("condoNome").value.trim();
-    const endereco = el("condoEndereco").value.trim();
-    if(!nome) return mostrarMensagem("Informe o nome do condomínio.");
-
-    try {
-        const { error } = await supabaseClient.from("condominios").insert([{ nome, endereco }]);
-        if(error) throw error;
-        mostrarMensagem("Condomínio salvo com sucesso!", "ok");
-    } catch(e) {
-        let local = JSON.parse(localStorage.getItem('lucas_condominios')) || [];
-        local.push(nome);
-        localStorage.setItem('lucas_condominios', JSON.stringify(local));
-        mostrarMensagem("Salvo localmente (sem tabela remota).", "ok");
-    }
-    el("condoNome").value = "";
-    el("condoEndereco").value = "";
-    carregarCondominios();
-}
-
-function renderizarTabelaCondominios(){
-    const tbody = el("tabelaAdminCondominios");
-    if(!tbody) return;
-    tbody.innerHTML = "";
-    el("totalAdminCondominios").textContent = `${condominiosCache.length} local(is)`;
-
-    condominiosCache.forEach(c => {
-        const id = c.id || c;
-        const nome = typeof c === 'string' ? c : c.nome;
-        const end = typeof c === 'string' ? '-' : (c.endereco || '-');
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td><strong>${nome}</strong></td>
-            <td>${end}</td>
-            <td><button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="excluirCondominio('${id}', '${nome}')">Excluir</button></td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-async function excluirCondominio(id, nome){
-    if(!confirm(`Deseja excluir o condomínio "${nome}"?`)) return;
-    try {
-        await supabaseClient.from("condominios").delete().eq("id", id);
-    } catch(e) {}
-    let local = JSON.parse(localStorage.getItem('lucas_condominios')) || [];
-    local = local.filter(item => item !== nome);
-    localStorage.setItem('lucas_condominios', JSON.stringify(local));
-    mostrarMensagem("Condomínio excluído.", "ok");
-    carregarCondominios();
-}
-
-/* ===================== TÉCNICOS / FUNCIONÁRIOS ===================== */
-async function carregarFuncionarios(){
-    let { data, error } = await supabaseClient.from("funcionarios").select("*").order("nome");
-    funcionariosCache = data || [];
-    renderizarSelectsFuncionarios();
-    renderizarTabelaFuncionarios();
-}
-
-function renderizarSelectsFuncionarios(){
-    const selects = [el("tarefaTecnico"), el("filtroTecnico"), el("regEquipe")];
-    selects.forEach(select => {
-        if(!select) return;
-        const val = select.value;
-        if(select.id === "filtroTecnico"){
-            select.innerHTML = '<option value="">Todos os técnicos</option><option value="sem_tecnico">Sem técnico atribuído</option>';
-        } else if(select.id === "tarefaTecnico"){
-            select.innerHTML = '<option value="">Sem técnico atribuído (Não direcionado)</option>';
-        } else {
-            select.innerHTML = '<option value="">Selecione o técnico...</option>';
-        }
-
-        funcionariosCache.forEach(f => {
-            const opt = document.createElement("option");
-            opt.value = f.id;
-            opt.textContent = f.nome + (f.cargo ? " · " + f.cargo : "");
-            select.appendChild(opt);
-        });
-        if(val) select.value = val;
-    });
-}
-
-async function criarFuncionario(){
-    const nome = el("funcNome").value.trim();
-    const cargo = el("funcCargo").value.trim();
-    const telefone = el("funcTelefone").value.trim();
-    if(!nome) return mostrarMensagem("Informe o nome do técnico.");
-
-    const { error } = await supabaseClient.from("funcionarios").insert([{ nome, cargo, telefone, ativo:true }]);
-    if(error) return mostrarMensagem("Erro ao criar técnico: " + error.message);
-
-    mostrarMensagem("Técnico cadastrado com sucesso!", "ok");
-    el("funcNome").value = "";
-    el("funcCargo").value = "";
-    el("funcTelefone").value = "";
-    carregarFuncionarios();
-}
-
-function renderizarTabelaFuncionarios(){
-    const tbody = el("tabelaAdminFuncionarios");
-    if(!tbody) return;
-    tbody.innerHTML = "";
-    el("totalAdminFuncionarios").textContent = `${funcionariosCache.length} técnico(s)`;
-
-    funcionariosCache.forEach(f => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td><strong>${f.nome}</strong></td>
-            <td>${f.cargo || '-'}</td>
-            <td>${f.telefone || '-'}</td>
-            <td><button class="btn-danger" style="padding:4px 8px;font-size:12px;" onclick="excluirFuncionario('${f.id}')">Excluir</button></td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-async function excluirFuncionario(id){
-    if(!confirm("Deseja excluir este técnico?")) return;
-    await supabaseClient.from("funcionarios").delete().eq("id", id);
-    mostrarMensagem("Técnico removido.", "ok");
-    carregarFuncionarios();
-}
-
-/* ===================== ORDENS DE SERVIÇO / ATIVIDADES ===================== */
-async function carregarTarefas(){
-    let { data, error } = await supabaseClient.from("tarefas").select("*").order("created_at", {ascending:false});
-    tarefasCache = data || [];
-    renderizarTarefas();
-}
-
-async function criarTarefa(){
-    const titulo = el("titulo").value.trim();
-    const descricao = el("descricao").value.trim();
-    const dia_direcionamento = el("dataDirecionamento").value || null;
-    const prazo = el("prazo").value || null;
-    const prioridade = el("prioridade").value;
-    const funcionario_id = el("tarefaTecnico").value || null;
-
-    if(!titulo) return mostrarMensagem("Informe o título da Ordem/Atividade.");
-
-    const payload = {
-        titulo,
-        descricao,
-        dia_direcionamento,
-        prazo,
-        prioridade,
-        funcionario_id,
-        status: "todo",
-        criado_por: currentUser?.email || "Admin"
-    };
-
-    const { error } = await supabaseClient.from("tarefas").insert([payload]);
-    if(error) return mostrarMensagem("Erro ao salvar tarefa: " + error.message);
-
-    mostrarMensagem("Ordem de Serviço criada com sucesso!", "ok");
-    el("titulo").value = "";
-    el("descricao").value = "";
-    el("dataDirecionamento").value = "";
-    el("prazo").value = "";
-    el("tarefaTecnico").value = "";
-    alternarFormAtividade();
-    carregarTarefas();
-}
-
-function renderizarTarefas(){
-    ["todo", "doing", "done"].forEach(s => el(s).innerHTML = "");
-
-    const busca = el("busca").value.toLowerCase();
-    const filtroStatus = el("filtroStatus").value;
-    const filtroPrioridade = el("filtroPrioridade").value;
-    const filtroTecnico = el("filtroTecnico").value;
-
-    const filtradas = tarefasCache.filter(t => {
-        const texto = ((t.titulo || "") + " " + (t.descricao || "")).toLowerCase();
-        const matchBusca = texto.includes(busca);
-        const matchStatus = !filtroStatus || t.status === filtroStatus;
-        const matchPrioridade = !filtroPrioridade || t.prioridade === filtroPrioridade;
-        
-        let matchTecnico = true;
-        if(filtroTecnico === "sem_tecnico") matchTecnico = !t.funcionario_id;
-        else if(filtroTecnico) matchTecnico = t.funcionario_id === filtroTecnico;
-
-        return matchBusca && matchStatus && matchPrioridade && matchTecnico;
-    });
-
-    let contadores = { todo: 0, doing: 0, done: 0 };
-
-    filtradas.forEach(t => {
-        const status = t.status || "todo";
-        contadores[status]++;
-
-        const tecnicoObj = funcionariosCache.find(f => f.id === t.funcionario_id);
-        const nomeTecnico = tecnicoObj ? tecnicoObj.nome : "⚠️ Sem técnico atribuído";
-
-        const card = document.createElement("div");
-        card.className = "tarefa";
-        card.innerHTML = `
-            <h4>${t.titulo}</h4>
-            <p style="font-size:13px;color:#cbd5e1;white-space:pre-wrap;">${t.descricao || "Sem descrição"}</p>
-            <div class="meta">
-                <span>🗓️ Direcionado para: <strong>${formatarData(t.dia_direcionamento)}</strong></span>
-            </div>
-            <div class="meta">
-                <span>⏳ Prazo: <strong>${formatarData(t.prazo)}</strong></span>
-                <span>Prioridade: <strong>${t.prioridade || 'normal'}</strong></span>
-            </div>
-            <div class="meta">
-                <span>🧑‍🔧 ${nomeTecnico}</span>
-            </div>
-            <div class="acoes">
-                ${status !== 'done' ? `<button class="btn-success" onclick="mudarStatusTarefa('${t.id}', 'done')">Concluir</button>` : ''}
-                ${status === 'todo' ? `<button class="btn-purple" onclick="mudarStatusTarefa('${t.id}', 'doing')">Iniciar</button>` : ''}
-                <button class="btn-danger" onclick="excluirTarefa('${t.id}')">Excluir</button>
-            </div>
-        `;
-        el(status).appendChild(card);
-    });
-
-    el("badgeTodo").textContent = contadores.todo;
-    el("badgeDoing").textContent = contadores.doing;
-    el("badgeDone").textContent = contadores.done;
-}
-
-async function mudarStatusTarefa(id, status){
-    await supabaseClient.from("tarefas").update({ status }).eq("id", id);
-    carregarTarefas();
-}
-
-async function excluirTarefa(id){
-    if(!confirm("Excluir esta Ordem/Atividade?")) return;
-    await supabaseClient.from("tarefas").delete().eq("id", id);
-    carregarTarefas();
-}
-
-function filtrarTarefas(){ renderizarTarefas(); }
-
-/* ===================== REGISTRO DE ATENDIMENTOS ===================== */
-async function carregarRegistros(){
-    let { data, error } = await supabaseClient.from("registros").select("*").order("data", {ascending:false});
-    if(error){
-        registrosCache = JSON.parse(localStorage.getItem('lucas_atendimentos')) || [];
-    } else {
-        registrosCache = data || [];
-    }
-    renderizarRegistros();
-}
-
-async function criarRegistro(){
-    const condominio = el("regCondominio").value;
-    const titulo = el("regTitulo").value.trim();
-    const descricao = el("regDescricao").value.trim();
-    const data = el("regData").value || new Date().toISOString().split('T')[0];
-    const fileInput = el("regFoto");
-
-    if(!condominio || !descricao){
-        return mostrarMensagem("Selecione o condomínio e descreva o serviço.");
-    }
-
-    const salvarObjeto = async (fotoUrl) => {
-        const payload = { 
-            condominio, 
-            titulo: titulo || "Atendimento Técnico", 
-            descricao, 
-            data, 
-            foto: fotoUrl, 
-            criado_por: currentUser?.email || "Técnico" 
-        };
-
-        try {
-            const { error } = await supabaseClient.from("registros").insert([payload]);
-            if(error) throw error;
-        } catch(e) {
-            let local = JSON.parse(localStorage.getItem('lucas_atendimentos')) || [];
-            payload.id = Date.now();
-            local.unshift(payload);
-            localStorage.setItem('lucas_atendimentos', JSON.stringify(local));
-        }
-        mostrarMensagem("Atendimento registrado com sucesso!", "ok");
-        alternarFormRegistro();
-        carregarRegistros();
-    };
-
-    if (fileInput.files && fileInput.files[0]) {
-        const file = fileInput.files[0];
-        const fileName = `atendimentos/${Date.now()}_${file.name}`;
-        const { data: uploadData, error: uploadError } = await supabaseClient.storage.from("camera-prints").upload(fileName, file);
-        if(!uploadError){
-            const publicUrl = supabaseClient.storage.from("camera-prints").getPublicUrl(fileName).data.publicUrl;
-            salvarObjeto(publicUrl);
-        } else {
-            const reader = new FileReader();
-            reader.onload = (e) => salvarObjeto(e.target.result);
-            reader.readAsDataURL(file);
-        }
-    } else {
-        salvarObjeto(null);
-    }
-}
-
-function renderizarRegistros(){
-    const container = el("listaRegistros");
-    const busca = el("buscaRegistro").value.toLowerCase();
-    const condoFiltro = el("filtroRegistroCondominio").value;
-    const dataFiltro = el("filtroRegistroData").value;
-
-    const filtrados = registrosCache.filter(r => {
-        const texto = ((r.titulo || "") + " " + (r.descricao || "")).toLowerCase();
-        const matchBusca = texto.includes(busca);
-        const matchCondo = !condoFiltro || r.condominio === condoFiltro;
-        const matchData = !dataFiltro || r.data === dataFiltro;
-        return matchBusca && matchCondo && matchData;
-    });
-
-    el("totalRegistros").textContent = `${filtrados.length} registro(s)`;
-
-    if(filtrados.length === 0){
-        container.innerHTML = `<div class="empty">Nenhum atendimento encontrado.</div>`;
-        return;
-    }
-
-    container.innerHTML = filtrados.map(r => `
-        <article class="registro-card">
-            <div class="registro-topo">
-                <h4>${r.titulo || 'Atendimento Técnico'}</h4>
-                <span class="registro-data-badge">${formatarData(r.data)}</span>
-            </div>
-            <div class="registro-chip" style="background:rgba(59,130,246,.2);color:#93c5fd;">🏢 ${r.condominio}</div>
-            <p style="white-space:pre-wrap;font-size:14px;color:#cbd5e1;margin-top:6px;">${r.descricao}</p>
-            ${r.foto ? `<img src="${r.foto}" class="registro-img" onclick="abrirImagemCamera('${r.foto}')" title="Clique para ampliar">` : ''}
-            <div class="registro-meta">
-                <span style="font-size:11px;color:var(--muted)">Técnico: ${r.criado_por || 'Sistema'}</span>
-                <button class="btn-danger" style="padding:4px 8px;font-size:11px;" onclick="excluirRegistro('${r.id}')">Excluir</button>
-            </div>
-        </article>
-    `).join('');
-}
-
-async function excluirRegistro(id){
-    if(!confirm("Deseja realmente excluir este atendimento?")) return;
-    try {
-        await supabaseClient.from("registros").delete().eq("id", id);
-    } catch(e) {}
-    let local = JSON.parse(localStorage.getItem('lucas_atendimentos')) || [];
-    local = local.filter(item => item.id !== id && String(item.id) !== String(id));
-    localStorage.setItem('lucas_atendimentos', JSON.stringify(local));
-    mostrarMensagem("Atendimento excluído.", "ok");
-    carregarRegistros();
-}
-
-function filtrarRegistros(){ renderizarRegistros(); }
-
-/* ===================== TABS E NAVEGAÇÃO ===================== */
-function alternarFormRegistro(){
-    const f = el("formNovoRegistro");
-    f.style.display = f.style.display === "none" ? "grid" : "none";
-}
-
-function alternarFormAtividade(){
-    const f = el("formNovaAtividade");
-    f.style.display = f.style.display === "none" ? "grid" : "none";
-}
-
-function abrirAba(nome){
-    document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
-    document.querySelectorAll(".tab-btn").forEach(t => t.classList.remove("ativo"));
-    el("tela" + nome).classList.add("ativa");
-    el("tab" + nome).classList.add("ativo");
-}
-
-function abrirConfigAba(nome){
-    document.querySelectorAll(".config-tela").forEach(t => t.classList.remove("ativa"));
-    document.querySelectorAll(".tabs.subtabs .tab-btn").forEach(t => t.classList.remove("ativo"));
-    el("config" + nome).classList.add("ativa");
-    el("subtab" + nome).classList.add("ativo");
-}
-
-function abrirImagemCamera(url){
-    el("modalImagemCameraImg").src = url;
-    el("modalImagemCamera").classList.add("aberto");
-}
-
-function fecharImagemCamera(event){
-    if(!event || event.target.id === "modalImagemCamera" || event.target.tagName === "BUTTON") {
-        el("modalImagemCamera").classList.remove("aberto");
-    }
-}
-
-async function carregarTudo(){
-    el("statusConexao").textContent = "Sincronizado";
-    await carregarCondominios();
-    await carregarFuncionarios();
-    await carregarTarefas();
-    await carregarRegistros();
-}
-
-supabaseClient.auth.onAuthStateChange((evt, session) => tratarSessao(session));
-preencherDataHoje('regData');
-</script>
-</body>
-</html>
+        <div class="config-tela" id="configAtividades">

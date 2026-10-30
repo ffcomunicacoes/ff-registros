@@ -476,7 +476,6 @@ footer{
     font-size:13px;
 }
 
-
 /* Efeitos visuais e movimento */
 body::before,
 body::after{
@@ -617,7 +616,6 @@ body::after{
     flex-wrap:wrap;
 }
 
-
 .tabs{
     display:flex;
     gap:10px;
@@ -673,7 +671,33 @@ body::after{
     margin-bottom:14px;
 }
 
-/* ===== ABA TV — precisa caber inteira na tela, sem rolagem ===== */
+/* ===== ESTILOS DA I.A. ===== */
+.ia-box {
+    background: rgba(139,92,246,.12);
+    border: 1px solid var(--purple);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+.ia-box h4 {
+    color: var(--purple);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 18px;
+}
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+@media(max-width:900px){
+    .grid-3 { grid-template-columns: 1fr; }
+}
+
+
+/* ===== ABA TV ===== */
 #telaTV.tela.ativa{
     display:flex;
     flex-direction:column;
@@ -807,7 +831,6 @@ body::after{
     .camera-grid{grid-template-columns:1fr}
 }
 
-
 @media(max-width:1150px){
     .layout{grid-template-columns:1fr}
 }
@@ -819,8 +842,6 @@ body::after{
     .filters{grid-template-columns:1fr}
     .inline-grid{grid-template-columns:1fr}
 }
-
-
 
 /* ===== Segunda aba: área de cadastros bonita ===== */
 .admin-header{
@@ -916,12 +937,6 @@ body::after{
     margin-bottom:12px;
 }
 .camera-card h4{margin-bottom:8px;font-size:17px}
-.camera-info{color:#cbd5e1;line-height:1.7;font-size:14px}
-.copy-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.copy-row button{padding:8px 10px;font-size:12px}
-.tag.nao-adicionada,.tag.nao-adicionado{background:rgba(239,68,68,.14);color:#fca5a5}
-.tag.adicionada,.tag.adicionado{background:rgba(34,197,94,.14);color:#86efac}
-
 
 /* ===== TELA DE LOGIN ===== */
 .login-bg{
@@ -1316,8 +1331,6 @@ body::after{
   .canal-edicao{grid-template-columns:1fr}
 }
 
-
-
 /* ===== RELATÓRIOS E TESTE DE CONEXÃO ===== */
 .relatorio-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:18px;align-items:start}
 .relatorio-opcoes{display:grid;gap:10px;margin-top:12px}
@@ -1382,8 +1395,8 @@ body::after{
 
     <div id="mensagem" class="msg"></div>
 
-
     <nav class="tabs">
+        <button class="tab-btn" id="tabIA" onclick="abrirAba('IA')">🧠 Assistente I.A.</button>
         <button class="tab-btn ativo" id="tabAtividades" onclick="abrirAba('Atividades')">📋 Atividades</button>
         <button class="tab-btn" id="tabMapaGravadores" onclick="abrirAba('MapaGravadores')">🎛️ Mapa de Gravadores</button>
         <button class="tab-btn" id="tabRegistro" onclick="abrirAba('Registro')">📝 Registro</button>
@@ -1393,6 +1406,36 @@ body::after{
         <button class="tab-btn" id="tabTV" onclick="abrirAba('TV')">📺 TV</button>
         <button class="tab-btn" id="tabConfiguracoes" onclick="abrirAba('Configuracoes')">⚙️ Configurações</button>
     </nav>
+    
+    <section class="tela" id="telaIA">
+        <div class="ia-box">
+            <h4>🤖 Diagnóstico Inteligente e Automação de Campo</h4>
+            <p style="font-size:14px;color:var(--muted);margin-bottom:12px;">Analisa o banco de dados em tempo real para consolidar pendências técnicas e estruturar os roteiros do WhatsApp.</p>
+            <button class="btn-purple" onclick="gerarRelatorioIA()">📊 Processar Diagnóstico & Roteiro</button>
+        </div>
+
+        <div class="grid-3">
+            <div class="card panel">
+                <h3>📌 Pendências de Campo</h3>
+                <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Obra, Energia ou Leitura de MAC:</p>
+                <div id="iaPendencias" style="font-size:13px;color:#cbd5e1;">Clique acima para analisar.</div>
+            </div>
+
+            <div class="card panel">
+                <h3>💬 Relato Simplificado</h3>
+                <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Modelo padrão para os técnicos:</p>
+                <textarea id="txtRelatoPadrao" readonly style="font-size:12px;height:150px;"></textarea>
+                <button class="btn-ghost" style="margin-top:8px;width:100%;" onclick="copiarTexto(null, 'txtRelatoPadrao')">📋 Copiar Modelo</button>
+            </div>
+
+            <div class="card panel">
+                <h3>🗺️ Roteiro Gerado (Hoje)</h3>
+                <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">Programação Pronta para o WhatsApp:</p>
+                <textarea id="txtRoteiroGerado" style="font-size:12px;height:150px;"></textarea>
+                <button class="btn-success" style="margin-top:8px;width:100%;" onclick="copiarTexto(null, 'txtRoteiroGerado')">📲 Copiar Roteiro</button>
+            </div>
+        </div>
+    </section>
 
     <main class="layout tela ativa" id="telaAtividades">
         <section>
@@ -1607,6 +1650,13 @@ body::after{
                         <button type="button" class="btn-ghost" onclick="adicionarLinhaCamera('regCamerasLista')">+ Adicionar câmera</button>
                     </div>
                     <div id="regCamerasLista"></div>
+                </div>
+                <div class="inline-grid">
+                   <select id="regStatus">
+                        <option value="Concluído">Concluído</option>
+                        <option value="Pendente - Energia/Obra">Pendente - Energia/Obra</option>
+                        <option value="Pendente - MAC Bot">Pendente - Digitar MAC no Bot</option>
+                    </select>
                 </div>
 
                 <button class="btn-purple" id="btnCriarRegistro" onclick="criarRegistro()">Salvar registro</button>
@@ -2242,6 +2292,13 @@ body::after{
                 </div>
                 <div id="editRegCamerasLista"></div>
             </div>
+            <div class="inline-grid">
+               <select id="editRegStatus">
+                    <option value="Concluído">Concluído</option>
+                    <option value="Pendente - Energia/Obra">Pendente - Energia/Obra</option>
+                    <option value="Pendente - MAC Bot">Pendente - Digitar MAC no Bot</option>
+                </select>
+            </div>
             <div class="modal-actions">
                 <button class="btn-ghost" onclick="fecharModalEditarRegistro()">Cancelar</button>
                 <button class="btn-success" id="btnSalvarRegistroEdicao" onclick="salvarEdicaoRegistro()">Salvar alterações</button>
@@ -2249,7 +2306,6 @@ body::after{
         </div>
     </div>
 </div>
-
 
     <footer>FF Registro © 2026 - Gestão de Atividades</footer>
 </div>
@@ -2349,6 +2405,13 @@ function hojeBR(){
     });
 }
 
+function formatarDataISO(data){
+    const ano = data.getFullYear();
+    const mes = String(data.getMonth() + 1).padStart(2, "0");
+    const dia = String(data.getDate()).padStart(2, "0");
+    return `${ano}-${mes}-${dia}`;
+}
+
 function setLoading(botaoId, ativo, textoLoading = "Salvando..."){
     const botao = el(botaoId);
     if(!botao) return;
@@ -2362,6 +2425,50 @@ function setLoading(botaoId, ativo, textoLoading = "Salvando..."){
         botao.disabled = false;
     }
 }
+
+/* ===================== FUNÇÕES DA I.A. ===================== */
+function gerarRelatorioIA(){
+    el("txtRelatoPadrao").value = 
+`MODELO DE RELATO DE SERVIÇO:
+• Local / O.S.: [Nome do Condomínio]
+• Status: [Concluído / Pendente]
+• O que foi feito: [Resumo rápido]
+• Pendência: [Motivo / Responsável]
+• MAC: [Digitar MAC se o bot solicitar]`;
+
+    // Filtra registros que contenham "Pendente" no status
+    const pendencias = registrosCache.filter(r => (r.status || "").toLowerCase().includes("pendente"));
+    
+    if(pendencias.length === 0){
+        el("iaPendencias").innerHTML = "✅ Nenhuma pendência aberta registrada recentemente.";
+    } else {
+        el("iaPendencias").innerHTML = pendencias.map(p => `
+            <div style="background:#0f172a;padding:8px;border-radius:8px;margin-bottom:6px;border-left:3px solid var(--warning)">
+                <strong>🏢 ${escapar(p.titulo || 'Atendimento')}</strong><br>
+                <small style="color:var(--danger)">⚠️ ${escapar(p.status || 'Pendente')}</small>
+            </div>
+        `).join('');
+    }
+
+    // Pega as tarefas e escalas de hoje
+    const hojeISO = formatarDataISO(new Date());
+    const tarefasHoje = tarefasCache.filter(t => t.prazo === hojeISO);
+
+    let roteiro = `📅 ROTEIRO DIÁRIO - ${new Date().toLocaleDateString('pt-BR')}\n\n`;
+    if(tarefasHoje.length === 0){
+        roteiro += "Nenhuma atividade agendada com prazo para hoje.";
+    } else {
+        tarefasHoje.forEach((t, i) => {
+            roteiro += `${i+1}️⃣ ${escapar(t.titulo)}\n`;
+            roteiro += `   • Técnico: ${escapar(nomeTecnico(t))}\n`;
+            roteiro += `   • Detalhes: ${escapar(t.descricao || 'Verificação padrão')}\n\n`;
+        });
+        roteiro += "⚠️ Lembrete: Respeitar limites de velocidade nas vias.";
+    }
+    el("txtRoteiroGerado").value = roteiro;
+    mostrarMensagem("Diagnóstico gerado com sucesso!", "ok");
+}
+
 
 /* ===================== AUTENTICAÇÃO ===================== */
 
@@ -2485,17 +2592,12 @@ async function carregarTudo(){
     el("statusConexao").textContent = "Sincronizando...";
 
     try{
-        // Equipes e funcionários carregam primeiro: tarefas e escalas dependem
-        // deles para exibir corretamente o nome da equipe/técnico responsável.
         await Promise.all([carregarEquipes(), carregarFuncionarios()]);
         await Promise.all([carregarTarefas(), carregarAgendamentos(), carregarCameras(), carregarEscalas()]);
 
-        // Registros dependem das tarefas (pra mostrar o título da atividade vinculada).
         await carregarRegistros();
         await carregarMapaGravadores();
 
-        // O calendário combina escalas + agendamentos; recalcula aqui pra garantir
-        // que os dois já estejam carregados, independente da ordem interna do Promise.all.
         renderizarCalendario();
 
         el("statusConexao").textContent = "Online";
@@ -2524,13 +2626,14 @@ async function carregarTarefas(){
 }
 
 function renderizarTarefas(lista){
+    if (!lista) lista = tarefasCache;
     ["todo","doing","done"].forEach(status => {
         el(status).innerHTML = "";
     });
 
-    const busca = el("busca").value.toLowerCase().trim();
-    const filtroStatus = el("filtroStatus").value;
-    const filtroPrioridade = el("filtroPrioridade").value;
+    const busca = (el("busca")?.value || "").toLowerCase().trim();
+    const filtroStatus = el("filtroStatus")?.value;
+    const filtroPrioridade = el("filtroPrioridade")?.value;
     const filtroTecnico = el("filtroTecnico")?.value || "";
     const algumFiltroAtivo = !!(busca || filtroStatus || filtroPrioridade || filtroTecnico);
 
@@ -3063,6 +3166,7 @@ function renderizarRegistros(){
                     <summary>Ver detalhes</summary>
                     <p class="registro-descricao-completa">${descricao}</p>
                     ${htmlDetalhesEquipamentos(item)}
+                    ${item.status ? `<div style="margin-top:10px;"><strong style="font-size:12px;color:var(--warning)">Status: ${escapar(item.status)}</strong></div>` : ""}
                 </details>
                 <p class="registro-descricao-curta">${descricao}</p>
                 <div class="registro-meta">
@@ -3102,6 +3206,7 @@ async function criarRegistro(){
     const gravador_tipo = el("regGravador").value || null;
     const cameras_alteradas = coletarCamerasAlteradas("regCamerasLista");
     const data = el("regData").value || formatarDataISO(new Date());
+    const status = el("regStatus").value || "Concluído";
 
     if(!titulo || !equipe_id){
         mostrarMensagem("Informe o título e selecione a equipe responsável pelo registro.");
@@ -3114,7 +3219,7 @@ async function criarRegistro(){
     try{
         const { error } = await supabaseClient
             .from("registros")
-            .insert([{ titulo, descricao, data, equipe_id, tarefa_id, gravador_tipo, cameras_alteradas, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
+            .insert([{ titulo, descricao, data, equipe_id, tarefa_id, gravador_tipo, cameras_alteradas, status, criado_por: nomeUsuarioAtual(), atualizado_por: nomeUsuarioAtual() }]);
 
         if(error) throw error;
 
@@ -3123,6 +3228,7 @@ async function criarRegistro(){
         el("regEquipe").value = "";
         el("regTarefa").value = "";
         el("regGravador").value = "";
+        el("regStatus").value = "Concluído";
         preencherListaCameras("regCamerasLista", []);
         el("regData").value = formatarDataISO(new Date());
 
@@ -3147,6 +3253,7 @@ function editarRegistro(id){
     el("editRegEquipe").value = item.equipe_id || "";
     el("editRegTarefa").value = item.tarefa_id || "";
     el("editRegGravador").value = item.gravador_tipo || "";
+    el("editRegStatus").value = item.status || "Concluído";
     preencherListaCameras("editRegCamerasLista", item.cameras_alteradas);
     el("editRegData").value = item.data || formatarDataISO(new Date());
     el("modalEditarRegistro").classList.add("ativo");
@@ -3165,6 +3272,7 @@ async function salvarEdicaoRegistro(){
     const gravador_tipo = el("editRegGravador").value || null;
     const cameras_alteradas = coletarCamerasAlteradas("editRegCamerasLista");
     const data = el("editRegData").value || formatarDataISO(new Date());
+    const status = el("editRegStatus").value || "Concluído";
 
     if(!titulo || !equipe_id){
         mostrarMensagem("Informe o título e selecione a equipe responsável pelo registro.");
@@ -3176,7 +3284,7 @@ async function salvarEdicaoRegistro(){
     try{
         const { error } = await supabaseClient
             .from("registros")
-            .update({ titulo, descricao, data, equipe_id, tarefa_id, gravador_tipo, cameras_alteradas, atualizado_por: nomeUsuarioAtual() })
+            .update({ titulo, descricao, data, equipe_id, tarefa_id, gravador_tipo, cameras_alteradas, status, atualizado_por: nomeUsuarioAtual() })
             .eq("id", id);
 
         if(error) throw error;
@@ -3353,7 +3461,6 @@ function renderizarCanaisMapa(){
     }).join("") : '<div class="empty" style="grid-column:1/-1">Nenhum canal encontrado.</div>';
 }
 
-
 const CAMERA_PRINT_BUCKET = "camera-prints";
 
 function abrirImagemCamera(url){
@@ -3469,7 +3576,6 @@ async function apagarMapaGravador(id){
         await carregarMapaGravadores();
     }catch(e){mostrarMensagem("Erro ao apagar mapa: "+e.message);}
 }
-
 
 function extrairEnderecoCamera(valor){
     const texto=(valor||"").trim();
@@ -3778,8 +3884,6 @@ async function apagarAgendamento(id){
     }
 }
 
-
-
 async function atualizarSomenteTV(){
     if(!currentUser || !el("telaTV")?.classList.contains("ativa")) return;
     try{
@@ -3798,7 +3902,7 @@ function pararAtualizacaoTV(){
 }
 
 function abrirAba(nome){
-    const abas = ["Atividades", "MapaGravadores", "Registro", "Relatorio", "Agendamentos", "Calendario", "TV", "Configuracoes"];
+    const abas = ["IA", "Atividades", "MapaGravadores", "Registro", "Relatorio", "Agendamentos", "Calendario", "TV", "Configuracoes"];
 
     abas.forEach(aba => {
         const tela = el("tela" + aba);
@@ -3845,18 +3949,30 @@ function normalizarClasseStatus(status){
     return (status || "").replace("ã","a").replace("ç","c");
 }
 
-async function copiarTexto(texto, campo){
+async function copiarTexto(texto, campoId){
+    let textoCopia = texto;
+    if(campoId){
+        const elem = el(campoId);
+        textoCopia = elem.value;
+        elem.select();
+    }
+    
     try{
-        await navigator.clipboard.writeText(texto || "");
-        mostrarMensagem(campo + " copiado.", "ok");
+        await navigator.clipboard.writeText(textoCopia || "");
+        mostrarMensagem(campoId ? "Texto copiado." : "Informação copiada.", "ok");
     }catch(e){
-        const temp = document.createElement("textarea");
-        temp.value = texto || "";
-        document.body.appendChild(temp);
-        temp.select();
-        document.execCommand("copy");
-        document.body.removeChild(temp);
-        mostrarMensagem(campo + " copiado.", "ok");
+        if(campoId) {
+            document.execCommand("copy");
+            mostrarMensagem("Texto copiado.", "ok");
+        } else {
+            const temp = document.createElement("textarea");
+            temp.value = textoCopia || "";
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+            mostrarMensagem("Informação copiada.", "ok");
+        }
     }
 }
 
@@ -3939,9 +4055,9 @@ function renderizarCameras(lista){
                 </div>
 
                 <div class="copy-row">
-                    <button onclick="copiarTexto('${escapar((item.ip || "").replace(/'/g, "\\'"))}', 'IP')">Copiar IP</button>
-                    <button class="btn-warning" onclick="copiarTexto('${escapar((item.descricao || "").replace(/'/g, "\\'"))}', 'Descrição')">Copiar descrição</button>
-                    <button class="btn-success" onclick="copiarTexto('${escapar((item.localizacao || "").replace(/'/g, "\\'"))}', 'Localização')">Copiar localização</button>
+                    <button onclick="copiarTexto('${escapar((item.ip || "").replace(/'/g, "\\'"))}', null)">Copiar IP</button>
+                    <button class="btn-warning" onclick="copiarTexto('${escapar((item.descricao || "").replace(/'/g, "\\'"))}', null)">Copiar descrição</button>
+                    <button class="btn-success" onclick="copiarTexto('${escapar((item.localizacao || "").replace(/'/g, "\\'"))}', null)">Copiar localização</button>
                     <button class="btn-warning" onclick="editarCamera('${item.id}')">Editar</button>
                     <button class="btn-danger" onclick="apagarCamera('${item.id}')">Apagar</button>
                 </div>
@@ -4073,7 +4189,6 @@ async function apagarCamera(id){
         mostrarMensagem("Erro ao apagar câmera: " + e.message);
     }
 }
-
 
 
 /* ===================== EQUIPES CFTV ===================== */
@@ -4473,13 +4588,6 @@ function inicioDaSemana(data){
     d.setDate(d.getDate() - diaSemana);
     d.setHours(0,0,0,0);
     return d;
-}
-
-function formatarDataISO(data){
-    const ano = data.getFullYear();
-    const mes = String(data.getMonth() + 1).padStart(2, "0");
-    const dia = String(data.getDate()).padStart(2, "0");
-    return `${ano}-${mes}-${dia}`;
 }
 
 async function carregarEscalas(){

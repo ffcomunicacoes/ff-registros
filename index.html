@@ -1,383 +1,739 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FF Gestão | Ordens de Serviço</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root{
-      --navy:#14243a;--navy2:#1d3554;--blue:#2563eb;--blue2:#eaf1ff;
-      --bg:#f4f6fa;--card:#fff;--text:#172033;--muted:#68758a;--line:#e2e8f0;
-      --green:#16845b;--green-bg:#e8f7ef;--amber:#a66a08;--amber-bg:#fff4dc;
-      --red:#c23c45;--red-bg:#fff0f0;--purple:#7053bd;--purple-bg:#f1edff;
-      --shadow:0 8px 24px rgba(19,36,58,.07);--radius:16px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FF Registro | Sistema de Gestão</title>
+<!-- Supabase SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- Ícones (Lucide) -->
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+    /* VARIÁVEIS DE COR E ESTILO */
+    :root {
+        --bg: #0f172a; --bg-card: #1e293b; --border: #334155; 
+        --primary: #3b82f6; --primary-hover: #2563eb; 
+        --success: #10b981; --warning: #f59e0b; --danger: #ef4444; 
+        --text: #f8fafc; --text-muted: #94a3b8;
+        --radius: 10px;
     }
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,Segoe UI,Arial,sans-serif}
-    button,input,select,textarea{font:inherit} button{cursor:pointer;border:0;border-radius:10px;padding:10px 14px;font-weight:700;transition:.15s}
-    button:hover{filter:brightness(.97);transform:translateY(-1px)} button:disabled{opacity:.55;cursor:not-allowed;transform:none}
-    input,select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text);padding:11px 12px;outline:none}
-    input:focus,select:focus,textarea:focus{border-color:#8aaaf7;box-shadow:0 0 0 3px #2563eb18} textarea{min-height:90px;resize:vertical}
-    label{display:grid;gap:6px;font-size:12px;font-weight:700;color:#46546a}
-    .login-wrap{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#10233d,#1d4167)}
-    .login-card{width:min(420px,100%);background:white;padding:30px;border-radius:22px;box-shadow:0 25px 70px #07162966}
-    .brand{display:flex;align-items:center;gap:12px}.brand-mark{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#2563eb,#19a779);display:grid;place-items:center;color:#fff;font-size:22px;font-weight:900}
-    .brand h1{margin:0;font-size:20px}.brand p{margin:2px 0 0;color:var(--muted);font-size:12px}.login-card h2{margin:28px 0 5px}.login-card .sub{color:var(--muted);margin:0 0 20px}
-    .login-form{display:grid;gap:12px}.btn-primary{background:var(--blue);color:white}.btn-dark{background:var(--navy);color:#fff}.btn-light{background:#eef2f8;color:#25344b}.btn-green{background:var(--green);color:white}.btn-red{background:var(--red);color:white}.btn-outline{background:white;border:1px solid var(--line);color:#344258}
-    #app{display:none;min-height:100vh}.shell{display:grid;grid-template-columns:230px minmax(0,1fr);min-height:100vh}
-    aside.sidebar{background:var(--navy);color:#eaf1fa;padding:22px 14px;display:flex;flex-direction:column;gap:24px}
-    .sidebar .brand{padding:0 8px}.sidebar .brand-mark{background:linear-gradient(135deg,#3b82f6,#16a36f)}.sidebar .brand h1{font-size:17px}.sidebar .brand p{color:#aabbd0}
-    .nav-label{padding:0 12px;color:#8ea4bf;text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:800}
-    .nav{display:grid;gap:5px}.nav button{display:flex;align-items:center;gap:11px;width:100%;background:transparent;color:#c9d5e5;text-align:left;padding:11px 12px;border-radius:11px}.nav button.active,.nav button:hover{background:#ffffff18;color:white}.nav .ico{width:20px;text-align:center;font-size:16px}
-    .sidebar-foot{margin-top:auto;padding:13px 12px;border-top:1px solid #ffffff20;color:#9fb1c8;font-size:11px;line-height:1.6}
-    main{min-width:0;padding:24px 28px 40px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.crumb{font-size:12px;color:var(--muted);margin-bottom:3px}.topbar h2{font-size:25px;margin:0;letter-spacing:-.03em}.top-actions{display:flex;align-items:center;gap:9px}.connection{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px;background:#fff;border:1px solid var(--line);border-radius:99px;padding:8px 11px}.dot{width:8px;height:8px;border-radius:50%;background:#f59e0b}.dot.online{background:#16a36f}.user-chip{display:flex;align-items:center;gap:8px;background:white;border:1px solid var(--line);border-radius:99px;padding:6px 8px 6px 12px;font-size:12px;font-weight:700}.avatar{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:white;background:var(--navy2)}
-    .view{display:none}.view.active{display:block}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}.section-head h3{margin:0;font-size:18px}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}
-    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}.kpi{padding:17px 18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.kpi-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:700}.kpi-icon{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;background:var(--blue2);font-size:16px}.kpi strong{display:block;font-size:30px;letter-spacing:-.04em;margin-top:7px}.kpi small{color:var(--muted)}
-    .dashboard-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.8fr);gap:16px}.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;min-width:0}.panel h3{font-size:15px;margin:0 0 14px}.panel-sub{font-size:12px;color:var(--muted);margin:-8px 0 12px}
-    .table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:620px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);vertical-align:middle}th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#7a879a;background:#fafbfd}td{font-size:12px}tr:last-child td{border-bottom:0}.table-title{font-weight:800;color:#25344b}.muted{color:var(--muted)}
-    .bar-list{display:grid;gap:13px}.bar-row{display:grid;grid-template-columns:minmax(85px,1fr) 2fr 28px;gap:10px;align-items:center;font-size:12px}.bar-track{height:9px;border-radius:99px;background:#edf1f6;overflow:hidden}.bar-fill{height:100%;background:linear-gradient(90deg,#3975eb,#26a77a);border-radius:99px}.bar-count{text-align:right;font-weight:800}
-    .filters{display:grid;grid-template-columns:minmax(180px,1.7fr) repeat(3,minmax(130px,1fr));gap:9px;margin-bottom:14px}.board{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:12px;align-items:start;overflow-x:auto;padding-bottom:8px}.board-col{background:#edf1f6;border:1px solid #e4e9f1;border-radius:14px;min-height:260px;padding:10px}.board-head{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 11px;font-weight:800;font-size:12px}.counter{background:#fff;border-radius:99px;padding:3px 8px;color:var(--muted);font-size:11px}.os-card{background:#fff;border:1px solid #e1e7ef;border-radius:12px;padding:12px;margin-bottom:9px;box-shadow:0 3px 10px #172c4710}.os-card:hover{border-color:#abc1f6}.os-card-top{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:7px}.os-num{font-size:10px;font-weight:900;color:#52709a;letter-spacing:.04em}.os-card h4{font-size:13px;margin:0 0 4px;line-height:1.35}.os-client{font-size:11px;color:var(--muted);margin-bottom:9px}.os-meta{display:grid;gap:5px;color:#5e6b7e;font-size:11px}.os-meta span{display:flex;gap:6px;align-items:center}.card-actions{display:flex;gap:6px;margin-top:10px}.card-actions button{font-size:10px;padding:7px 9px;border-radius:8px}.card-actions .btn-outline{flex:1}.stage-select{margin-top:9px;padding:7px;font-size:11px;background:#f8fafc}
-    .pill{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800;white-space:nowrap}.p-high{background:var(--red-bg);color:var(--red)}.p-normal{background:var(--blue2);color:#315db4}.p-low{background:var(--green-bg);color:var(--green)}.s-new{background:#edf2f7;color:#58667a}.s-progress{background:var(--blue2);color:#315db4}.s-wait{background:var(--amber-bg);color:var(--amber)}.s-done{background:var(--green-bg);color:var(--green)}.s-cancel{background:var(--red-bg);color:var(--red)}
-    .tech-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.tech-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.tech-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}.tech-avatar{width:38px;height:38px;border-radius:12px;background:var(--blue2);color:#315db4;display:grid;place-items:center;font-weight:900}.tech-head h4{margin:0;font-size:13px}.tech-head p{margin:2px 0 0;color:var(--muted);font-size:11px}.tech-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}.tech-stat{padding:9px;background:#f7f9fc;border-radius:9px}.tech-stat b{display:block;font-size:19px}.tech-stat span{font-size:10px;color:var(--muted)}.tech-card button{margin-top:11px;width:100%;font-size:11px}
-    .empty{border:1px dashed #cbd5e1;border-radius:11px;padding:25px 12px;text-align:center;color:var(--muted);font-size:12px;background:#ffffff88}
-    .modal-backdrop{position:fixed;inset:0;background:#09172ab0;display:none;align-items:center;justify-content:center;padding:16px;z-index:50}.modal-backdrop.open{display:flex}.modal{background:#fff;width:min(760px,100%);max-height:92vh;overflow:auto;border-radius:18px;box-shadow:0 30px 90px #06132966}.modal.small{width:min(600px,100%)}.modal-head{position:sticky;top:0;background:#fff;z-index:2;display:flex;justify-content:space-between;align-items:center;padding:18px 21px;border-bottom:1px solid var(--line)}.modal-head h3{margin:0;font-size:17px}.x-btn{background:#f0f3f8;color:#334155;border-radius:8px;padding:6px 10px}.modal-body{padding:20px 21px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.span-2{grid-column:1/-1}.modal-foot{display:flex;justify-content:flex-end;gap:8px;padding:15px 21px;border-top:1px solid var(--line);background:#fbfcfe}.form-hint{font-size:11px;color:var(--muted);margin-top:-4px}
-    .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail-item{padding:10px 12px;background:#f7f9fc;border-radius:10px}.detail-item small{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}.detail-item strong{font-size:12px}.timeline{display:grid;gap:0;margin-top:10px}.timeline-item{position:relative;padding:0 0 16px 20px;border-left:2px solid #dbe4f2;margin-left:7px}.timeline-item:last-child{border-left-color:transparent}.timeline-item:before{content:"";position:absolute;left:-6px;top:2px;width:10px;height:10px;border-radius:50%;background:#3b73df;border:2px solid white;box-shadow:0 0 0 1px #3b73df}.timeline-item b{font-size:11px}.timeline-item p{font-size:11px;color:#566478;margin:3px 0}.timeline-item time{font-size:10px;color:#8a97a8}
-    .toast{position:fixed;right:20px;bottom:20px;background:#172b45;color:white;padding:12px 16px;border-radius:11px;box-shadow:var(--shadow);display:none;z-index:90;max-width:min(420px,calc(100vw - 40px));font-size:12px}.toast.show{display:block}.toast.error{background:#9d2935}.hint-box{background:#eff6ff;color:#315db4;border:1px solid #d7e5ff;padding:12px 14px;border-radius:11px;font-size:12px;margin-bottom:15px}
-    @media(max-width:1100px){.kpis{grid-template-columns:repeat(2,1fr)}.dashboard-grid{grid-template-columns:1fr}.tech-grid{grid-template-columns:repeat(2,1fr)}}
-    @media(max-width:760px){.shell{grid-template-columns:1fr}.sidebar{padding:12px;gap:12px}.sidebar .brand{padding:4px}.sidebar .brand p,.sidebar-foot,.nav-label{display:none}.nav{grid-template-columns:repeat(3,1fr)}.nav button{justify-content:center;padding:9px 6px;font-size:11px}.nav .ico{width:auto}main{padding:16px 13px 28px}.topbar{align-items:flex-start;flex-direction:column}.top-actions{width:100%;justify-content:space-between}.topbar h2{font-size:21px}.kpis{gap:8px}.kpi{padding:12px}.kpi strong{font-size:24px}.filters{grid-template-columns:1fr 1fr}.filters input{grid-column:1/-1}.tech-grid{grid-template-columns:1fr}.form-grid,.detail-grid{grid-template-columns:1fr}.span-2{grid-column:auto}.section-head{align-items:flex-start;flex-direction:column}.board{grid-template-columns:repeat(4,240px)}.connection{font-size:10px}}
-  </style>
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
+    
+    /* SCROLLBAR CUSTOMIZADA */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* LAYOUT PRINCIPAL */
+    nav.sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; transition: 0.3s; z-index: 100;}
+    .brand { font-size: 20px; font-weight: 700; padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; color: var(--primary); }
+    
+    .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 15px 20px; text-align: left; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; width: 100%; font-weight: 500;}
+    .nav-btn:hover { background: rgba(59, 130, 246, 0.1); color: var(--text); }
+    .nav-btn.active { background: rgba(59, 130, 246, 0.15); color: var(--primary); border-right: 3px solid var(--primary); font-weight: 600; }
+    
+    .user-info { margin-top: auto; padding: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); line-height: 1.6;}
+    
+    main { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+    .view { display: none; animation: fadeIn 0.3s ease; }
+    .view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* TIPOGRAFIA */
+    h1 { font-size: 24px; font-weight: 600; margin-bottom: 5px; }
+    p.subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 14px; }
+    
+    /* CARDS E GRIDS */
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    .card-kpi h3 { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+    .card-kpi .value { font-size: 36px; font-weight: 700; }
+    
+    /* FORMS E BOTÕES */
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); }
+    input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px 15px; border-radius: 8px; outline: none; transition: 0.2s; font-size: 14px;}
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
+    textarea { resize: vertical; min-height: 100px; }
+    
+    button.btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;}
+    button.btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+    button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    button.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    button.btn-outline:hover:not(:disabled) { background: rgba(255,255,255,0.05); }
+    button.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    button.btn-danger:hover:not(:disabled) { background: var(--danger); color: white; }
+    
+    /* KANBAN BOARD */
+    .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
+    .kanban-col { background: rgba(15, 23, 42, 0.4); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; gap: 15px; min-height: 500px; border: 1px dashed var(--border); }
+    .kanban-header { font-weight: 600; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); padding-bottom: 12px; border-bottom: 1px solid var(--border); font-size: 13px; letter-spacing: 0.5px; }
+    
+    .os-card { background: var(--bg-card); border-radius: 8px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;}
+    .os-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); border-color: #475569; }
+    .os-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
+    .os-card.prioridade-alta::before { background: var(--danger); }
+    
+    .os-card h4 { margin-bottom: 6px; font-size: 15px; font-weight: 600; line-height: 1.3;}
+    .os-card .local { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+    .os-card .actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 12px; }
+    
+    /* TABELAS */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; background: rgba(255,255,255,0.02);}
+    tr:hover td { background: rgba(255,255,255,0.01); }
+    
+    /* BADGES */
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
+    .badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .badge.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+    
+    /* MODAIS (Substitui prompts e alerts) */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s ease;}
+    .modal-content { background: var(--bg-card); width: 100%; max-width: 450px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h2 { font-size: 18px; margin: 0; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: rgba(0,0,0,0.2); }
+    
+    /* LOGIN SCREEN */
+    #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
+    .login-box { background: var(--bg-card); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
+    
+    /* TOAST NOTIFICATIONS */
+    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast { padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: slideIn 0.3s ease forwards; transform: translateX(120%); }
+    .toast.success { background: var(--success); }
+    .toast.error { background: var(--danger); }
+    .toast.warning { background: var(--warning); color: #000; }
+    @keyframes slideIn { to { transform: translateX(0); } }
+
+    /* LOADING OVERLAY */
+    #global-loader { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; display: none; }
+    .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* RESPONSIVIDADE */
+    @media (max-width: 768px) {
+        body { flex-direction: column; }
+        nav.sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; height: auto; border-right: none; border-bottom: 1px solid var(--border); justify-content: center;}
+        .brand { width: 100%; justify-content: center; border-bottom: none; padding-bottom: 10px; }
+        .nav-btn { width: auto; padding: 10px; border: none !important; }
+        .nav-btn span { display: none; } /* Esconde texto no mobile, mostra só ícone */
+        .user-info { display: none; } /* Oculta info de usuario no mobile para economizar espaço */
+        main { padding: 15px; }
+    }
+</style>
 </head>
 <body>
-  <section id="loginScreen" class="login-wrap">
-    <div class="login-card">
-      <div class="brand"><div class="brand-mark">FF</div><div><h1>FF Gestão</h1><p>Central de ordens de serviço</p></div></div>
-      <h2>Acessar sistema</h2><p class="sub">Entre com sua conta para acompanhar os atendimentos.</p>
-      <form class="login-form" id="loginForm">
-        <label>E-mail<input id="loginEmail" type="email" autocomplete="username" required placeholder="seu@email.com"></label>
-        <label>Senha<input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Sua senha"></label>
-        <button class="btn-primary" id="loginButton" type="submit">Entrar</button>
-        <p id="loginError" class="muted" style="margin:0;min-height:16px"></p>
-      </form>
+
+<!-- LOADING GLOBAL -->
+<div id="global-loader">
+    <div class="spinner"></div>
+    <p style="color:var(--text-muted); font-weight:500;">Sincronizando dados...</p>
+</div>
+
+<!-- CONTAINER DE TOASTS -->
+<div id="toast-container"></div>
+
+<!-- TELA DE LOGIN -->
+<div id="login-screen">
+    <div class="login-box">
+        <i data-lucide="clipboard-check" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 15px;"></i>
+        <h2 style="margin-bottom: 5px;">FF Registro</h2>
+        <p class="subtitle" style="margin-bottom: 25px;">Acesso ao Sistema Gerencial</p>
+        
+        <form onsubmit="event.preventDefault(); login();">
+            <div class="form-group">
+                <input type="email" id="email" placeholder="E-mail de acesso" required />
+            </div>
+            <div class="form-group">
+                <input type="password" id="senha" placeholder="Senha" required />
+            </div>
+            <button type="submit" class="btn" id="btn-login" style="width:100%; margin-top: 10px;">
+                <i data-lucide="log-in" style="width:18px;"></i> Entrar no Sistema
+            </button>
+        </form>
     </div>
-  </section>
+</div>
 
-  <div id="app">
-    <div class="shell">
-      <aside class="sidebar">
-        <div class="brand"><div class="brand-mark">FF</div><div><h1>FF Gestão</h1><p>Operação técnica</p></div></div>
-        <div><div class="nav-label">Operação</div><nav class="nav">
-          <button class="active" data-view="dashboard"><span class="ico">▦</span>Visão geral</button>
-          <button data-view="orders"><span class="ico">▤</span>Ordens de serviço</button>
-          <button data-view="technicians"><span class="ico">♙</span>Técnicos</button>
-        </nav></div>
-        <div class="sidebar-foot">FF Gestão<br>Controle de atendimentos, distribuição e execução.</div>
-      </aside>
-      <main>
-        <header class="topbar">
-          <div><div class="crumb">FF Gestão / <span id="crumb">Visão geral</span></div><h2 id="pageTitle">Visão geral</h2></div>
-          <div class="top-actions"><div class="connection"><span class="dot" id="connectionDot"></span><span id="connectionText">Conectando...</span></div><div class="user-chip"><span class="avatar" id="userAvatar">?</span><span id="userName">Usuário</span></div><button class="btn-light" id="logoutButton">Sair</button></div>
-        </header>
-
-        <section class="view active" id="view-dashboard">
-          <div class="section-head"><div><h3>Resumo da operação</h3><p>Veja o que chegou, o que está com cada técnico e o que precisa de atenção.</p></div><button class="btn-primary" id="newOrderDash">＋ Nova ordem</button></div>
-          <div class="kpis">
-            <div class="kpi"><div class="kpi-top"><span>Ordens abertas</span><span class="kpi-icon">▤</span></div><strong id="kpiOpen">0</strong><small>Não concluídas</small></div>
-            <div class="kpi"><div class="kpi-top"><span>Sem direcionamento</span><span class="kpi-icon">↗</span></div><strong id="kpiUnassigned">0</strong><small>Precisam de técnico ou equipe</small></div>
-            <div class="kpi"><div class="kpi-top"><span>Em atendimento</span><span class="kpi-icon">⚙</span></div><strong id="kpiProgress">0</strong><small>Com execução iniciada ou atribuídas</small></div>
-            <div class="kpi"><div class="kpi-top"><span>Atrasadas</span><span class="kpi-icon">◷</span></div><strong id="kpiLate">0</strong><small>Prazo vencido e ainda abertas</small></div>
-          </div>
-          <div class="dashboard-grid">
-            <section class="panel"><h3>Ordens que precisam de atenção</h3><p class="panel-sub">Prioridade alta, sem responsável ou com prazo vencido.</p><div class="table-wrap"><table><thead><tr><th>Ordem</th><th>Cliente / local</th><th>Responsável</th><th>Situação</th><th>Prazo</th></tr></thead><tbody id="attentionTable"></tbody></table></div></section>
-            <section class="panel"><h3>Carga por técnico</h3><p class="panel-sub">Quantidade de ordens abertas atribuídas.</p><div class="bar-list" id="workloadList"></div></section>
-          </div>
-        </section>
-
-        <section class="view" id="view-orders">
-          <div class="section-head"><div><h3>Central de ordens de serviço</h3><p>Cadastre, classifique, direcione e acompanhe cada atendimento.</p></div><button class="btn-primary" id="newOrder">＋ Nova ordem de serviço</button></div>
-          <div class="hint-box">Fluxo recomendado: <b>Nova</b> → <b>Triagem</b> → <b>Aguardando direcionamento</b> → <b>Atribuída / Em atendimento</b> → <b>Concluída</b>. Atualize a situação sempre que a ordem mudar de etapa.</div>
-          <div class="filters">
-            <input id="searchOrders" type="search" placeholder="Buscar OS, cliente, local ou serviço...">
-            <select id="filterTech"><option value="">Todos os técnicos</option></select>
-            <select id="filterStage"><option value="">Todas as situações</option></select>
-            <select id="filterPriority"><option value="">Todas as prioridades</option><option value="alta">Alta</option><option value="normal">Normal</option><option value="baixa">Baixa</option></select>
-          </div>
-          <div class="board" id="ordersBoard"></div>
-          <div class="section-head" style="margin:16px 0 0"><p id="ordersCount" class="muted"></p><button class="btn-outline" id="exportCsv">Exportar CSV</button></div>
-        </section>
-
-        <section class="view" id="view-technicians">
-          <div class="section-head"><div><h3>Equipe técnica</h3><p>Acompanhe a carga de trabalho, os atendimentos e o desempenho de cada profissional.</p></div><button class="btn-primary" id="newTechButton">＋ Cadastrar técnico</button></div>
-          <div class="kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">
-            <div class="kpi"><div class="kpi-top"><span>Técnicos ativos</span><span class="kpi-icon">♙</span></div><strong id="techActive">0</strong></div>
-            <div class="kpi"><div class="kpi-top"><span>Ordens distribuídas</span><span class="kpi-icon">↗</span></div><strong id="techAssigned">0</strong></div>
-            <div class="kpi"><div class="kpi-top"><span>Concluídas no mês</span><span class="kpi-icon">✓</span></div><strong id="techFinished">0</strong></div>
-          </div>
-          <div class="tech-grid" id="technicianGrid"></div>
-        </section>
-      </main>
+<!-- MENU LATERAL -->
+<nav class="sidebar">
+    <div class="brand"><i data-lucide="shield-check"></i> FF Registro</div>
+    
+    <button class="nav-btn active" onclick="nav('dashboard')">
+        <i data-lucide="layout-dashboard"></i> <span>Painel Inicial</span>
+    </button>
+    <button class="nav-btn" onclick="nav('os')">
+        <i data-lucide="list-todo"></i> <span>Ordens de Serviço</span>
+    </button>
+    <button class="nav-btn" onclick="nav('registros')">
+        <i data-lucide="file-check-2"></i> <span>Registros (Histórico)</span>
+    </button>
+    <button class="nav-btn" onclick="nav('equipe')">
+        <i data-lucide="users"></i> <span>Equipe Técnica</span>
+    </button>
+    
+    <div class="user-info">
+        Conectado como:<br><strong id="user-name" style="color:var(--text)">Carregando...</strong><br>
+        <button class="btn btn-outline" style="width:100%; margin-top:15px; padding: 8px; font-size:12px; color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" onclick="confirmarLogout()">
+            <i data-lucide="log-out" style="width:14px;"></i> Sair da Conta
+        </button>
     </div>
-  </div>
+</nav>
 
-  <div class="modal-backdrop" id="orderModal">
-    <div class="modal">
-      <div class="modal-head"><h3 id="orderModalTitle">Nova ordem de serviço</h3><button class="x-btn" data-close="orderModal">✕</button></div>
-      <form id="orderForm">
-        <div class="modal-body"><input id="orderId" type="hidden">
-          <div class="form-grid">
-            <label>Número da O.S.<input id="orderNumber" maxlength="40" required></label>
-            <label>Tipo de serviço<select id="serviceType"><option value="Instalação">Instalação</option><option value="Manutenção">Manutenção</option><option value="Configuração">Configuração</option><option value="Visita técnica">Visita técnica</option><option value="Suporte">Suporte</option><option value="Outro">Outro</option></select></label>
-            <label>Cliente / unidade<input id="clientName" maxlength="140" required placeholder="Nome do cliente ou condomínio"></label>
-            <label>Telefone / contato<input id="clientPhone" maxlength="50" placeholder="(00) 00000-0000"></label>
-            <label class="span-2">Título do atendimento<input id="orderTitle" maxlength="140" required placeholder="Ex.: Câmera sem imagem na entrada principal"></label>
-            <label class="span-2">Local do atendimento<input id="serviceLocation" maxlength="180" placeholder="Endereço, bloco, portaria ou referência"></label>
-            <label class="span-2">Descrição / solicitação<textarea id="orderDescription" placeholder="Explique o problema, o que o cliente solicitou e informações importantes."></textarea></label>
-            <label>Prioridade<select id="orderPriority"><option value="normal">Normal</option><option value="alta">Alta — urgente</option><option value="baixa">Baixa</option></select></label>
-            <label>Situação<select id="orderStage"></select></label>
-            <label>Direcionar para técnico<select id="orderTech"><option value="">Sem técnico definido</option></select></label>
-            <label>Equipe responsável<select id="orderTeam"><option value="">Sem equipe definida</option></select></label>
-            <label>Data agendada<input id="scheduledDate" type="date"></label>
-            <label>Prazo para conclusão<input id="dueDate" type="date"></label>
-            <label class="span-2">Pendência / motivo de espera<textarea id="pendingReason" placeholder="Ex.: aguardando peça, autorização ou acesso ao local."></textarea></label>
-            <label class="span-2">Relato de conclusão<textarea id="closingNote" placeholder="Preencha ao concluir: o que foi feito, resultado e orientação ao cliente."></textarea></label>
-            <p class="form-hint span-2">Os campos de cliente e local ajudam a equipe a identificar o atendimento; técnico e equipe definem o direcionamento da ordem.</p>
-          </div>
+<!-- ÁREA PRINCIPAL -->
+<main>
+    <!-- TELA 1: DASHBOARD -->
+    <div id="view-dashboard" class="view active">
+        <h1>Visão Geral</h1>
+        <p class="subtitle">Resumo das operações e distribuição inteligente de chamados.</p>
+        
+        <div class="grid-cards">
+            <div class="card card-kpi">
+                <h3>O.S. Pendentes</h3>
+                <div class="value" id="kpi-pendentes" style="color:var(--warning)">0</div>
+            </div>
+            <div class="card card-kpi">
+                <h3>Em Andamento</h3>
+                <div class="value" id="kpi-andamento" style="color:var(--primary)">0</div>
+            </div>
+            <div class="card card-kpi">
+                <h3>Concluídas (Total)</h3>
+                <div class="value" id="kpi-concluidas" style="color:var(--success)">0</div>
+            </div>
         </div>
-        <div class="modal-foot"><button type="button" class="btn-outline" data-close="orderModal">Cancelar</button><button type="submit" class="btn-primary" id="saveOrderButton">Salvar ordem</button></div>
-      </form>
+
+        <div class="card" style="border-left: 4px solid #8b5cf6; background: linear-gradient(145deg, var(--bg-card) 0%, rgba(139, 92, 246, 0.05) 100%);">
+            <h2 style="color:#8b5cf6; display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <i data-lucide="bot"></i> Despachante I.A.
+            </h2>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px; line-height:1.5;">
+                Gere um roteiro otimizado para a equipe técnica baseado nas prioridades das Ordens de Serviço pendentes na fila.
+            </p>
+            <button class="btn" style="background:#8b5cf6; color:white;" onclick="gerarRoteiroIA()">
+                <i data-lucide="sparkles"></i> Gerar Roteiro do Dia
+            </button>
+            <textarea id="roteiro-ia" style="margin-top:20px; height:200px; display:none; background: rgba(0,0,0,0.2); font-family: monospace; font-size:13px;" readonly></textarea>
+        </div>
     </div>
-  </div>
 
-  <div class="modal-backdrop" id="detailModal">
-    <div class="modal small">
-      <div class="modal-head"><h3 id="detailTitle">Detalhes da ordem</h3><button class="x-btn" data-close="detailModal">✕</button></div>
-      <div class="modal-body"><div id="detailContent"></div><h3 style="font-size:14px;margin:20px 0 8px">Histórico do atendimento</h3><div class="timeline" id="historyList"></div>
-        <label style="margin-top:14px">Adicionar atualização<input id="historyNote" placeholder="Ex.: Técnico chegou ao local; aguardando liberação..." maxlength="500"></label>
-        <button class="btn-primary" id="addHistoryButton" style="margin-top:8px">Registrar atualização</button>
-      </div>
-      <div class="modal-foot"><button type="button" class="btn-outline" data-close="detailModal">Fechar</button><button type="button" class="btn-primary" id="editFromDetail">Editar ordem</button></div>
+    <!-- TELA 2: ORDENS DE SERVIÇO (KANBAN) -->
+    <div id="view-os" class="view">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h1>Gestão de Chamados</h1>
+                <p class="subtitle" style="margin-bottom:0;">Acompanhe o fluxo das Ordens de Serviço.</p>
+            </div>
+            <button class="btn" onclick="abrirModalOS()">
+                <i data-lucide="plus"></i> Criar Nova O.S.
+            </button>
+        </div>
+        
+        <div class="kanban-board">
+            <!-- COLUNA PENDENTE -->
+            <div class="kanban-col">
+                <div class="kanban-header">
+                    <span><i data-lucide="clock" style="width:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> PENDENTES</span>
+                    <span class="badge warning" id="count-pendente">0</span>
+                </div>
+                <div id="col-pendente" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+            
+            <!-- COLUNA ANDAMENTO -->
+            <div class="kanban-col" style="background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2);">
+                <div class="kanban-header">
+                    <span style="color: var(--primary)"><i data-lucide="settings" style="width:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> EM ANDAMENTO</span>
+                    <span class="badge" style="background:var(--primary); color:white;" id="count-andamento">0</span>
+                </div>
+                <div id="col-andamento" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+            
+            <!-- COLUNA CONCLUÍDO -->
+            <div class="kanban-col" style="opacity: 0.8;">
+                <div class="kanban-header">
+                    <span style="color: var(--success)"><i data-lucide="check-circle-2" style="width:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> CONCLUÍDOS</span>
+                    <span class="badge success" id="count-concluido">0</span>
+                </div>
+                <div id="col-concluido" style="display:flex; flex-direction:column; gap:12px;"></div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="modal-backdrop" id="techModal">
-    <div class="modal small">
-      <div class="modal-head"><h3>Cadastrar técnico</h3><button class="x-btn" data-close="techModal">✕</button></div>
-      <form id="techForm"><div class="modal-body"><div class="form-grid">
-        <label class="span-2">Nome completo<input id="techName" required maxlength="100"></label>
-        <label>Função / especialidade<input id="techRole" maxlength="100" placeholder="Técnico CFTV"></label>
-        <label>Telefone<input id="techPhone" maxlength="50"></label>
-      </div></div><div class="modal-foot"><button type="button" class="btn-outline" data-close="techModal">Cancelar</button><button class="btn-primary" type="submit" id="saveTechButton">Cadastrar</button></div></form>
+    <!-- TELA 3: REGISTROS -->
+    <div id="view-registros" class="view">
+        <h1>Histórico de Campo</h1>
+        <p class="subtitle">Relatórios gerados automaticamente no fechamento de serviços.</p>
+        <div class="card table-container" style="padding:0; overflow:hidden;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:120px;">Data</th>
+                        <th>O.S. Título</th>
+                        <th>Relato Técnico</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-registros"></tbody>
+            </table>
+        </div>
     </div>
-  </div>
-  <div class="toast" id="toast"></div>
 
-  <script>
-    // Mesmas credenciais públicas usadas na versão original. Mantenha RLS habilitado no Supabase.
-    const SUPABASE_URL = "https://dkjojycfqzkfrnyphtta.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F";
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <!-- TELA 4: EQUIPE -->
+    <div id="view-equipe" class="view">
+        <h1>Equipe Técnica</h1>
+        <p class="subtitle">Colaboradores cadastrados no banco de dados.</p>
+        <div class="card table-container" style="padding:0; overflow:hidden;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome do Técnico</th>
+                        <th>Especialidade</th>
+                        <th>Telefone</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-equipe"></tbody>
+            </table>
+        </div>
+    </div>
+</main>
 
-    const ETAPAS = [
-      {value:"nova", label:"Nova"},
-      {value:"triagem", label:"Em triagem"},
-      {value:"aguardando_direcionamento", label:"Aguardando direcionamento"},
-      {value:"atribuida", label:"Atribuída"},
-      {value:"em_atendimento", label:"Em atendimento"},
-      {value:"aguardando", label:"Aguardando / pendente"},
-      {value:"concluida", label:"Concluída"},
-      {value:"cancelada", label:"Cancelada"}
-    ];
-    const GROUPS = [
-      {key:"entrada", title:"Entrada / triagem", stages:["nova","triagem","aguardando_direcionamento"]},
-      {key:"andamento", title:"Direcionadas / em campo", stages:["atribuida","em_atendimento"]},
-      {key:"pendente", title:"Aguardando", stages:["aguardando"]},
-      {key:"finalizada", title:"Finalizadas", stages:["concluida","cancelada"]}
-    ];
-    let user = null, tarefas = [], tecnicos = [], equipes = [], selectedDetailId = null, realtimeChannel = null;
+<!-- ================= MODAIS ================= -->
 
-    const $ = id => document.getElementById(id);
-    const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-    const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
-    const fmtDate = value => value ? new Date(`${value}T00:00:00`).toLocaleDateString("pt-BR") : "—";
-    const fmtDateTime = value => value ? new Date(value).toLocaleString("pt-BR") : "—";
-    const openStage = s => !["concluida","cancelada"].includes(s);
-    const etapaLabel = value => ETAPAS.find(x => x.value === value)?.label || "Nova";
-    const priorityLabel = value => ({alta:"Alta",normal:"Normal",baixa:"Baixa"}[value] || "Normal");
-    const nomeTecnico = id => tecnicos.find(t => t.id === id)?.nome || "Não atribuído";
-    const nomeEquipe = id => equipes.find(e => e.id === id)?.nome || "Não definida";
-    const initials = name => String(name || "?").trim().split(/\s+/).slice(0,2).map(s=>s[0]||"").join("").toUpperCase();
-    function toast(message, error=false){ const t=$("toast"); t.textContent=message; t.className="toast show"+(error?" error":""); setTimeout(()=>t.className="toast",3600); }
-    function setConnection(ok, text){$("connectionDot").classList.toggle("online",!!ok);$("connectionText").textContent=text;}
-    function showLogin(){$("loginScreen").style.display="grid";$("app").style.display="none";}
-    function showApp(){ $("loginScreen").style.display="none";$("app").style.display="block";$("userName").textContent=user.nome;$("userAvatar").textContent=initials(user.nome); }
-    function legacyStage(item){
-      if(item.etapa) return item.etapa;
-      if(item.status==="done") return "concluida";
-      if(item.status==="doing") return item.funcionario_id ? "em_atendimento" : "triagem";
-      return item.funcionario_id ? "atribuida" : "nova";
-    }
-    function legacyStatus(stage){return ["concluida","cancelada"].includes(stage)?"done":["atribuida","em_atendimento","aguardando"].includes(stage)?"doing":"todo";}
-    function numeroOS(){ const d=new Date(); const stamp=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`; return `OS-${stamp}-${String(Math.floor(Math.random()*9000)+1000)}`; }
-    function populateSelects(){
-      const techOptions = `<option value="">Sem técnico definido</option>`+tecnicos.filter(t=>t.ativo!==false).map(t=>`<option value="${esc(t.id)}">${esc(t.nome)}</option>`).join("");
-      ["orderTech","filterTech"].forEach(id=>{const old=$(id).value;$(id).innerHTML=(id==="filterTech"?`<option value="">Todos os técnicos</option>`:techOptions);if(id==="filterTech")$(id).innerHTML+=tecnicos.filter(t=>t.ativo!==false).map(t=>`<option value="${esc(t.id)}">${esc(t.nome)}</option>`).join("");if(old)$(id).value=old;});
-      $("orderTeam").innerHTML=`<option value="">Sem equipe definida</option>`+equipes.filter(e=>e.ativo!==false).map(e=>`<option value="${esc(e.id)}">${esc(e.nome)}</option>`).join("");
-      const stageOpts=ETAPAS.map(s=>`<option value="${s.value}">${s.label}</option>`).join("");
-      $("orderStage").innerHTML=stageOpts;$("filterStage").innerHTML=`<option value="">Todas as situações</option>`+stageOpts;
-    }
-    async function carregarDados(silent=false){
-      try{
-        const [tRes,fRes,eRes]=await Promise.all([
-          db.from("tarefas").select("*").order("created_at",{ascending:false}),
-          db.from("funcionarios").select("*").order("nome",{ascending:true}),
-          db.from("equipes").select("*").order("nome",{ascending:true})
-        ]);
-        if(tRes.error) throw tRes.error;if(fRes.error) throw fRes.error;if(eRes.error) throw eRes.error;
-        tarefas=tRes.data||[];tecnicos=fRes.data||[];equipes=eRes.data||[];
-        tarefas.forEach(t=>{t.etapaAtual=legacyStage(t);});
-        populateSelects();renderAll();setConnection(true,"Conectado");
-      }catch(e){setConnection(false,"Falha na conexão");if(!silent)toast("Erro ao carregar dados: "+e.message,true);}
-    }
-    function renderAll(){renderDashboard();renderOrders();renderTechnicians();}
-    function renderDashboard(){
-      const active=tarefas.filter(t=>openStage(t.etapaAtual));
-      const unassigned=active.filter(t=>!t.funcionario_id&&!t.equipe_id);
-      const progress=active.filter(t=>["atribuida","em_atendimento"].includes(t.etapaAtual));
-      const late=active.filter(t=>t.prazo&&t.prazo<todayISO());
-      $("kpiOpen").textContent=active.length;$("kpiUnassigned").textContent=unassigned.length;$("kpiProgress").textContent=progress.length;$("kpiLate").textContent=late.length;
-      const attention=active.filter(t=>(t.prioridade||"normal")==="alta"||(!t.funcionario_id&&!t.equipe_id)||(t.prazo&&t.prazo<todayISO())).sort((a,b)=>{const w=t=>(t.prazo&&t.prazo<todayISO()?3:0)+(t.prioridade==="alta"?2:0)+(!t.funcionario_id&&!t.equipe_id?1:0);return w(b)-w(a);}).slice(0,7);
-      $("attentionTable").innerHTML=attention.length?attention.map(t=>`<tr><td><span class="table-title">${esc(t.numero_os||"Sem nº")}</span><br><span class="muted">${esc(t.titulo)}</span></td><td>${esc(t.cliente||"Cliente não informado")}<br><span class="muted">${esc(t.local_atendimento||"Local não informado")}</span></td><td>${esc(nomeTecnico(t.funcionario_id))}</td><td>${stagePill(t.etapaAtual)}</td><td>${t.prazo?fmtDate(t.prazo):"—"}</td></tr>`).join(""):`<tr><td colspan="5"><div class="empty">Nenhuma ordem exige atenção no momento.</div></td></tr>`;
-      const activeTechs=tecnicos.filter(t=>t.ativo!==false).map(t=>({nome:t.nome,count:active.filter(o=>o.funcionario_id===t.id).length})).sort((a,b)=>b.count-a.count).slice(0,8);
-      const max=Math.max(1,...activeTechs.map(t=>t.count));
-      $("workloadList").innerHTML=activeTechs.length?activeTechs.map(t=>`<div class="bar-row"><span title="${esc(t.nome)}">${esc(t.nome)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(t.count/max*100)}%"></div></div><span class="bar-count">${t.count}</span></div>`).join(""):`<div class="empty">Cadastre os técnicos para visualizar a distribuição.</div>`;
-    }
-    function stagePill(stage){let c="s-new";if(["atribuida","em_atendimento"].includes(stage))c="s-progress";if(stage==="aguardando")c="s-wait";if(stage==="concluida")c="s-done";if(stage==="cancelada")c="s-cancel";return `<span class="pill ${c}">${esc(etapaLabel(stage))}</span>`;}
-    function getFilteredOrders(){
-      const q=$("searchOrders").value.trim().toLowerCase(), tech=$("filterTech").value, stage=$("filterStage").value, priority=$("filterPriority").value;
-      return tarefas.filter(t=>{
-        const blob=[t.numero_os,t.titulo,t.cliente,t.local_atendimento,t.descricao,t.tipo_servico].join(" ").toLowerCase();
-        return (!q||blob.includes(q))&&(!tech||t.funcionario_id===tech)&&(!stage||t.etapaAtual===stage)&&(!priority||(t.prioridade||"normal")===priority);
-      });
-    }
-    function renderOrders(){
-      const filtered=getFilteredOrders();$("ordersCount").textContent=`${filtered.length} ordem(ns) encontrada(s)`;
-      $("ordersBoard").innerHTML=GROUPS.map(g=>{
-        const items=filtered.filter(t=>g.stages.includes(t.etapaAtual));
-        return `<section class="board-col"><div class="board-head"><span>${g.title}</span><span class="counter">${items.length}</span></div>${items.length?items.map(orderCard).join(""):`<div class="empty">Nenhuma ordem</div>`}</section>`;
-      }).join("");
-    }
-    function orderCard(t){
-      const tech=nomeTecnico(t.funcionario_id), due=t.prazo?fmtDate(t.prazo):"Sem prazo", late=t.prazo&&t.prazo<todayISO()&&openStage(t.etapaAtual);
-      const pClass=t.prioridade==="alta"?"p-high":t.prioridade==="baixa"?"p-low":"p-normal";
-      return `<article class="os-card" data-order="${esc(t.id)}"><div class="os-card-top"><span class="os-num">${esc(t.numero_os||"OS sem número")}</span><span class="pill ${pClass}">${priorityLabel(t.prioridade)}</span></div><h4>${esc(t.titulo)}</h4><div class="os-client">${esc(t.cliente||"Cliente não informado")}</div><div class="os-meta"><span>♙ ${esc(tech)}</span><span>⌖ ${esc(t.local_atendimento||"Local não informado")}</span><span style="${late?"color:var(--red);font-weight:800":""}">◷ ${late?"Atrasada · ":"Prazo · "}${due}</span></div><select class="stage-select" data-action="stage" data-id="${esc(t.id)}" aria-label="Atualizar situação">${ETAPAS.map(s=>`<option value="${s.value}" ${s.value===t.etapaAtual?"selected":""}>${s.label}</option>`).join("")}</select><div class="card-actions"><button class="btn-outline" data-action="detail" data-id="${esc(t.id)}">Detalhes / histórico</button><button class="btn-light" data-action="edit" data-id="${esc(t.id)}">Editar</button></div></article>`;
-    }
-    function renderTechnicians(){
-      const active=tecnicos.filter(t=>t.ativo!==false), open=tarefas.filter(t=>openStage(t.etapaAtual)), month=new Date();month.setDate(1);month.setHours(0,0,0,0);
-      const completed=tarefas.filter(t=>t.etapaAtual==="concluida"&&new Date(t.concluido_em||t.updated_at||t.created_at||0)>=month).length;
-      $("techActive").textContent=active.length;$("techAssigned").textContent=open.filter(t=>t.funcionario_id).length;$("techFinished").textContent=completed;
-      $("technicianGrid").innerHTML=active.length?active.map(t=>{
-        const assigned=open.filter(o=>o.funcionario_id===t.id), finished=tarefas.filter(o=>o.funcionario_id===t.id&&o.etapaAtual==="concluida").length;
-        return `<article class="tech-card"><div class="tech-head"><div class="tech-avatar">${esc(initials(t.nome))}</div><div><h4>${esc(t.nome)}</h4><p>${esc(t.cargo||"Técnico")}${t.telefone?" · "+esc(t.telefone):""}</p></div></div><div class="tech-stats"><div class="tech-stat"><b>${assigned.length}</b><span>Ordens abertas</span></div><div class="tech-stat"><b>${finished}</b><span>Concluídas</span></div></div><button class="btn-outline" data-tech-filter="${esc(t.id)}">Ver ordens deste técnico</button></article>`;
-      }).join(""):`<div class="empty" style="grid-column:1/-1">Nenhum técnico ativo cadastrado. Use “Cadastrar técnico” para começar.</div>`;
-    }
-    function switchView(view){
-      document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));$("view-"+view).classList.add("active");
-      document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===view));
-      const labels={dashboard:"Visão geral",orders:"Ordens de serviço",technicians:"Técnicos"};$("pageTitle").textContent=labels[view];$("crumb").textContent=labels[view];
-    }
-    function openModal(id){$(id).classList.add("open");}function closeModal(id){$(id).classList.remove("open");}
-    function openOrderForm(id=null){
-      $("orderForm").reset();$("orderId").value="";$("orderNumber").value=numeroOS();$("orderStage").value="nova";$("orderPriority").value="normal";$("orderModalTitle").textContent=id?"Editar ordem de serviço":"Nova ordem de serviço";
-      if(id){const t=tarefas.find(x=>x.id===id);if(!t)return;$("orderId").value=t.id;$("orderNumber").value=t.numero_os||numeroOS();$("serviceType").value=t.tipo_servico||"Outro";$("clientName").value=t.cliente||"";$("clientPhone").value=t.telefone_contato||"";$("orderTitle").value=t.titulo||"";$("serviceLocation").value=t.local_atendimento||"";$("orderDescription").value=t.descricao||"";$("orderPriority").value=t.prioridade||"normal";$("orderStage").value=t.etapaAtual;$("orderTech").value=t.funcionario_id||"";$("orderTeam").value=t.equipe_id||"";$("scheduledDate").value=t.data_agendada||"";$("dueDate").value=t.prazo||"";$("pendingReason").value=t.motivo_pendencia||"";$("closingNote").value=t.observacao_final||"";}
-      openModal("orderModal");
-    }
-    async function registrarHistorico(id,tipo,descricao){
-      const {error}=await db.from("historico_ordens").insert([{tarefa_id:id,tipo,descricao,realizado_por:user?.nome||user?.email||"Usuário"}]);
-      if(error) throw new Error("Ordem salva, mas não foi possível registrar o histórico: "+error.message);
-    }
-    async function saveOrder(ev){
-      ev.preventDefault();const id=$("orderId").value, stage=$("orderStage").value;
-      const payload={
-        numero_os:$("orderNumber").value.trim(),tipo_servico:$("serviceType").value,cliente:$("clientName").value.trim(),telefone_contato:$("clientPhone").value.trim(),
-        titulo:$("orderTitle").value.trim(),local_atendimento:$("serviceLocation").value.trim(),descricao:$("orderDescription").value.trim(),prioridade:$("orderPriority").value,
-        prazo:$("dueDate").value||null,data_agendada:$("scheduledDate").value||null,funcionario_id:$("orderTech").value||null,equipe_id:$("orderTeam").value||null,
-        etapa:stage,status:legacyStatus(stage),motivo_pendencia:$("pendingReason").value.trim(),observacao_final:$("closingNote").value.trim(),atualizado_por:user.nome
-      };
-      if(!payload.numero_os||!payload.cliente||!payload.titulo){toast("Preencha número da O.S., cliente e título.",true);return;}
-      if(stage==="em_atendimento"&&!id)payload.inicio_execucao=new Date().toISOString();
-      if(stage==="em_atendimento"&&id){const old=tarefas.find(t=>t.id===id);if(old&&!old.inicio_execucao)payload.inicio_execucao=new Date().toISOString();}
-      if(stage==="concluida"){payload.concluido_em=new Date().toISOString();payload.encerrado_em=new Date().toISOString();}
-      else if(stage==="cancelada"){payload.encerrado_em=new Date().toISOString();payload.concluido_em=null;}
-      else {payload.concluido_em=null;payload.encerrado_em=null;}
-      const button=$("saveOrderButton");button.disabled=true;button.textContent="Salvando...";
-      try{
-        let saved;
-        if(id){const {data,error}=await db.from("tarefas").update(payload).eq("id",id).select().single();if(error)throw error;saved=data;}
-        else{payload.criado_por=user.nome;payload.inicio=new Date().toISOString();const {data,error}=await db.from("tarefas").insert([payload]).select().single();if(error)throw error;saved=data;}
-        try{
-          if(id){
-            const before=tarefas.find(t=>t.id===id);
-            await registrarHistorico(saved.id,"edicao","Dados gerais da ordem atualizados.");
-            if(before && before.etapaAtual!==stage) await registrarHistorico(saved.id,"status",`Situação alterada de “${etapaLabel(before.etapaAtual)}” para “${etapaLabel(stage)}”.`);
-            if(before && before.funcionario_id!==payload.funcionario_id) await registrarHistorico(saved.id,"direcionamento",`Técnico alterado de “${nomeTecnico(before.funcionario_id)}” para “${nomeTecnico(payload.funcionario_id)}”.`);
-            if(before && before.equipe_id!==payload.equipe_id) await registrarHistorico(saved.id,"equipe",`Equipe alterada de “${nomeEquipe(before.equipe_id)}” para “${nomeEquipe(payload.equipe_id)}”.`);
-          }else{
-            await registrarHistorico(saved.id,"criacao","Ordem de serviço cadastrada.");
-            if(payload.funcionario_id || payload.equipe_id) await registrarHistorico(saved.id,"direcionamento",`Ordem direcionada para ${payload.funcionario_id?nomeTecnico(payload.funcionario_id):"técnico não definido"}${payload.equipe_id?" / "+nomeEquipe(payload.equipe_id):""}.`);
-          }
-        }catch(logError){console.warn(logError);}
-        closeModal("orderModal");await carregarDados(true);toast(id?"Ordem atualizada.":"Ordem cadastrada.");
-      }catch(e){toast("Não foi possível salvar: "+e.message,true);}finally{button.disabled=false;button.textContent="Salvar ordem";}
-    }
-    async function updateStage(id,stage){
-      const old=tarefas.find(t=>t.id===id);if(!old)return;
-      const payload={etapa:stage,status:legacyStatus(stage),atualizado_por:user.nome};
-      if(stage==="em_atendimento"&&!old.inicio_execucao)payload.inicio_execucao=new Date().toISOString();
-      if(stage==="concluida"){payload.concluido_em=new Date().toISOString();payload.encerrado_em=new Date().toISOString();}
-      else if(stage==="cancelada"){payload.concluido_em=null;payload.encerrado_em=new Date().toISOString();}
-      else{payload.concluido_em=null;payload.encerrado_em=null;}
-      try{const {error}=await db.from("tarefas").update(payload).eq("id",id);if(error)throw error;await registrarHistorico(id,"status",`Situação alterada de “${etapaLabel(old.etapaAtual)}” para “${etapaLabel(stage)}”.`);await carregarDados(true);toast("Situação atualizada.");}
-      catch(e){toast("Erro ao atualizar situação: "+e.message,true);await carregarDados(true);}
-    }
-    async function openDetails(id){
-      const t=tarefas.find(x=>x.id===id);if(!t)return;selectedDetailId=id;$("detailTitle").textContent=`${t.numero_os||"Ordem"} · ${t.titulo}`;
-      $("detailContent").innerHTML=`<div class="detail-grid">
-        <div class="detail-item"><small>Cliente</small><strong>${esc(t.cliente||"Não informado")}</strong></div><div class="detail-item"><small>Situação</small><strong>${esc(etapaLabel(t.etapaAtual))}</strong></div>
-        <div class="detail-item"><small>Técnico</small><strong>${esc(nomeTecnico(t.funcionario_id))}</strong></div><div class="detail-item"><small>Equipe</small><strong>${esc(nomeEquipe(t.equipe_id))}</strong></div>
-        <div class="detail-item"><small>Local</small><strong>${esc(t.local_atendimento||"Não informado")}</strong></div><div class="detail-item"><small>Contato</small><strong>${esc(t.telefone_contato||"Não informado")}</strong></div>
-        <div class="detail-item"><small>Agendado</small><strong>${fmtDate(t.data_agendada)}</strong></div><div class="detail-item"><small>Prazo</small><strong>${fmtDate(t.prazo)}</strong></div>
-        <div class="detail-item"><small>Prioridade</small><strong>${priorityLabel(t.prioridade)}</strong></div><div class="detail-item"><small>Tipo</small><strong>${esc(t.tipo_servico||"Não informado")}</strong></div>
-        <div class="detail-item" style="grid-column:1/-1"><small>Descrição</small><strong style="white-space:pre-wrap;font-weight:500">${esc(t.descricao||"Sem descrição")}</strong></div>
-        ${t.motivo_pendencia?`<div class="detail-item" style="grid-column:1/-1"><small>Pendência</small><strong>${esc(t.motivo_pendencia)}</strong></div>`:""}
-        ${t.observacao_final?`<div class="detail-item" style="grid-column:1/-1"><small>Relato de conclusão</small><strong>${esc(t.observacao_final)}</strong></div>`:""}
-      </div>`;
-      $("historyList").innerHTML="<div class='muted' style='font-size:11px'>Carregando histórico...</div>";openModal("detailModal");
-      try{const {data,error}=await db.from("historico_ordens").select("*").eq("tarefa_id",id).order("created_at",{ascending:false});if(error)throw error;$("historyList").innerHTML=data?.length?data.map(h=>`<div class="timeline-item"><b>${esc(h.tipo||"Atualização")} · ${esc(h.realizado_por||"Usuário")}</b><p>${esc(h.descricao||"")}</p><time>${fmtDateTime(h.created_at)}</time></div>`).join(""):`<div class="empty">Nenhuma atualização registrada ainda.</div>`;}
-      catch(e){$("historyList").innerHTML=`<div class="empty">Não foi possível carregar o histórico: ${esc(e.message)}</div>`;}
-    }
-    async function addHistoryNote(){const note=$("historyNote").value.trim();if(!note||!selectedDetailId)return;const b=$("addHistoryButton");b.disabled=true;try{await registrarHistorico(selectedDetailId,"comentario",note);$("historyNote").value="";await openDetails(selectedDetailId);toast("Atualização registrada.");}catch(e){toast(e.message,true);}finally{b.disabled=false;}}
-    async function addTechnician(ev){ev.preventDefault();const nome=$("techName").value.trim(),cargo=$("techRole").value.trim(),telefone=$("techPhone").value.trim();if(!nome)return;const b=$("saveTechButton");b.disabled=true;try{const {error}=await db.from("funcionarios").insert([{nome,cargo,telefone,ativo:true,criado_por:user.nome,atualizado_por:user.nome}]);if(error)throw error;closeModal("techModal");$("techForm").reset();await carregarDados(true);toast("Técnico cadastrado.");}catch(e){toast("Erro ao cadastrar técnico: "+e.message,true);}finally{b.disabled=false;}}
-    function exportCSV(){const rows=getFilteredOrders();const cols=["numero_os","cliente","titulo","tipo_servico","local_atendimento","prioridade","etapaAtual","tecnico_nome","prazo","data_agendada"];const header=["O.S.","Cliente","Atendimento","Tipo","Local","Prioridade","Situação","Técnico","Prazo","Agendamento"];const cell=v=>`"${String(v??"").replace(/"/g,'""')}"`;const csv="\uFEFF"+[header,...rows.map(t=>cols.map(k=>k==="etapaAtual"?etapaLabel(t.etapaAtual):k==="tecnico_nome"?nomeTecnico(t.funcionario_id):t[k]))].map(r=>r.map(cell).join(";")).join("\n");const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`ordens-servico-${todayISO()}.csv`;a.click();URL.revokeObjectURL(url);}
+<!-- MODAL: NOVA O.S. -->
+<div id="modal-os" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Nova Ordem de Serviço</h2>
+            <button class="btn-outline" style="border:none; padding:5px; cursor:pointer;" onclick="fecharModal('modal-os')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Título / Problema</label>
+                <input type="text" id="os-titulo" placeholder="Ex: Câmera portaria sem imagem" />
+            </div>
+            <div class="form-group">
+                <label>Localização</label>
+                <input type="text" id="os-local" placeholder="Ex: Condomínio X - Bloco 2" />
+            </div>
+            <div class="form-group">
+                <label>Prioridade</label>
+                <select id="os-prioridade">
+                    <option value="Normal">Normal (SLA Padrão)</option>
+                    <option value="Alta">Alta (Urgência/Parada)</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Descrição Detalhada (Opcional)</label>
+                <textarea id="os-desc" placeholder="Detalhes adicionais para o técnico..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="fecharModal('modal-os')">Cancelar</button>
+            <button class="btn" id="btn-salvar-os" onclick="salvarOS()"><i data-lucide="save" style="width:16px;"></i> Salvar O.S.</button>
+        </div>
+    </div>
+</div>
 
-    document.querySelectorAll(".nav button").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
-    ["newOrder","newOrderDash"].forEach(id=>$(id).addEventListener("click",()=>openOrderForm()));
-    $("orderForm").addEventListener("submit",saveOrder);$("techForm").addEventListener("submit",addTechnician);
-    $("newTechButton").addEventListener("click",()=>openModal("techModal"));$("logoutButton").addEventListener("click",async()=>{await db.auth.signOut();});
-    ["searchOrders","filterTech","filterStage","filterPriority"].forEach(id=>$(id).addEventListener(id==="searchOrders"?"input":"change",renderOrders));
-    $("ordersBoard").addEventListener("click",ev=>{const b=ev.target.closest("button[data-action]");if(!b)return;const id=b.dataset.id;if(b.dataset.action==="detail")openDetails(id);if(b.dataset.action==="edit")openOrderForm(id);});
-    $("ordersBoard").addEventListener("change",ev=>{const s=ev.target.closest("select[data-action='stage']");if(s)updateStage(s.dataset.id,s.value);});
-    $("technicianGrid").addEventListener("click",ev=>{const b=ev.target.closest("button[data-tech-filter]");if(!b)return;switchView("orders");$("filterTech").value=b.dataset.techFilter;renderOrders();});
-    $("exportCsv").addEventListener("click",exportCSV);$("addHistoryButton").addEventListener("click",addHistoryNote);$("editFromDetail").addEventListener("click",()=>{const id=selectedDetailId;closeModal("detailModal");openOrderForm(id);});
-    document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));
-    document.querySelectorAll(".modal-backdrop").forEach(m=>m.addEventListener("click",ev=>{if(ev.target===m)closeModal(m.id);}));
-    document.addEventListener("keydown",ev=>{if(ev.key==="Escape")document.querySelectorAll(".modal-backdrop.open").forEach(m=>closeModal(m.id));});
-    $("loginForm").addEventListener("submit",async ev=>{ev.preventDefault();$("loginError").textContent="";const b=$("loginButton");b.disabled=true;b.textContent="Entrando...";try{const {error}=await db.auth.signInWithPassword({email:$("loginEmail").value.trim(),password:$("loginPassword").value});if(error)throw error;}catch(e){$("loginError").textContent="Não foi possível entrar. Confira e-mail e senha.";}finally{b.disabled=false;b.textContent="Entrar";}});
+<!-- MODAL: CONCLUIR O.S. (Relato) -->
+<div id="modal-concluir" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 style="color:var(--success); display:flex; align-items:center; gap:8px;"><i data-lucide="check-circle-2"></i> Fechar Ordem de Serviço</h2>
+            <button class="btn-outline" style="border:none; padding:5px; cursor:pointer;" onclick="fecharModal('modal-concluir')"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+            <p style="margin-bottom:15px; font-size:13px; color:var(--text-muted);">Descreva o que foi realizado no local. Isso ficará salvo no histórico de registros permanentemente.</p>
+            <input type="hidden" id="concluir-os-id" />
+            <div class="form-group" style="margin-bottom:0;">
+                <textarea id="os-relato" placeholder="Ex: Trocado conector BNC e refeita a emenda da fonte..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="fecharModal('modal-concluir')">Cancelar</button>
+            <button class="btn" style="background:var(--success);" onclick="confirmarConclusao()"><i data-lucide="check" style="width:16px;"></i> Registrar Conclusão</button>
+        </div>
+    </div>
+</div>
 
-    async function iniciar(){
-      const {data,error}=await db.auth.getSession();if(error){showLogin();return;}
-      async function onSession(session){if(!session){user=null;showLogin();return;}user={id:session.user.id,email:session.user.email,nome:session.user.email};try{const {data}=await db.from("perfis").select("nome").eq("id",session.user.id).maybeSingle();if(data?.nome)user.nome=data.nome;}catch(_){/* O e-mail continua como identificação de fallback. */}showApp();await carregarDados();if(realtimeChannel)db.removeChannel(realtimeChannel);realtimeChannel=db.channel("ff-ordens-realtime").on("postgres_changes",{event:"*",schema:"public",table:"tarefas"},()=>carregarDados(true)).subscribe();}
-      await onSession(data.session);db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_OUT"){user=null;showLogin();}else if(event==="SIGNED_IN"){onSession(session);}});
+<!-- MODAL: CONFIRMAR EXCLUSÃO -->
+<div id="modal-excluir" class="modal-overlay">
+    <div class="modal-content" style="max-width: 350px;">
+        <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
+            <h2 style="color:var(--danger); text-align:center; width:100%;">Atenção!</h2>
+        </div>
+        <div class="modal-body" style="text-align:center;">
+            <i data-lucide="alert-triangle" style="width:48px; height:48px; color:var(--danger); margin: 0 auto 15px;"></i>
+            <p>Tem certeza que deseja excluir esta O.S.? Esta ação não pode ser desfeita.</p>
+            <input type="hidden" id="excluir-os-id" />
+        </div>
+        <div class="modal-footer" style="justify-content:center; background:transparent; border-top:none;">
+            <button class="btn btn-outline" onclick="fecharModal('modal-excluir')">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarExclusao()">Sim, Excluir</button>
+        </div>
+    </div>
+</div>
+
+<!-- LÓGICA JAVASCRIPT -->
+<script>
+// Inicializa ícones do Lucide
+lucide.createIcons();
+
+// Credenciais Supabase
+const SUPABASE_URL = "https://dkjojycfqzkfrnyphtta.supabase.co";
+const SUPABASE_KEY = "sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Variáveis de Estado
+let ordens = [];
+let tecnicos = [];
+let registros = [];
+
+// ================= SISTEMA DE TOASTS =================
+function showToast(msg, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    let icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-octagon' : 'info';
+    toast.innerHTML = `<i data-lucide="${icon}" style="width:18px; height:18px;"></i> ${msg}`;
+    
+    container.appendChild(toast);
+    lucide.createIcons();
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = '0.3s';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ================= LOADING GLOBAL =================
+function showLoading(show) {
+    document.getElementById('global-loader').style.display = show ? 'flex' : 'none';
+}
+
+// ================= CONTROLE DE TELAS & MODAIS =================
+function nav(viewId) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('view-' + viewId).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
+function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
+function abrirModalOS() { 
+    document.getElementById('os-titulo').value = '';
+    document.getElementById('os-local').value = '';
+    document.getElementById('os-desc').value = '';
+    abrirModal('modal-os'); 
+}
+
+// ================= AUTENTICAÇÃO =================
+async function checkSession() {
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (session) {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('user-name').innerText = session.user.email;
+            await carregarDados();
+        }
+    } catch (err) {
+        console.error("Erro na sessão:", err);
     }
-    iniciar();
-  </script>
+}
+
+async function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('senha').value;
+    const btn = document.getElementById('btn-login');
+    
+    if(!email || !password) return showToast("Preencha e-mail e senha.", "warning");
+    
+    btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; border-width:2px; margin:0; border-left-color:white;"></div> Entrando...';
+    btn.disabled = true;
+    
+    try {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        
+        showToast("Login realizado com sucesso!");
+        checkSession();
+    } catch (err) {
+        showToast("Erro ao entrar: Verifique credenciais.", "error");
+        btn.innerHTML = '<i data-lucide="log-in" style="width:18px;"></i> Entrar no Sistema';
+        btn.disabled = false;
+        lucide.createIcons();
+    }
+}
+
+function confirmarLogout() {
+    if(confirm("Deseja realmente sair do sistema?")) {
+        supabase.auth.signOut().then(() => window.location.reload());
+    }
+}
+
+// ================= CARREGAMENTO DE DADOS =================
+async function carregarDados() {
+    showLoading(true);
+    try {
+        // Busca O.S.
+        const resOs = await supabase.from('ordens_servico').select('*').order('created_at', { ascending: false });
+        if (resOs.error) throw resOs.error;
+        ordens = resOs.data || [];
+
+        // Busca Técnicos
+        const resTec = await supabase.from('tecnicos').select('*');
+        if (resTec.error) throw resTec.error;
+        tecnicos = resTec.data || [];
+
+        // Busca Registros (Fazendo join manual para pegar o nome da OS via JS)
+        const resReg = await supabase.from('registros_atendimento').select('*').order('data_execucao', { ascending: false });
+        if (resReg.error) throw resReg.error;
+        registros = resReg.data || [];
+
+        atualizarInterface();
+    } catch (err) {
+        console.error(err);
+        showToast("Erro ao carregar dados do banco.", "error");
+    } finally {
+        showLoading(false);
+    }
+}
+
+// ================= RENDERIZAÇÃO =================
+function atualizarInterface() {
+    const pendentes = ordens.filter(o => o.status === 'Pendente');
+    const andamento = ordens.filter(o => o.status === 'Em Andamento');
+    const concluidas = ordens.filter(o => o.status === 'Concluido');
+
+    // KPIs Dashboard
+    document.getElementById('kpi-pendentes').innerText = pendentes.length;
+    document.getElementById('kpi-andamento').innerText = andamento.length;
+    document.getElementById('kpi-concluidas').innerText = concluidas.length;
+    
+    // Contadores Kanban
+    document.getElementById('count-pendente').innerText = pendentes.length;
+    document.getElementById('count-andamento').innerText = andamento.length;
+    document.getElementById('count-concluido').innerText = concluidas.length;
+
+    // Listas Kanban
+    document.getElementById('col-pendente').innerHTML = pendentes.length ? pendentes.map(cardHTML).join('') : '<p style="color:var(--text-muted); font-size:12px; text-align:center; padding:20px;">Nenhuma pendência.</p>';
+    document.getElementById('col-andamento').innerHTML = andamento.length ? andamento.map(cardHTML).join('') : '';
+    document.getElementById('col-concluido').innerHTML = concluidas.length ? concluidas.map(cardHTML).join('') : '';
+
+    // Tabela Equipe
+    document.getElementById('lista-equipe').innerHTML = tecnicos.map(t => `
+        <tr>
+            <td><strong style="color:var(--text)">${t.nome}</strong></td>
+            <td>${t.especialidade || '-'}</td>
+            <td>${t.telefone || '-'}</td>
+            <td><span class="badge success">Ativo</span></td>
+        </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center;">Nenhum técnico cadastrado.</td></tr>';
+
+    // Tabela Registros
+    document.getElementById('lista-registros').innerHTML = registros.map(r => {
+        const data = new Date(r.data_execucao).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+        // Busca o titulo da OS relacionada
+        const osRelacionada = ordens.find(o => o.id === r.ordem_servico_id);
+        const tituloOs = osRelacionada ? osRelacionada.titulo : 'O.S. Excluída/Desconhecida';
+        
+        return `
+        <tr>
+            <td style="font-size:12px; color:var(--text-muted);">${data.replace(', ', '<br>')}</td>
+            <td style="font-weight:500;">${tituloOs}</td>
+            <td style="color:var(--text-muted); line-height:1.4;">${r.relato}</td>
+        </tr>
+    `}).join('') || '<tr><td colspan="3" style="text-align:center;">Nenhum registro encontrado.</td></tr>';
+
+    lucide.createIcons(); // Recarrega ícones gerados no HTML
+}
+
+function cardHTML(os) {
+    const isAlta = os.prioridade === 'Alta';
+    const cardClass = isAlta ? 'os-card prioridade-alta' : 'os-card';
+    const priorityBadge = isAlta ? '<span class="badge danger" style="font-size:10px;">Alta</span>' : '';
+    
+    let btnPrincipal = '';
+    if(os.status === 'Pendente') {
+        btnPrincipal = `<button class="btn" style="padding:6px; font-size:12px; width:100%;" onclick="mudarStatusOS('${os.id}', 'Em Andamento')">Iniciar Serviço</button>`;
+    } else if(os.status === 'Em Andamento') {
+        btnPrincipal = `<button class="btn" style="padding:6px; font-size:12px; width:100%; background:var(--success);" onclick="abrirModalConclusao('${os.id}')"><i data-lucide="check" style="width:14px;"></i> Concluir</button>`;
+    } else {
+        btnPrincipal = `<button class="btn btn-outline" style="padding:6px; font-size:12px; width:100%;" onclick="mudarStatusOS('${os.id}', 'Pendente')"><i data-lucide="rotate-ccw" style="width:14px;"></i> Reabrir</button>`;
+    }
+
+    return `
+        <div class="${cardClass}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                <h4 style="margin:0; padding-right:10px;">${os.titulo}</h4>
+                ${priorityBadge}
+            </div>
+            <div class="local"><i data-lucide="map-pin" style="width:12px;"></i> ${os.local || 'Sem local'}</div>
+            ${os.descricao ? `<div style="font-size:11px; color:var(--text-muted); margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${os.descricao}</div>` : ''}
+            
+            <div class="actions">
+                ${btnPrincipal}
+                <button class="btn btn-outline" style="padding:6px 10px; color:var(--danger); border-color:transparent;" title="Excluir" onclick="prepararExclusao('${os.id}')">
+                    <i data-lucide="trash-2" style="width:14px;"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// ================= AÇÕES CRUD =================
+
+async function salvarOS() {
+    const titulo = document.getElementById('os-titulo').value.trim();
+    const local = document.getElementById('os-local').value.trim();
+    const descricao = document.getElementById('os-desc').value.trim();
+    const prioridade = document.getElementById('os-prioridade').value;
+    
+    if(!titulo) {
+        showToast("O título da O.S. é obrigatório!", "warning");
+        document.getElementById('os-titulo').focus();
+        return;
+    }
+    
+    const btn = document.getElementById('btn-salvar-os');
+    btn.disabled = true;
+    btn.innerHTML = 'Salvando...';
+    
+    try {
+        const { error } = await supabase.from('ordens_servico').insert([{ 
+            titulo, local, descricao, prioridade, status: 'Pendente' 
+        }]);
+        if(error) throw error;
+        
+        showToast("Ordem de Serviço criada com sucesso!");
+        fecharModal('modal-os');
+        carregarDados();
+    } catch (err) {
+        console.error(err);
+        showToast("Erro ao salvar O.S.", "error");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="save" style="width:16px;"></i> Salvar O.S.';
+        lucide.createIcons();
+    }
+}
+
+async function mudarStatusOS(id, novoStatus) {
+    showLoading(true);
+    try {
+        const { error } = await supabase.from('ordens_servico').update({ status: novoStatus }).eq('id', id);
+        if(error) throw error;
+        
+        showToast(`O.S. movida para: ${novoStatus}`, "success");
+        carregarDados();
+    } catch (err) {
+        showLoading(false);
+        showToast("Erro ao atualizar status.", "error");
+    }
+}
+
+function abrirModalConclusao(id) {
+    document.getElementById('concluir-os-id').value = id;
+    document.getElementById('os-relato').value = '';
+    abrirModal('modal-concluir');
+    setTimeout(() => document.getElementById('os-relato').focus(), 100);
+}
+
+async function confirmarConclusao() {
+    const id = document.getElementById('concluir-os-id').value;
+    const relato = document.getElementById('os-relato').value.trim() || "Serviço reportado como concluído sem observações adicionais.";
+    
+    fecharModal('modal-concluir');
+    showLoading(true);
+    
+    try {
+        // 1. Atualiza Status
+        const { error: errUpdate } = await supabase.from('ordens_servico').update({ status: 'Concluido' }).eq('id', id);
+        if(errUpdate) throw errUpdate;
+        
+        // 2. Salva o Registro
+        const { error: errInsert } = await supabase.from('registros_atendimento').insert([{
+            ordem_servico_id: id, relato: relato
+        }]);
+        if(errInsert) throw errInsert;
+        
+        showToast("O.S. concluída e registrada!", "success");
+        carregarDados();
+    } catch (err) {
+        showLoading(false);
+        showToast("Erro ao concluir O.S.", "error");
+    }
+}
+
+function prepararExclusao(id) {
+    document.getElementById('excluir-os-id').value = id;
+    abrirModal('modal-excluir');
+}
+
+async function confirmarExclusao() {
+    const id = document.getElementById('excluir-os-id').value;
+    fecharModal('modal-excluir');
+    showLoading(true);
+    
+    try {
+        const { error } = await supabase.from('ordens_servico').delete().eq('id', id);
+        if(error) throw error;
+        
+        showToast("O.S. excluída com sucesso.", "success");
+        carregarDados();
+    } catch(err) {
+        showLoading(false);
+        showToast("Erro ao excluir.", "error");
+    }
+}
+
+// ================= I.A. GERADOR DE ROTEIRO =================
+function gerarRoteiroIA() {
+    const btn = document.getElementById('roteiro-ia');
+    btn.style.display = 'block';
+    
+    const pendentes = ordens.filter(o => o.status === 'Pendente');
+    const altas = pendentes.filter(o => o.prioridade === 'Alta');
+    const normais = pendentes.filter(o => o.prioridade !== 'Alta');
+    
+    const osParaHoje = [...altas, ...normais].slice(0, 5); // Limite de 5 para não sobrecarregar
+    
+    let text = "====== ROTEIRO TÉCNICO DE HOJE ======\n\n";
+    
+    if(osParaHoje.length === 0) {
+        text += "Nenhuma Ordem de Serviço pendente na fila no momento. Aproveite para organizar a infraestrutura!";
+    } else {
+        text += "Atenção: Ordens marcadas como ALTA têm prioridade total de deslocamento.\n\n";
+        osParaHoje.forEach((o, i) => {
+            text += `[ ${o.prioridade.toUpperCase()} ] TAREFA ${i+1}:\n`;
+            text += `🔹 Problema: ${o.titulo}\n`;
+            text += `📍 Endereço: ${o.local || 'Não informado'}\n`;
+            if(o.descricao) text += `📄 Detalhes: ${o.descricao}\n`;
+            text += `--------------------------------------\n`;
+        });
+        text += "\nPor favor, atualizem o status no sistema ao iniciar e ao concluir cada tarefa.";
+    }
+    
+    btn.value = text;
+    showToast("Roteiro gerado! Copie e envie no WhatsApp da equipe.", "success");
+}
+
+// Inicia aplicação
+window.onload = checkSession;
+
+</script>
 </body>
 </html>

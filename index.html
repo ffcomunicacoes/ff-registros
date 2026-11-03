@@ -4,188 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FF Registro | Sistema de Gestão</title>
-<!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- Ícones (Lucide) -->
-<script src="https://unpkg.com/lucide@latest"></script>
-
 <style>
-    /* VARIÁVEIS DE COR E ESTILO */
     :root {
         --bg: #0f172a; --bg-card: #1e293b; --border: #334155; 
-        --primary: #3b82f6; --primary-hover: #2563eb; 
-        --success: #10b981; --warning: #f59e0b; --danger: #ef4444; 
+        --primary: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; 
         --text: #f8fafc; --text-muted: #94a3b8;
-        --radius: 10px;
     }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
     
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; font-size: 14px; }
+    /* Menu Lateral */
+    nav.sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; }
+    .brand { font-size: 20px; font-weight: bold; padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+    .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 15px 20px; text-align: left; font-size: 15px; cursor: pointer; transition: 0.2s; }
+    .nav-btn:hover { background: rgba(59, 130, 246, 0.1); color: var(--primary); }
+    .nav-btn.active { background: rgba(59, 130, 246, 0.15); color: var(--primary); border-right: 3px solid var(--primary); font-weight: bold; }
+    .user-info { margin-top: auto; padding: 20px; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted); }
     
-    /* SCROLLBAR CUSTOMIZADA */
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-    /* LAYOUT PRINCIPAL */
-    nav.sidebar { width: 260px; background: var(--bg-card); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 20px 0; transition: 0.3s; z-index: 100;}
-    .brand { font-size: 20px; font-weight: 700; padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 10px; display: flex; align-items: center; gap: 10px; color: var(--primary); }
-    
-    .nav-btn { background: transparent; border: none; color: var(--text-muted); padding: 15px 20px; text-align: left; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; width: 100%; font-weight: 500;}
-    .nav-btn:hover { background: rgba(59, 130, 246, 0.1); color: var(--text); }
-    .nav-btn.active { background: rgba(59, 130, 246, 0.15); color: var(--primary); border-right: 3px solid var(--primary); font-weight: 600; }
-    
-    .user-info { margin-top: auto; padding: 20px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); line-height: 1.6;}
-    
-    main { flex: 1; overflow-y: auto; padding: 30px; position: relative; }
+    /* Área Principal */
+    main { flex: 1; overflow-y: auto; padding: 30px; }
     .view { display: none; animation: fadeIn 0.3s ease; }
     .view.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* TIPOGRAFIA */
-    h1 { font-size: 24px; font-weight: 600; margin-bottom: 5px; }
-    p.subtitle { color: var(--text-muted); margin-bottom: 25px; font-size: 14px; }
+    h1 { margin-bottom: 5px; }
+    p.subtitle { color: var(--text-muted); margin-bottom: 25px; }
     
-    /* CARDS E GRIDS */
-    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    .card-kpi h3 { color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-    .card-kpi .value { font-size: 36px; font-weight: 700; }
+    /* Cards e Grid */
+    .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px;}
+    .card-kpi h3 { color: var(--text-muted); font-size: 14px; font-weight: normal; margin-bottom: 5px; }
+    .card-kpi .value { font-size: 32px; font-weight: bold; }
     
-    /* FORMS E BOTÕES */
-    .form-group { margin-bottom: 15px; text-align: left; }
-    .form-group label { display: block; margin-bottom: 5px; font-size: 12px; color: var(--text-muted); }
-    input, select, textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 12px 15px; border-radius: 8px; outline: none; transition: 0.2s; font-size: 14px;}
-    input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2); }
-    textarea { resize: vertical; min-height: 100px; }
+    /* Formulários e Botões */
+    input, select, textarea { width: 100%; background: #0b1120; border: 1px solid var(--border); color: var(--text); padding: 12px; border-radius: 8px; margin-bottom: 15px; outline: none; }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
     
-    button.btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px;}
-    button.btn:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
-    button.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    button.btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    button.btn:hover { filter: brightness(1.1); }
     button.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
-    button.btn-outline:hover:not(:disabled) { background: rgba(255,255,255,0.05); }
-    button.btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
-    button.btn-danger:hover:not(:disabled) { background: var(--danger); color: white; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
     
-    /* KANBAN BOARD */
-    .kanban-board { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; align-items: start; }
-    .kanban-col { background: rgba(15, 23, 42, 0.4); border-radius: var(--radius); padding: 15px; display: flex; flex-direction: column; gap: 15px; min-height: 500px; border: 1px dashed var(--border); }
-    .kanban-header { font-weight: 600; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); padding-bottom: 12px; border-bottom: 1px solid var(--border); font-size: 13px; letter-spacing: 0.5px; }
+    /* Quadro Kanban */
+    .kanban-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .kanban-col { background: rgba(30, 41, 59, 0.5); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; gap: 15px; min-height: 400px; border: 1px dashed var(--border); }
+    .kanban-header { font-weight: bold; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+    .os-card { background: var(--bg-card); border-left: 4px solid var(--primary); border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .os-card h4 { margin-bottom: 5px; font-size: 15px; }
+    .os-card .meta { font-size: 12px; color: var(--text-muted); margin-top: 10px; display: flex; justify-content: space-between; }
     
-    .os-card { background: var(--bg-card); border-radius: 8px; padding: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); border: 1px solid var(--border); transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;}
-    .os-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.3); border-color: #475569; }
-    .os-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background: var(--primary); }
-    .os-card.prioridade-alta::before { background: var(--danger); }
+    /* Tabelas */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text-muted); font-size: 13px; text-transform: uppercase; }
     
-    .os-card h4 { margin-bottom: 6px; font-size: 15px; font-weight: 600; line-height: 1.3;}
-    .os-card .local { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
-    .os-card .actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 15px; border-top: 1px solid var(--border); padding-top: 12px; }
-    
-    /* TABELAS */
-    .table-container { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-    th { color: var(--text-muted); font-size: 12px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; background: rgba(255,255,255,0.02);}
-    tr:hover td { background: rgba(255,255,255,0.01); }
-    
-    /* BADGES */
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; }
-    .badge.success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .badge.warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-    .badge.danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
-    
-    /* MODAIS (Substitui prompts e alerts) */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.2s ease;}
-    .modal-content { background: var(--bg-card); width: 100%; max-width: 450px; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; }
-    .modal-header { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-header h2 { font-size: 18px; margin: 0; }
-    .modal-body { padding: 24px; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; background: rgba(0,0,0,0.2); }
-    
-    /* LOGIN SCREEN */
-    #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 2000; }
-    .login-box { background: var(--bg-card); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); }
-    
-    /* TOAST NOTIFICATIONS */
-    #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-    .toast { padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; font-size: 14px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); animation: slideIn 0.3s ease forwards; transform: translateX(120%); }
-    .toast.success { background: var(--success); }
-    .toast.error { background: var(--danger); }
-    .toast.warning { background: var(--warning); color: #000; }
-    @keyframes slideIn { to { transform: translateX(0); } }
-
-    /* LOADING OVERLAY */
-    #global-loader { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.8); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; display: none; }
-    .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;}
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* RESPONSIVIDADE */
-    @media (max-width: 768px) {
-        body { flex-direction: column; }
-        nav.sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 10px; height: auto; border-right: none; border-bottom: 1px solid var(--border); justify-content: center;}
-        .brand { width: 100%; justify-content: center; border-bottom: none; padding-bottom: 10px; }
-        .nav-btn { width: auto; padding: 10px; border: none !important; }
-        .nav-btn span { display: none; } /* Esconde texto no mobile, mostra só ícone */
-        .user-info { display: none; } /* Oculta info de usuario no mobile para economizar espaço */
-        main { padding: 15px; }
-    }
+    /* Tela de Login */
+    #login-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+    .login-box { background: var(--bg-card); padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--border); }
+    .badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; background: rgba(255,255,255,0.1); }
 </style>
 </head>
 <body>
 
-<!-- LOADING GLOBAL -->
-<div id="global-loader">
-    <div class="spinner"></div>
-    <p style="color:var(--text-muted); font-weight:500;">Sincronizando dados...</p>
-</div>
-
-<!-- CONTAINER DE TOASTS -->
-<div id="toast-container"></div>
-
 <!-- TELA DE LOGIN -->
 <div id="login-screen">
     <div class="login-box">
-        <i data-lucide="clipboard-check" style="width: 48px; height: 48px; color: var(--primary); margin-bottom: 15px;"></i>
-        <h2 style="margin-bottom: 5px;">FF Registro</h2>
-        <p class="subtitle" style="margin-bottom: 25px;">Acesso ao Sistema Gerencial</p>
-        
-        <form onsubmit="event.preventDefault(); login();">
-            <div class="form-group">
-                <input type="email" id="email" placeholder="E-mail de acesso" required />
-            </div>
-            <div class="form-group">
-                <input type="password" id="senha" placeholder="Senha" required />
-            </div>
-            <button type="submit" class="btn" id="btn-login" style="width:100%; margin-top: 10px;">
-                <i data-lucide="log-in" style="width:18px;"></i> Entrar no Sistema
-            </button>
-        </form>
+        <div style="font-size:40px; margin-bottom:10px;">📋</div>
+        <h2>FF Registro</h2>
+        <p class="subtitle" style="margin-bottom: 20px;">Acesso ao Sistema</p>
+        <input type="email" id="email" placeholder="Seu E-mail" />
+        <input type="password" id="senha" placeholder="Sua Senha" />
+        <button id="btn-login" class="btn" style="width:100%" onclick="login()">Entrar</button>
+        <p id="login-msg" style="color:var(--danger); margin-top:15px; font-size:13px;"></p>
     </div>
 </div>
 
 <!-- MENU LATERAL -->
 <nav class="sidebar">
-    <div class="brand"><i data-lucide="shield-check"></i> FF Registro</div>
-    
-    <button class="nav-btn active" onclick="nav('dashboard')">
-        <i data-lucide="layout-dashboard"></i> <span>Painel Inicial</span>
-    </button>
-    <button class="nav-btn" onclick="nav('os')">
-        <i data-lucide="list-todo"></i> <span>Ordens de Serviço</span>
-    </button>
-    <button class="nav-btn" onclick="nav('registros')">
-        <i data-lucide="file-check-2"></i> <span>Registros (Histórico)</span>
-    </button>
-    <button class="nav-btn" onclick="nav('equipe')">
-        <i data-lucide="users"></i> <span>Equipe Técnica</span>
-    </button>
-    
+    <div class="brand">📋 FF Registro</div>
+    <!-- Note que agora passamos 'this' para evitar erro de clique -->
+    <button class="nav-btn active" onclick="nav('dashboard', this)">📊 Painel & I.A.</button>
+    <button class="nav-btn" onclick="nav('os', this)">🛠️ Ordens de Serviço</button>
+    <button class="nav-btn" onclick="nav('registros', this)">📝 Registros Fechados</button>
+    <button class="nav-btn" onclick="nav('equipe', this)">👥 Equipe</button>
     <div class="user-info">
-        Conectado como:<br><strong id="user-name" style="color:var(--text)">Carregando...</strong><br>
-        <button class="btn btn-outline" style="width:100%; margin-top:15px; padding: 8px; font-size:12px; color: var(--danger); border-color: rgba(239, 68, 68, 0.3);" onclick="confirmarLogout()">
-            <i data-lucide="log-out" style="width:14px;"></i> Sair da Conta
-        </button>
+        Usuário:<br><strong id="user-name">Carregando...</strong><br>
+        <a href="#" onclick="logout()" style="color:var(--danger); display:block; margin-top:5px; text-decoration:none;">Sair do sistema</a>
     </div>
 </nav>
 
@@ -193,93 +98,56 @@
 <main>
     <!-- TELA 1: DASHBOARD -->
     <div id="view-dashboard" class="view active">
-        <h1>Visão Geral</h1>
-        <p class="subtitle">Resumo das operações e distribuição inteligente de chamados.</p>
+        <h1>Painel de Controle</h1>
+        <p class="subtitle">Resumo das operações e inteligência artificial.</p>
         
         <div class="grid-cards">
-            <div class="card card-kpi">
-                <h3>O.S. Pendentes</h3>
-                <div class="value" id="kpi-pendentes" style="color:var(--warning)">0</div>
-            </div>
-            <div class="card card-kpi">
-                <h3>Em Andamento</h3>
-                <div class="value" id="kpi-andamento" style="color:var(--primary)">0</div>
-            </div>
-            <div class="card card-kpi">
-                <h3>Concluídas (Total)</h3>
-                <div class="value" id="kpi-concluidas" style="color:var(--success)">0</div>
-            </div>
+            <div class="card card-kpi"><h3>O.S. Pendentes</h3><div class="value" id="kpi-pendentes" style="color:var(--warning)">0</div></div>
+            <div class="card card-kpi"><h3>Em Andamento</h3><div class="value" id="kpi-andamento" style="color:var(--primary)">0</div></div>
+            <div class="card card-kpi"><h3>Concluídas (Total)</h3><div class="value" id="kpi-concluidas" style="color:var(--success)">0</div></div>
         </div>
 
-        <div class="card" style="border-left: 4px solid #8b5cf6; background: linear-gradient(145deg, var(--bg-card) 0%, rgba(139, 92, 246, 0.05) 100%);">
-            <h2 style="color:#8b5cf6; display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                <i data-lucide="bot"></i> Despachante I.A.
-            </h2>
-            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px; line-height:1.5;">
-                Gere um roteiro otimizado para a equipe técnica baseado nas prioridades das Ordens de Serviço pendentes na fila.
-            </p>
-            <button class="btn" style="background:#8b5cf6; color:white;" onclick="gerarRoteiroIA()">
-                <i data-lucide="sparkles"></i> Gerar Roteiro do Dia
-            </button>
-            <textarea id="roteiro-ia" style="margin-top:20px; height:200px; display:none; background: rgba(0,0,0,0.2); font-family: monospace; font-size:13px;" readonly></textarea>
+        <div class="card" style="border-left: 4px solid #8b5cf6;">
+            <h2 style="color:#8b5cf6;">🤖 Despachante Inteligente (I.A.)</h2>
+            <p style="color:var(--text-muted); font-size:14px; margin-bottom:15px;">A Inteligência Artificial lê as O.S. pendentes e gera um relatório pronto para copiar e colar no WhatsApp da equipe.</p>
+            <button class="btn" style="background:#8b5cf6;" onclick="gerarRoteiroIA()">Gerar Roteiro do Dia</button>
+            <textarea id="roteiro-ia" style="margin-top:15px; height:150px; display:none;" readonly></textarea>
         </div>
     </div>
 
     <!-- TELA 2: ORDENS DE SERVIÇO (KANBAN) -->
     <div id="view-os" class="view">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <div>
-                <h1>Gestão de Chamados</h1>
-                <p class="subtitle" style="margin-bottom:0;">Acompanhe o fluxo das Ordens de Serviço.</p>
+                <h1>Ordens de Serviço (O.S.)</h1>
+                <p class="subtitle">Acompanhe e mova os chamados técnicos.</p>
             </div>
-            <button class="btn" onclick="abrirModalOS()">
-                <i data-lucide="plus"></i> Criar Nova O.S.
-            </button>
+            <button class="btn" onclick="abrirModalOS()">+ Nova O.S.</button>
         </div>
         
         <div class="kanban-board">
-            <!-- COLUNA PENDENTE -->
             <div class="kanban-col">
-                <div class="kanban-header">
-                    <span><i data-lucide="clock" style="width:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> PENDENTES</span>
-                    <span class="badge warning" id="count-pendente">0</span>
-                </div>
-                <div id="col-pendente" style="display:flex; flex-direction:column; gap:12px;"></div>
+                <div class="kanban-header">📋 PENDENTE <span class="badge" id="count-pendente">0</span></div>
+                <div id="col-pendente"></div>
             </div>
-            
-            <!-- COLUNA ANDAMENTO -->
-            <div class="kanban-col" style="background: rgba(59, 130, 246, 0.05); border-color: rgba(59, 130, 246, 0.2);">
-                <div class="kanban-header">
-                    <span style="color: var(--primary)"><i data-lucide="settings" style="width:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> EM ANDAMENTO</span>
-                    <span class="badge" style="background:var(--primary); color:white;" id="count-andamento">0</span>
-                </div>
-                <div id="col-andamento" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <div class="kanban-col">
+                <div class="kanban-header">⚙️ EM ANDAMENTO <span class="badge" id="count-andamento">0</span></div>
+                <div id="col-andamento"></div>
             </div>
-            
-            <!-- COLUNA CONCLUÍDO -->
-            <div class="kanban-col" style="opacity: 0.8;">
-                <div class="kanban-header">
-                    <span style="color: var(--success)"><i data-lucide="check-circle-2" style="width:14px; display:inline-block; vertical-align:middle; margin-right:4px;"></i> CONCLUÍDOS</span>
-                    <span class="badge success" id="count-concluido">0</span>
-                </div>
-                <div id="col-concluido" style="display:flex; flex-direction:column; gap:12px;"></div>
+            <div class="kanban-col">
+                <div class="kanban-header">✅ CONCLUÍDO <span class="badge" id="count-concluido">0</span></div>
+                <div id="col-concluido"></div>
             </div>
         </div>
     </div>
 
     <!-- TELA 3: REGISTROS -->
     <div id="view-registros" class="view">
-        <h1>Histórico de Campo</h1>
-        <p class="subtitle">Relatórios gerados automaticamente no fechamento de serviços.</p>
-        <div class="card table-container" style="padding:0; overflow:hidden;">
+        <h1>Registros de Campo</h1>
+        <p class="subtitle">Histórico automático de tudo que foi relatado ao fechar uma O.S.</p>
+        <div class="card">
             <table>
-                <thead>
-                    <tr>
-                        <th style="width:120px;">Data</th>
-                        <th>O.S. Título</th>
-                        <th>Relato Técnico</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Data</th><th>Relato / Serviço Realizado</th><th>Status</th></tr></thead>
                 <tbody id="lista-registros"></tbody>
             </table>
         </div>
@@ -287,158 +155,55 @@
 
     <!-- TELA 4: EQUIPE -->
     <div id="view-equipe" class="view">
-        <h1>Equipe Técnica</h1>
-        <p class="subtitle">Colaboradores cadastrados no banco de dados.</p>
-        <div class="card table-container" style="padding:0; overflow:hidden;">
+        <h1>Equipe e Técnicos</h1>
+        <p class="subtitle">Profissionais cadastrados no sistema.</p>
+        <div class="card">
             <table>
-                <thead>
-                    <tr>
-                        <th>Nome do Técnico</th>
-                        <th>Especialidade</th>
-                        <th>Telefone</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Nome</th><th>Especialidade</th><th>Telefone</th><th>Status</th></tr></thead>
                 <tbody id="lista-equipe"></tbody>
             </table>
         </div>
     </div>
 </main>
 
-<!-- ================= MODAIS ================= -->
-
 <!-- MODAL: NOVA O.S. -->
-<div id="modal-os" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Nova Ordem de Serviço</h2>
-            <button class="btn-outline" style="border:none; padding:5px; cursor:pointer;" onclick="fecharModal('modal-os')"><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label>Título / Problema</label>
-                <input type="text" id="os-titulo" placeholder="Ex: Câmera portaria sem imagem" />
-            </div>
-            <div class="form-group">
-                <label>Localização</label>
-                <input type="text" id="os-local" placeholder="Ex: Condomínio X - Bloco 2" />
-            </div>
-            <div class="form-group">
-                <label>Prioridade</label>
-                <select id="os-prioridade">
-                    <option value="Normal">Normal (SLA Padrão)</option>
-                    <option value="Alta">Alta (Urgência/Parada)</option>
-                </select>
-            </div>
-            <div class="form-group" style="margin-bottom:0;">
-                <label>Descrição Detalhada (Opcional)</label>
-                <textarea id="os-desc" placeholder="Detalhes adicionais para o técnico..."></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="fecharModal('modal-os')">Cancelar</button>
-            <button class="btn" id="btn-salvar-os" onclick="salvarOS()"><i data-lucide="save" style="width:16px;"></i> Salvar O.S.</button>
+<div id="modal-os" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:500; align-items:center; justify-content:center;">
+    <div class="card" style="width: 100%; max-width: 500px;">
+        <h2>Nova Ordem de Serviço</h2>
+        <input type="text" id="os-titulo" placeholder="Título / Defeito relatado" />
+        <input type="text" id="os-local" placeholder="Local (Condomínio / Endereço)" />
+        <textarea id="os-desc" placeholder="Detalhes do problema..."></textarea>
+        <select id="os-prioridade">
+            <option value="Normal">Prioridade: Normal</option>
+            <option value="Alta">Prioridade: Alta</option>
+        </select>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+            <button class="btn btn-outline" onclick="fecharModalOS()">Cancelar</button>
+            <button class="btn" id="btn-salvar-os" onclick="salvarOS()">Salvar O.S.</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL: CONCLUIR O.S. (Relato) -->
-<div id="modal-concluir" class="modal-overlay">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 style="color:var(--success); display:flex; align-items:center; gap:8px;"><i data-lucide="check-circle-2"></i> Fechar Ordem de Serviço</h2>
-            <button class="btn-outline" style="border:none; padding:5px; cursor:pointer;" onclick="fecharModal('modal-concluir')"><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body">
-            <p style="margin-bottom:15px; font-size:13px; color:var(--text-muted);">Descreva o que foi realizado no local. Isso ficará salvo no histórico de registros permanentemente.</p>
-            <input type="hidden" id="concluir-os-id" />
-            <div class="form-group" style="margin-bottom:0;">
-                <textarea id="os-relato" placeholder="Ex: Trocado conector BNC e refeita a emenda da fonte..."></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="fecharModal('modal-concluir')">Cancelar</button>
-            <button class="btn" style="background:var(--success);" onclick="confirmarConclusao()"><i data-lucide="check" style="width:16px;"></i> Registrar Conclusão</button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL: CONFIRMAR EXCLUSÃO -->
-<div id="modal-excluir" class="modal-overlay">
-    <div class="modal-content" style="max-width: 350px;">
-        <div class="modal-header" style="border-bottom:none; padding-bottom:0;">
-            <h2 style="color:var(--danger); text-align:center; width:100%;">Atenção!</h2>
-        </div>
-        <div class="modal-body" style="text-align:center;">
-            <i data-lucide="alert-triangle" style="width:48px; height:48px; color:var(--danger); margin: 0 auto 15px;"></i>
-            <p>Tem certeza que deseja excluir esta O.S.? Esta ação não pode ser desfeita.</p>
-            <input type="hidden" id="excluir-os-id" />
-        </div>
-        <div class="modal-footer" style="justify-content:center; background:transparent; border-top:none;">
-            <button class="btn btn-outline" onclick="fecharModal('modal-excluir')">Cancelar</button>
-            <button class="btn btn-danger" onclick="confirmarExclusao()">Sim, Excluir</button>
-        </div>
-    </div>
-</div>
-
-<!-- LÓGICA JAVASCRIPT -->
+<!-- LÓGICA DO SISTEMA -->
 <script>
-// Inicializa ícones do Lucide
-lucide.createIcons();
-
-// Credenciais Supabase
 const SUPABASE_URL = "https://dkjojycfqzkfrnyphtta.supabase.co";
 const SUPABASE_KEY = "sb_publishable_8fzGHTs0-Ct66nWFi-J7Aw_rg7dZG1F";
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Variáveis de Estado
 let ordens = [];
 let tecnicos = [];
 let registros = [];
 
-// ================= SISTEMA DE TOASTS =================
-function showToast(msg, type = 'success') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    
-    let icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-octagon' : 'info';
-    toast.innerHTML = `<i data-lucide="${icon}" style="width:18px; height:18px;"></i> ${msg}`;
-    
-    container.appendChild(toast);
-    lucide.createIcons();
-    
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        toast.style.transition = '0.3s';
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
-}
-
-// ================= LOADING GLOBAL =================
-function showLoading(show) {
-    document.getElementById('global-loader').style.display = show ? 'flex' : 'none';
-}
-
-// ================= CONTROLE DE TELAS & MODAIS =================
-function nav(viewId) {
+// Função de navegação corrigida (sem o event global problemático)
+function nav(viewId, elementClicked) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.getElementById('view-' + viewId).classList.add('active');
-    event.currentTarget.classList.add('active');
+    if (elementClicked) {
+        elementClicked.classList.add('active');
+    }
 }
 
-function abrirModal(id) { document.getElementById(id).style.display = 'flex'; }
-function fecharModal(id) { document.getElementById(id).style.display = 'none'; }
-function abrirModalOS() { 
-    document.getElementById('os-titulo').value = '';
-    document.getElementById('os-local').value = '';
-    document.getElementById('os-desc').value = '';
-    abrirModal('modal-os'); 
-}
-
-// ================= AUTENTICAÇÃO =================
 async function checkSession() {
     try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -447,260 +212,184 @@ async function checkSession() {
         if (session) {
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('user-name').innerText = session.user.email;
-            await carregarDados();
+            carregarDados();
         }
     } catch (err) {
-        console.error("Erro na sessão:", err);
+        console.error("Erro na sessão:", err.message);
     }
 }
 
+// Função de Login corrigida (pegando o botão por ID)
 async function login() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('senha').value;
     const btn = document.getElementById('btn-login');
-    
-    if(!email || !password) return showToast("Preencha e-mail e senha.", "warning");
-    
-    btn.innerHTML = '<div class="spinner" style="width:16px; height:16px; border-width:2px; margin:0; border-left-color:white;"></div> Entrando...';
+    const msg = document.getElementById('login-msg');
+
+    if (!email || !password) {
+        msg.innerText = "Preencha e-mail e senha.";
+        return;
+    }
+
+    btn.innerText = "Conectando...";
     btn.disabled = true;
+    msg.innerText = "";
     
     try {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        
-        showToast("Login realizado com sucesso!");
-        checkSession();
+        if (error) {
+            msg.innerText = "Falha no login: verifique suas credenciais.";
+            btn.innerText = "Entrar";
+            btn.disabled = false;
+        } else {
+            checkSession();
+        }
     } catch (err) {
-        showToast("Erro ao entrar: Verifique credenciais.", "error");
-        btn.innerHTML = '<i data-lucide="log-in" style="width:18px;"></i> Entrar no Sistema';
+        msg.innerText = "Erro de conexão com o banco.";
+        btn.innerText = "Entrar";
         btn.disabled = false;
-        lucide.createIcons();
     }
 }
 
-function confirmarLogout() {
-    if(confirm("Deseja realmente sair do sistema?")) {
-        supabase.auth.signOut().then(() => window.location.reload());
-    }
+async function logout() { 
+    await supabase.auth.signOut(); 
+    window.location.reload(); 
 }
 
-// ================= CARREGAMENTO DE DADOS =================
 async function carregarDados() {
-    showLoading(true);
     try {
-        // Busca O.S.
+        // Envolve as chamadas do banco em um Try/Catch para identificar erros
         const resOs = await supabase.from('ordens_servico').select('*').order('created_at', { ascending: false });
-        if (resOs.error) throw resOs.error;
-        ordens = resOs.data || [];
+        if (resOs.error) throw new Error("Erro nas Ordens de Serviço: " + resOs.error.message);
+        if (resOs.data) ordens = resOs.data;
 
-        // Busca Técnicos
         const resTec = await supabase.from('tecnicos').select('*');
-        if (resTec.error) throw resTec.error;
-        tecnicos = resTec.data || [];
+        if (resTec.error) throw new Error("Erro nos Técnicos: " + resTec.error.message);
+        if (resTec.data) tecnicos = resTec.data;
 
-        // Busca Registros (Fazendo join manual para pegar o nome da OS via JS)
         const resReg = await supabase.from('registros_atendimento').select('*').order('data_execucao', { ascending: false });
-        if (resReg.error) throw resReg.error;
-        registros = resReg.data || [];
+        if (resReg.error) throw new Error("Erro nos Registros: " + resReg.error.message);
+        if (resReg.data) registros = resReg.data;
 
-        atualizarInterface();
-    } catch (err) {
-        console.error(err);
-        showToast("Erro ao carregar dados do banco.", "error");
-    } finally {
-        showLoading(false);
+        atualizarTelas();
+    } catch (erro) {
+        console.error(erro);
+        alert("Erro ao puxar dados. Suas tabelas ou políticas RLS do Supabase podem estar bloqueando o acesso.\n\nDetalhe: " + erro.message);
     }
 }
 
-// ================= RENDERIZAÇÃO =================
-function atualizarInterface() {
+function atualizarTelas() {
     const pendentes = ordens.filter(o => o.status === 'Pendente');
     const andamento = ordens.filter(o => o.status === 'Em Andamento');
     const concluidas = ordens.filter(o => o.status === 'Concluido');
 
-    // KPIs Dashboard
     document.getElementById('kpi-pendentes').innerText = pendentes.length;
     document.getElementById('kpi-andamento').innerText = andamento.length;
     document.getElementById('kpi-concluidas').innerText = concluidas.length;
     
-    // Contadores Kanban
     document.getElementById('count-pendente').innerText = pendentes.length;
     document.getElementById('count-andamento').innerText = andamento.length;
     document.getElementById('count-concluido').innerText = concluidas.length;
 
-    // Listas Kanban
-    document.getElementById('col-pendente').innerHTML = pendentes.length ? pendentes.map(cardHTML).join('') : '<p style="color:var(--text-muted); font-size:12px; text-align:center; padding:20px;">Nenhuma pendência.</p>';
-    document.getElementById('col-andamento').innerHTML = andamento.length ? andamento.map(cardHTML).join('') : '';
-    document.getElementById('col-concluido').innerHTML = concluidas.length ? concluidas.map(cardHTML).join('') : '';
+    document.getElementById('col-pendente').innerHTML = pendentes.map(cardHTML).join('');
+    document.getElementById('col-andamento').innerHTML = andamento.map(cardHTML).join('');
+    document.getElementById('col-concluido').innerHTML = concluidas.map(cardHTML).join('');
 
-    // Tabela Equipe
     document.getElementById('lista-equipe').innerHTML = tecnicos.map(t => `
         <tr>
-            <td><strong style="color:var(--text)">${t.nome}</strong></td>
+            <td><strong>${t.nome}</strong></td>
             <td>${t.especialidade || '-'}</td>
             <td>${t.telefone || '-'}</td>
-            <td><span class="badge success">Ativo</span></td>
+            <td><span class="badge" style="background:var(--success)">Ativo</span></td>
         </tr>
-    `).join('') || '<tr><td colspan="4" style="text-align:center;">Nenhum técnico cadastrado.</td></tr>';
+    `).join('') || '<tr><td colspan="4">Nenhum técnico cadastrado.</td></tr>';
 
-    // Tabela Registros
     document.getElementById('lista-registros').innerHTML = registros.map(r => {
-        const data = new Date(r.data_execucao).toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
-        // Busca o titulo da OS relacionada
-        const osRelacionada = ordens.find(o => o.id === r.ordem_servico_id);
-        const tituloOs = osRelacionada ? osRelacionada.titulo : 'O.S. Excluída/Desconhecida';
-        
+        const data = new Date(r.data_execucao).toLocaleDateString('pt-BR');
         return `
         <tr>
-            <td style="font-size:12px; color:var(--text-muted);">${data.replace(', ', '<br>')}</td>
-            <td style="font-weight:500;">${tituloOs}</td>
-            <td style="color:var(--text-muted); line-height:1.4;">${r.relato}</td>
+            <td>${data}</td>
+            <td>${r.relato}</td>
+            <td><span class="badge" style="background:var(--success)">Concluído</span></td>
         </tr>
-    `}).join('') || '<tr><td colspan="3" style="text-align:center;">Nenhum registro encontrado.</td></tr>';
-
-    lucide.createIcons(); // Recarrega ícones gerados no HTML
+    `}).join('') || '<tr><td colspan="3">Nenhum registro encontrado.</td></tr>';
 }
 
 function cardHTML(os) {
-    const isAlta = os.prioridade === 'Alta';
-    const cardClass = isAlta ? 'os-card prioridade-alta' : 'os-card';
-    const priorityBadge = isAlta ? '<span class="badge danger" style="font-size:10px;">Alta</span>' : '';
-    
-    let btnPrincipal = '';
-    if(os.status === 'Pendente') {
-        btnPrincipal = `<button class="btn" style="padding:6px; font-size:12px; width:100%;" onclick="mudarStatusOS('${os.id}', 'Em Andamento')">Iniciar Serviço</button>`;
-    } else if(os.status === 'Em Andamento') {
-        btnPrincipal = `<button class="btn" style="padding:6px; font-size:12px; width:100%; background:var(--success);" onclick="abrirModalConclusao('${os.id}')"><i data-lucide="check" style="width:14px;"></i> Concluir</button>`;
-    } else {
-        btnPrincipal = `<button class="btn btn-outline" style="padding:6px; font-size:12px; width:100%;" onclick="mudarStatusOS('${os.id}', 'Pendente')"><i data-lucide="rotate-ccw" style="width:14px;"></i> Reabrir</button>`;
-    }
-
+    const color = os.prioridade === 'Alta' ? 'var(--danger)' : 'var(--primary)';
     return `
-        <div class="${cardClass}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
-                <h4 style="margin:0; padding-right:10px;">${os.titulo}</h4>
-                ${priorityBadge}
+        <div class="os-card" style="border-left-color: ${color}">
+            <h4>${os.titulo}</h4>
+            <p style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">📍 ${os.local || 'Local não definido'}</p>
+            <div class="meta">
+                <span>Prioridade: <b style="color:${color}">${os.prioridade || 'Normal'}</b></span>
             </div>
-            <div class="local"><i data-lucide="map-pin" style="width:12px;"></i> ${os.local || 'Sem local'}</div>
-            ${os.descricao ? `<div style="font-size:11px; color:var(--text-muted); margin-bottom:10px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${os.descricao}</div>` : ''}
-            
-            <div class="actions">
-                ${btnPrincipal}
-                <button class="btn btn-outline" style="padding:6px 10px; color:var(--danger); border-color:transparent;" title="Excluir" onclick="prepararExclusao('${os.id}')">
-                    <i data-lucide="trash-2" style="width:14px;"></i>
+            <div class="meta" style="margin-top:10px; border-top:1px solid var(--border); padding-top:10px;">
+                <button class="btn btn-outline" style="padding:6px; font-size:11px; width:100%" onclick="avancarOS('${os.id}', '${os.status}')">
+                    ${os.status === 'Pendente' ? '▶ Iniciar Serviço' : (os.status === 'Em Andamento' ? '✅ Concluir O.S.' : '🔄 Reabrir O.S.')}
                 </button>
             </div>
         </div>
     `;
 }
 
-// ================= AÇÕES CRUD =================
+function abrirModalOS() { document.getElementById('modal-os').style.display = 'flex'; }
+function fecharModalOS() { document.getElementById('modal-os').style.display = 'none'; }
 
 async function salvarOS() {
-    const titulo = document.getElementById('os-titulo').value.trim();
-    const local = document.getElementById('os-local').value.trim();
-    const descricao = document.getElementById('os-desc').value.trim();
+    const titulo = document.getElementById('os-titulo').value;
+    const local = document.getElementById('os-local').value;
+    const desc = document.getElementById('os-desc').value;
     const prioridade = document.getElementById('os-prioridade').value;
+    const btnSalvar = document.getElementById('btn-salvar-os');
     
-    if(!titulo) {
-        showToast("O título da O.S. é obrigatório!", "warning");
-        document.getElementById('os-titulo').focus();
-        return;
-    }
+    if(!titulo) return alert("O título é obrigatório!");
     
-    const btn = document.getElementById('btn-salvar-os');
-    btn.disabled = true;
-    btn.innerHTML = 'Salvando...';
-    
+    btnSalvar.innerText = "Salvando...";
+    btnSalvar.disabled = true;
+
     try {
-        const { error } = await supabase.from('ordens_servico').insert([{ 
-            titulo, local, descricao, prioridade, status: 'Pendente' 
-        }]);
-        if(error) throw error;
+        const { error } = await supabase.from('ordens_servico').insert([{ titulo, local, descricao: desc, prioridade }]);
+        if (error) throw error;
         
-        showToast("Ordem de Serviço criada com sucesso!");
-        fecharModal('modal-os');
+        document.getElementById('os-titulo').value = '';
+        document.getElementById('os-local').value = '';
+        document.getElementById('os-desc').value = '';
+        
+        fecharModalOS();
         carregarDados();
     } catch (err) {
-        console.error(err);
-        showToast("Erro ao salvar O.S.", "error");
+        alert("Erro ao salvar: " + err.message);
     } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="save" style="width:16px;"></i> Salvar O.S.';
-        lucide.createIcons();
+        btnSalvar.innerText = "Salvar O.S.";
+        btnSalvar.disabled = false;
     }
 }
 
-async function mudarStatusOS(id, novoStatus) {
-    showLoading(true);
+async function avancarOS(id, statusAtual) {
+    let novoStatus = 'Em Andamento';
+    if(statusAtual === 'Em Andamento') novoStatus = 'Concluido';
+    if(statusAtual === 'Concluido') novoStatus = 'Pendente';
+
     try {
-        const { error } = await supabase.from('ordens_servico').update({ status: novoStatus }).eq('id', id);
-        if(error) throw error;
+        const { error: updateError } = await supabase.from('ordens_servico').update({ status: novoStatus }).eq('id', id);
+        if (updateError) throw updateError;
         
-        showToast(`O.S. movida para: ${novoStatus}`, "success");
+        if(novoStatus === 'Concluido') {
+            let relato = prompt("O que foi feito neste serviço? (Isso será salvo nos Registros de Campo)");
+            if(!relato) relato = "Serviço reportado como concluído sem observações adicionais.";
+            
+            const { error: regError } = await supabase.from('registros_atendimento').insert([{
+                ordem_servico_id: id, relato: relato
+            }]);
+            if (regError) throw regError;
+        }
         carregarDados();
     } catch (err) {
-        showLoading(false);
-        showToast("Erro ao atualizar status.", "error");
+        alert("Erro ao mover a O.S.: " + err.message);
     }
 }
 
-function abrirModalConclusao(id) {
-    document.getElementById('concluir-os-id').value = id;
-    document.getElementById('os-relato').value = '';
-    abrirModal('modal-concluir');
-    setTimeout(() => document.getElementById('os-relato').focus(), 100);
-}
-
-async function confirmarConclusao() {
-    const id = document.getElementById('concluir-os-id').value;
-    const relato = document.getElementById('os-relato').value.trim() || "Serviço reportado como concluído sem observações adicionais.";
-    
-    fecharModal('modal-concluir');
-    showLoading(true);
-    
-    try {
-        // 1. Atualiza Status
-        const { error: errUpdate } = await supabase.from('ordens_servico').update({ status: 'Concluido' }).eq('id', id);
-        if(errUpdate) throw errUpdate;
-        
-        // 2. Salva o Registro
-        const { error: errInsert } = await supabase.from('registros_atendimento').insert([{
-            ordem_servico_id: id, relato: relato
-        }]);
-        if(errInsert) throw errInsert;
-        
-        showToast("O.S. concluída e registrada!", "success");
-        carregarDados();
-    } catch (err) {
-        showLoading(false);
-        showToast("Erro ao concluir O.S.", "error");
-    }
-}
-
-function prepararExclusao(id) {
-    document.getElementById('excluir-os-id').value = id;
-    abrirModal('modal-excluir');
-}
-
-async function confirmarExclusao() {
-    const id = document.getElementById('excluir-os-id').value;
-    fecharModal('modal-excluir');
-    showLoading(true);
-    
-    try {
-        const { error } = await supabase.from('ordens_servico').delete().eq('id', id);
-        if(error) throw error;
-        
-        showToast("O.S. excluída com sucesso.", "success");
-        carregarDados();
-    } catch(err) {
-        showLoading(false);
-        showToast("Erro ao excluir.", "error");
-    }
-}
-
-// ================= I.A. GERADOR DE ROTEIRO =================
 function gerarRoteiroIA() {
     const btn = document.getElementById('roteiro-ia');
     btn.style.display = 'block';
@@ -709,31 +398,21 @@ function gerarRoteiroIA() {
     const altas = pendentes.filter(o => o.prioridade === 'Alta');
     const normais = pendentes.filter(o => o.prioridade !== 'Alta');
     
-    const osParaHoje = [...altas, ...normais].slice(0, 5); // Limite de 5 para não sobrecarregar
+    const osParaHoje = [...altas, ...normais].slice(0, 5);
     
-    let text = "====== ROTEIRO TÉCNICO DE HOJE ======\n\n";
+    let text = "🧠 SUGESTÃO DE ROTEIRO (Baseado nas prioridades da fila):\n\n";
+    if(osParaHoje.length === 0) text += "Nenhuma O.S. pendente no momento.";
     
-    if(osParaHoje.length === 0) {
-        text += "Nenhuma Ordem de Serviço pendente na fila no momento. Aproveite para organizar a infraestrutura!";
-    } else {
-        text += "Atenção: Ordens marcadas como ALTA têm prioridade total de deslocamento.\n\n";
-        osParaHoje.forEach((o, i) => {
-            text += `[ ${o.prioridade.toUpperCase()} ] TAREFA ${i+1}:\n`;
-            text += `🔹 Problema: ${o.titulo}\n`;
-            text += `📍 Endereço: ${o.local || 'Não informado'}\n`;
-            if(o.descricao) text += `📄 Detalhes: ${o.descricao}\n`;
-            text += `--------------------------------------\n`;
-        });
-        text += "\nPor favor, atualizem o status no sistema ao iniciar e ao concluir cada tarefa.";
-    }
+    osParaHoje.forEach((o, i) => {
+        text += `${i+1}. [${o.prioridade.toUpperCase()}] ${o.titulo}\n   📍 Local: ${o.local || 'Não definido'}\n   📄 Detalhes: ${o.descricao || 'Sem descrição'}\n\n`;
+    });
     
+    text += "Copie esta lista e envie para a equipe via WhatsApp.";
     btn.value = text;
-    showToast("Roteiro gerado! Copie e envie no WhatsApp da equipe.", "success");
 }
 
-// Inicia aplicação
-window.onload = checkSession;
-
+// Iniciar checagem
+checkSession();
 </script>
 </body>
 </html>
